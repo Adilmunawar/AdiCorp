@@ -4,6 +4,7 @@ import { useAuth } from "@/context/AuthContext";
 import { format } from "date-fns";
 import { Clock } from "lucide-react";
 import DashboardStats from "@/components/dashboard/DashboardStats";
+import AnalyticsWidget from "@/components/dashboard/AnalyticsWidget";
 
 export default function DashboardPage() {
   const { userProfile } = useAuth();
@@ -62,6 +63,9 @@ export default function DashboardPage() {
 
         {/* Dashboard Stats */}
         <DashboardStats />
+
+        {/* Analytics Widget */}
+        <AnalyticsWidget />
       </div>
     </Dashboard>
   );

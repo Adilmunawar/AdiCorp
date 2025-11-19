@@ -10,6 +10,7 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Employees from "./pages/Employees";
+import EmployeeProfile from "./pages/EmployeeProfile";
 import Attendance from "./pages/Attendance";
 import WorkingDays from "./pages/WorkingDays";
 import Events from "./pages/Events";
@@ -33,6 +34,7 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
             <Route path="/employees" element={<PrivateRoute><Employees /></PrivateRoute>} />
+            <Route path="/employees/:id" element={<PrivateRoute><EmployeeProfile /></PrivateRoute>} />
             <Route path="/attendance" element={<PrivateRoute><Attendance /></PrivateRoute>} />
             <Route path="/working-days" element={<PrivateRoute><WorkingDays /></PrivateRoute>} />
             <Route path="/events" element={<PrivateRoute><Events /></PrivateRoute>} />
