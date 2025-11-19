@@ -10,13 +10,13 @@ interface DashboardProps {
 
 export default function Dashboard({ children, title }: DashboardProps) {
   return (
-    <div className="min-h-screen flex bg-adicorp-dark">
+    <div className="min-h-screen flex bg-background">
       <Sidebar />
       
       <div className="flex-1 ml-64 min-h-screen flex flex-col">
         <Header title={title} />
         
-        <main className="flex-1 p-6 overflow-auto">
+        <main className="flex-1 p-8 overflow-auto bg-gradient-to-br from-background via-background to-muted/20">
           <div className="animate-fade-in max-w-full">
             {children}
           </div>

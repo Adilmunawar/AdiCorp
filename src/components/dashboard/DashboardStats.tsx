@@ -93,14 +93,17 @@ export default function DashboardStats() {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {[...Array(6)].map((_, i) => (
-          <Card key={i} className="glass-card">
+          <Card key={i} className="border border-border bg-card">
             <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <Skeleton className="h-4 w-20" />
-                <Skeleton className="h-8 w-8 rounded" />
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex-1 space-y-3">
+                  <Skeleton className="h-3 w-24" />
+                  <Skeleton className="h-8 w-20" />
+                  <Skeleton className="h-3 w-32" />
+                </div>
+                <Skeleton className="h-12 w-12 rounded-xl" />
               </div>
-              <Skeleton className="h-8 w-16 mt-2" />
-              <Skeleton className="h-3 w-24 mt-1" />
+              <Skeleton className="h-1 w-full rounded-full" />
             </CardContent>
           </Card>
         ))}
@@ -116,42 +119,54 @@ export default function DashboardStats() {
       value: stats.totalEmployees,
       description: `${stats.activeEmployees} active`,
       icon: Users,
-      color: "text-blue-400"
+      gradient: "from-blue-500/20 to-blue-600/20",
+      iconBg: "bg-blue-500/10",
+      iconColor: "text-blue-500"
     },
     {
       title: "Today's Attendance",
       value: stats.todayAttendance,
       description: `${stats.attendanceRate}% attendance rate`,
       icon: UserCheck,
-      color: "text-green-400"
+      gradient: "from-green-500/20 to-emerald-600/20",
+      iconBg: "bg-green-500/10",
+      iconColor: "text-green-500"
     },
     {
       title: "Monthly Attendance",
       value: stats.monthlyAttendance,
       description: "Total this month",
       icon: Calendar,
-      color: "text-purple-400"
+      gradient: "from-purple-500/20 to-violet-600/20",
+      iconBg: "bg-purple-500/10",
+      iconColor: "text-purple-500"
     },
     {
       title: "Total Wage Budget",
       value: formatCurrency(stats.totalWageRate),
       description: "Combined wage rates",
       icon: DollarSign,
-      color: "text-yellow-400"
+      gradient: "from-yellow-500/20 to-amber-600/20",
+      iconBg: "bg-yellow-500/10",
+      iconColor: "text-yellow-600"
     },
     {
       title: "Current Date",
       value: format(new Date(), "MMM dd"),
       description: format(new Date(), "yyyy"),
       icon: Clock,
-      color: "text-cyan-400"
+      gradient: "from-cyan-500/20 to-teal-600/20",
+      iconBg: "bg-cyan-500/10",
+      iconColor: "text-cyan-500"
     },
     {
       title: "Attendance Rate",
       value: `${stats.attendanceRate}%`,
       description: "Today's rate",
       icon: TrendingUp,
-      color: "text-pink-400"
+      gradient: "from-pink-500/20 to-rose-600/20",
+      iconBg: "bg-pink-500/10",
+      iconColor: "text-pink-500"
     }
   ];
 
@@ -160,17 +175,37 @@ export default function DashboardStats() {
       {statCards.map((stat, index) => {
         const IconComponent = stat.icon;
         return (
-          <Card key={index} className="glass-card hover:scale-105 transition-transform duration-200">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-white/70">{stat.title}</p>
-                  <div className="flex items-baseline gap-2">
-                    <h3 className="text-2xl font-bold text-white">{stat.value}</h3>
-                  </div>
-                  <p className="text-xs text-white/50 mt-1">{stat.description}</p>
+          <Card 
+            key={index} 
+            className="relative overflow-hidden border border-border bg-card hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 group"
+          >
+            <div className={`absolute inset-0 bg-gradient-to-br ${stat.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-300`}></div>
+            
+            <CardContent className="p-6 relative z-10">
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex-1">
+                  <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+                    {stat.title}
+                  </p>
+                  <h3 className="text-3xl font-bold text-foreground mb-1 tracking-tight">
+                    {stat.value}
+                  </h3>
+                  <p className="text-xs text-muted-foreground font-medium flex items-center gap-1">
+                    <TrendingUp className="h-3 w-3" />
+                    {stat.description}
+                  </p>
                 </div>
-                <IconComponent className={`h-8 w-8 ${stat.color}`} />
+                
+                <div className={`${stat.iconBg} p-3 rounded-xl shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+                  <IconComponent className={`h-6 w-6 ${stat.iconColor}`} />
+                </div>
+              </div>
+              
+              <div className="h-1 w-full bg-muted rounded-full overflow-hidden">
+                <div 
+                  className={`h-full bg-gradient-to-r ${stat.gradient.replace('/20', '')} animate-pulse-glow`}
+                  style={{ width: '75%' }}
+                ></div>
               </div>
             </CardContent>
           </Card>

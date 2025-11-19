@@ -384,10 +384,7 @@ export type Database = {
           total_calculated_salary: number
         }[]
       }
-      get_user_company_id: {
-        Args: { user_id: string }
-        Returns: string
-      }
+      get_user_company_id: { Args: { user_id: string }; Returns: string }
       get_user_profile: {
         Args: { user_id: string }
         Returns: {
@@ -398,6 +395,12 @@ export type Database = {
           is_admin: boolean
           last_name: string | null
         }[]
+        SetofOptions: {
+          from: "*"
+          to: "profiles"
+          isOneToOne: false
+          isSetofReturn: true
+        }
       }
       get_working_days_for_month: {
         Args: { target_company_id: string; target_month: string }
@@ -407,10 +410,7 @@ export type Database = {
           working_dates: string[]
         }[]
       }
-      is_admin: {
-        Args: { user_id: string }
-        Returns: boolean
-      }
+      is_admin: { Args: { user_id: string }; Returns: boolean }
     }
     Enums: {
       [_ in never]: never
