@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import {
   Card,
   CardContent,
@@ -21,7 +22,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Edit, Trash2, User, Search, MoreHorizontal, Mail } from "lucide-react";
+import { Edit, Trash2, User, Search, MoreHorizontal, Mail, Eye } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
@@ -51,6 +52,7 @@ export default function EmployeeList({ onAddEmployee, onEditEmployee }: Employee
   const [page, setPage] = useState(1);
   const { userProfile } = useAuth();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const ITEMS_PER_PAGE = 10;
   const { logEmployeeActivity } = useActivityLogger();
   const { currency } = useCurrency();
@@ -235,7 +237,12 @@ export default function EmployeeList({ onAddEmployee, onEditEmployee }: Employee
                         <AvatarFallback>{employee.name.charAt(0).toUpperCase()}</AvatarFallback>
                       </Avatar>
                     </TableCell>
-                    <TableCell className="font-medium">{employee.name}</TableCell>
+                     <TableCell 
+                       className="font-medium text-primary hover:underline cursor-pointer"
+                       onClick={() => navigate(`/employees/${employee.id}`)}
+                     >
+                       {employee.name}
+                     </TableCell>
                      <TableCell>
                        <Badge variant="secondary">{employee.rank}</Badge>
                      </TableCell>
@@ -255,6 +262,11 @@ export default function EmployeeList({ onAddEmployee, onEditEmployee }: Employee
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                          <DropdownMenuItem onClick={() => navigate(`/employees/${employee.id}`)}>
+                            <Eye className="mr-2 h-4 w-4" />
+                            <span>View Profile</span>
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
                            {userProfile?.is_admin && (
                              <DropdownMenuItem onClick={() => onEditEmployee?.(employee.id)}>
                                <Edit className="mr-2 h-4 w-4" />
