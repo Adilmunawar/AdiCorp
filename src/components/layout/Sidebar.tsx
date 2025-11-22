@@ -38,26 +38,26 @@ export default function Sidebar() {
   };
   
   return (
-    <div className="w-64 h-screen bg-card border-r border-border fixed left-0 top-0 overflow-y-auto animate-slide-in flex flex-col shadow-lg">
+    <div className="w-64 h-screen bg-card border-r border-border fixed left-0 top-0 overflow-y-auto flex flex-col">
       {/* Header */}
-      <div className="p-6 border-b border-border">
+      <div className="p-5 border-b border-border">
         <div className="flex items-center gap-3">
           <div className="relative">
             <img 
               src="/AdilMunawar-Uploads/31e3e556-6bb0-44a2-bd2d-6d5fa04f0ba9.png" 
               alt="AdiCorp Logo" 
-              className="w-12 h-12 rounded-xl object-cover ring-2 ring-primary/20"
+              className="w-10 h-10 rounded-lg object-cover border border-border"
             />
           </div>
           <div>
-            <h1 className="text-lg font-bold text-foreground">AdiCorp</h1>
-            <p className="text-xs text-muted-foreground">HR Solutions</p>
+            <h1 className="text-base font-semibold text-foreground">AdiCorp HR</h1>
+            <p className="text-xs text-muted-foreground">Management System</p>
           </div>
         </div>
       </div>
       
       {/* Navigation Menu */}
-      <div className="flex-1 px-3 py-6">
+      <div className="flex-1 px-3 py-4">
         <nav className="space-y-1">
           {navItems.map((item) => {
             const isActive = location.pathname === item.path;
@@ -66,20 +66,14 @@ export default function Sidebar() {
                 key={item.name}
                 to={item.path}
                 className={cn(
-                  "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 group relative overflow-hidden",
+                  "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors duration-150",
                   isActive
-                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
-                    : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground hover:bg-accent"
                 )}
               >
-                {isActive && (
-                  <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-transparent animate-pulse-glow"></div>
-                )}
-                <item.icon size={20} className={cn(
-                  "flex-shrink-0 transition-transform duration-300",
-                  isActive ? "scale-110" : "group-hover:scale-110"
-                )} />
-                <span className="font-medium relative z-10">{item.name}</span>
+                <item.icon size={18} className="flex-shrink-0" />
+                <span className="text-sm font-medium">{item.name}</span>
               </Link>
             );
           })}
@@ -87,29 +81,29 @@ export default function Sidebar() {
       </div>
       
       {/* User Profile and Logout */}
-      <div className="border-t border-border p-4 mt-auto bg-muted/30">
-        <div className="flex items-center gap-3 mb-4 px-2 p-3 rounded-xl bg-card/50 border border-border">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center flex-shrink-0 shadow-lg">
+      <div className="border-t border-border p-3 mt-auto">
+        <div className="flex items-center gap-3 mb-3 p-2.5 rounded-lg bg-muted/30">
+          <div className="w-9 h-9 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
             {loading ? (
-              <Loader2 size={18} className="animate-spin text-primary-foreground" />
+              <Loader2 size={16} className="animate-spin text-primary-foreground" />
             ) : (
-              <UserCog size={18} className="text-primary-foreground" />
+              <UserCog size={16} className="text-primary-foreground" />
             )}
           </div>
           <div className="min-w-0 flex-1">
-            <h3 className="text-sm font-semibold text-foreground truncate">
-              {loading ? "Loading..." : user?.email?.split('@')[0] || "Admin User"}
+            <h3 className="text-sm font-medium text-foreground truncate">
+              {loading ? "Loading..." : user?.email?.split('@')[0] || "Admin"}
             </h3>
             <p className="text-xs text-muted-foreground">Administrator</p>
           </div>
         </div>
         
         <button 
-          className="flex items-center gap-3 px-4 py-3 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all duration-300 w-full group border border-transparent hover:border-destructive/20"
+          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors duration-150 w-full"
           onClick={handleSignOut}
         >
-          <LogOut size={18} className="flex-shrink-0 transition-transform group-hover:scale-110" />
-          <span className="font-medium">Logout</span>
+          <LogOut size={16} className="flex-shrink-0" />
+          <span className="text-sm font-medium">Logout</span>
         </button>
       </div>
     </div>
