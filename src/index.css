@@ -16,24 +16,24 @@
     --popover: 0 0% 100%;
     --popover-foreground: 200 15% 15%;
     
-    --primary: 168 65% 38%;
+    --primary: 216 93% 37%;
     --primary-foreground: 0 0% 100%;
     
-    --secondary: 168 20% 95%;
-    --secondary-foreground: 168 40% 30%;
+    --secondary: 216 20% 95%;
+    --secondary-foreground: 216 40% 30%;
     
-    --muted: 180 10% 96%;
-    --muted-foreground: 200 10% 45%;
+    --muted: 216 10% 96%;
+    --muted-foreground: 216 10% 45%;
     
-    --accent: 168 25% 93%;
-    --accent-foreground: 168 40% 30%;
+    --accent: 216 25% 93%;
+    --accent-foreground: 216 40% 30%;
     
     --destructive: 0 65% 50%;
     --destructive-foreground: 0 0% 100%;
     
     --border: 200 10% 90%;
     --input: 200 10% 90%;
-    --ring: 168 65% 38%;
+    --ring: 216 93% 37%;
     
     --radius: 0.5rem;
   }
@@ -137,7 +137,7 @@
   /* Gradient text */
   .text-gradient-primary {
     @apply bg-clip-text text-transparent;
-    background-image: linear-gradient(135deg, hsl(var(--primary)), hsl(168 80% 45%), hsl(var(--primary)));
+    background-image: linear-gradient(135deg, hsl(var(--primary)), hsl(216 80% 45%), hsl(var(--primary)));
     background-size: 200% 100%;
   }
 

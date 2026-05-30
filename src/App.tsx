@@ -12,7 +12,6 @@ import BiometricLockScreen from "./components/auth/BiometricLockScreen";
 import PermissionErrorToaster from "./components/common/PermissionErrorToaster";
 import BrandLoader from "./components/common/BrandLoader";
 
-const Index = lazy(() => import("./pages/Index"));
 const Auth = lazy(() => import("./pages/Auth"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Employees = lazy(() => import("./pages/Employees"));
@@ -47,7 +46,7 @@ function AnimatedRoutes() {
       <AnimatedRoute>
         <Suspense fallback={<RouteLoader />}>
           <Routes location={location}>
-            <Route path="/" element={<Index />} />
+            <Route path="/" element={<Navigate to="/auth" replace />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
             <Route path="/employees" element={<PrivateRoute><Employees /></PrivateRoute>} />
