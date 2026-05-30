@@ -58,19 +58,19 @@ export default function Sidebar({ collapsed, mobileOpen, onToggleCollapse }: Sid
         to={item.path}
         data-active={isActive ? "true" : "false"}
         className={cn(
-          "nav-premium-item flex items-center gap-3 rounded-lg px-3 py-2 group",
-          compact && "justify-center px-2.5",
+          "flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 group transition-all duration-200",
+          compact && "justify-center px-2",
           isActive
-            ? "bg-primary text-primary-foreground font-medium"
-            : "text-muted-foreground hover:text-foreground hover:bg-accent"
+            ? "bg-primary text-white shadow-sm"
+            : "text-muted-foreground hover:text-foreground hover:bg-black/5"
         )}
       >
-        <item.icon size={17} className={cn(
+        <item.icon size={15} className={cn(
           "flex-shrink-0 transition-colors duration-200",
           !isActive && "group-hover:text-primary"
         )} />
         {!compact && (
-          <span className="text-[13px] tracking-[-0.01em] truncate">{item.name}</span>
+          <span className="text-[12px] font-medium tracking-tight truncate">{item.name}</span>
         )}
       </Link>
     );
@@ -79,7 +79,7 @@ export default function Sidebar({ collapsed, mobileOpen, onToggleCollapse }: Sid
       return (
         <Tooltip delayDuration={0}>
           <TooltipTrigger asChild>{content}</TooltipTrigger>
-          <TooltipContent side="right" sideOffset={8} className="font-medium text-xs">
+          <TooltipContent side="right" sideOffset={8} className="font-semibold text-[10px] px-2 py-1">
             {item.name}
           </TooltipContent>
         </Tooltip>
@@ -90,32 +90,31 @@ export default function Sidebar({ collapsed, mobileOpen, onToggleCollapse }: Sid
 
   return (
     <div className={cn(
-      "h-screen fixed left-0 top-0 flex flex-col z-40 border-r border-border/60 transition-[width,transform] duration-300",
+      "fixed left-0 top-0 flex flex-col z-40 bg-white border-r border-border/40 shadow-[10px_0_40px_-15px_rgba(0,0,0,0.05)] transition-[width,transform] duration-300",
+      "h-screen sm:h-[calc(100vh-2rem)] sm:my-4 sm:rounded-r-3xl",
       isMobile
-        ? cn("w-[272px]", mobileOpen ? "translate-x-0" : "-translate-x-full")
-        : collapsed ? "w-[60px]" : "w-[252px]"
-    )} style={{
-      background: 'linear-gradient(180deg, hsl(var(--card)) 0%, hsl(var(--muted) / 0.3) 100%)',
-    }}>
+        ? cn("w-[240px]", mobileOpen ? "translate-x-0" : "-translate-x-full", "h-screen rounded-none my-0")
+        : collapsed ? "w-[60px]" : "w-[220px]"
+    )}>
       {/* Brand */}
       <div className={cn(
-        "flex items-center gap-3 border-b border-border/40 transition-all duration-300",
-        compact ? "px-2.5 py-4 justify-center" : "px-5 py-4"
+        "flex items-center gap-2.5 border-b border-border/40 transition-all duration-300",
+        compact ? "px-2 py-3 justify-center" : "px-4 py-3"
       )}>
         <div className="relative flex-shrink-0">
-          <div className="w-9 h-9 rounded-lg overflow-hidden ring-1 ring-border/50">
+          <div className="w-8 h-8 rounded-lg shadow-sm border border-black/5">
             <img 
               src={ADICORP_LOGO_PATH}
               alt="AdiCorp Logo" 
-              className="w-full h-full object-cover"
+              className="w-full h-full object-contain p-0.5"
             />
           </div>
-          <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-card bg-primary" />
+          <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-white bg-primary" />
         </div>
         {!compact && (
           <div className="min-w-0 flex-1">
-            <h1 className="text-sm font-bold text-foreground tracking-tight leading-none">AdiCorp HR</h1>
-            <p className="text-[10px] text-muted-foreground font-medium tracking-widest uppercase mt-0.5">Management</p>
+            <h1 className="text-[13px] font-extrabold text-foreground tracking-tight leading-none">AdiCorp HR</h1>
+            <p className="text-[9px] text-muted-foreground font-bold tracking-[0.15em] uppercase mt-0.5">Workspace</p>
           </div>
         )}
       </div>
@@ -124,27 +123,26 @@ export default function Sidebar({ collapsed, mobileOpen, onToggleCollapse }: Sid
       {!isMobile && (
         <button
           onClick={onToggleCollapse}
-          className="absolute -right-3 top-[60px] z-50 w-6 h-6 rounded-full bg-card border border-border/60 flex items-center justify-center text-muted-foreground hover:text-foreground transition-all duration-200 hover:border-primary/30"
-          style={{ boxShadow: '0 1px 4px hsl(var(--foreground) / 0.08)' }}
+          className="absolute -right-3 top-[50px] z-50 w-6 h-6 rounded-full bg-white border border-border flex items-center justify-center text-muted-foreground hover:text-primary transition-all shadow-sm"
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
-          {collapsed ? <ChevronRight size={11} strokeWidth={2.5} /> : <ChevronLeft size={11} strokeWidth={2.5} />}
+          {collapsed ? <ChevronRight size={12} strokeWidth={3} /> : <ChevronLeft size={12} strokeWidth={3} />}
         </button>
       )}
       
       {/* Navigation */}
-      <div className="flex-1 overflow-y-auto py-4" style={{ scrollbarWidth: 'none' }}>
+      <div className="flex-1 overflow-y-auto py-2.5 px-2" style={{ scrollbarWidth: 'none' }}>
         {groups.map((group, gi) => {
           const items = navItems.filter(i => i.group === group);
           if (items.length === 0) return null;
           return (
-            <div key={group} className={cn("px-2.5", gi > 0 && "mt-4")}>
+            <div key={group} className={cn(gi > 0 && "mt-3")}>
               {!compact ? (
-                <p className="px-3 mb-1.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground/50">
+                <p className="px-2 mb-1.5 text-[9px] font-bold uppercase tracking-[0.15em] text-muted-foreground/60">
                   {groupLabels[group]}
                 </p>
               ) : (
-                gi > 0 && <div className="w-5 mx-auto mb-2.5 border-t border-border/40" />
+                gi > 0 && <div className="w-4 mx-auto mb-2 border-t border-border/50" />
               )}
               <nav className="space-y-0.5">
                 {items.map((item) => (
@@ -158,21 +156,21 @@ export default function Sidebar({ collapsed, mobileOpen, onToggleCollapse }: Sid
       
       {/* Quick Actions */}
       {isRegistered && isLockEnabled && (
-        <div className={cn("px-2.5 pb-1", compact && "px-1.5")}>
+        <div className={cn("px-2 pb-1", compact && "px-1.5")}>
           <Tooltip delayDuration={0}>
             <TooltipTrigger asChild>
               <button 
                 onClick={lockApp}
                 className={cn(
-                  "flex items-center gap-2.5 w-full px-3 py-2 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all duration-200 text-[13px]",
+                  "flex items-center gap-2.5 w-full px-2.5 py-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all duration-200 text-[12px] font-medium",
                   compact && "justify-center px-2"
                 )}
               >
-                <Lock size={15} />
+                <Lock size={14} />
                 {!compact && <span>Lock App</span>}
               </button>
             </TooltipTrigger>
-            {compact && <TooltipContent side="right" sideOffset={8}>Lock App</TooltipContent>}
+            {compact && <TooltipContent side="right" sideOffset={8} className="text-[10px] py-1 px-2 font-semibold">Lock App</TooltipContent>}
           </Tooltip>
         </div>
       )}
@@ -180,31 +178,25 @@ export default function Sidebar({ collapsed, mobileOpen, onToggleCollapse }: Sid
       {/* User & Logout */}
       <div className={cn(
         "border-t border-border/40 mt-auto transition-all duration-300",
-        compact ? "p-2" : "p-3"
+        compact ? "p-1.5" : "p-2"
       )}>
         <div className={cn(
-          "flex items-center gap-2.5 p-2.5 rounded-lg transition-all duration-200",
-          compact && "justify-center p-2"
-        )} style={{
-          background: 'hsl(var(--primary) / 0.04)',
-          border: '1px solid hsl(var(--primary) / 0.08)',
-        }}>
-          <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{
-            background: 'linear-gradient(135deg, hsl(var(--primary) / 0.12), hsl(var(--primary) / 0.06))',
-            border: '1px solid hsl(var(--primary) / 0.15)',
-          }}>
+          "flex items-center gap-2.5 p-2 rounded-xl transition-all duration-200 bg-black/5 border border-black/5",
+          compact && "justify-center p-1.5"
+        )}>
+          <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 bg-white shadow-sm border border-black/5">
             {loading ? (
-              <Loader2 size={13} className="animate-spin text-primary" />
+              <Loader2 size={12} className="animate-spin text-primary" />
             ) : (
-              <UserCog size={13} className="text-primary" />
+              <UserCog size={12} className="text-primary" />
             )}
           </div>
           {!compact && (
             <div className="min-w-0 flex-1">
-              <h3 className="text-[13px] font-semibold text-foreground truncate leading-none">
+              <h3 className="text-[11px] font-bold text-foreground truncate leading-none">
                 {loading ? "Loading..." : user?.email?.split('@')[0] || "Admin"}
               </h3>
-              <p className="text-[10px] text-muted-foreground font-medium mt-0.5">Administrator</p>
+              <p className="text-[9px] text-muted-foreground font-semibold mt-0.5 uppercase tracking-wider">Administrator</p>
             </div>
           )}
         </div>
@@ -213,17 +205,17 @@ export default function Sidebar({ collapsed, mobileOpen, onToggleCollapse }: Sid
           <TooltipTrigger asChild>
             <button 
               className={cn(
-                "flex items-center gap-2.5 px-3 py-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/8 transition-all duration-200 w-full mt-1 text-[13px]",
+                "flex items-center gap-2.5 px-2 py-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all duration-200 w-full mt-1 text-[12px] font-medium",
                 compact && "justify-center px-2"
               )}
               onClick={() => signOut()}
               type="button"
             >
-              <LogOut size={15} className="flex-shrink-0" />
-              {!compact && <span className="font-medium">Logout</span>}
+              <LogOut size={14} className="flex-shrink-0" />
+              {!compact && <span>Logout</span>}
             </button>
           </TooltipTrigger>
-          {compact && <TooltipContent side="right" sideOffset={8}>Logout</TooltipContent>}
+          {compact && <TooltipContent side="right" sideOffset={8} className="text-[10px] py-1 px-2 font-semibold">Logout</TooltipContent>}
         </Tooltip>
       </div>
     </div>
