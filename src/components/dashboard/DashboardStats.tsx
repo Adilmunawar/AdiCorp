@@ -103,13 +103,13 @@ export default function DashboardStats() {
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
         {[...Array(6)].map((_, i) => (
-          <Card key={i} className="border border-border overflow-hidden">
-            <CardContent className="p-5">
-              <Skeleton className="h-3 w-24 mb-3" />
-              <Skeleton className="h-7 w-16 mb-2" />
-              <Skeleton className="h-1.5 w-full mt-3" />
+          <Card key={i} className="border-border/40 overflow-hidden bg-card/50">
+            <CardContent className="p-4">
+              <Skeleton className="h-2 w-20 mb-2" />
+              <Skeleton className="h-5 w-14 mb-2" />
+              <Skeleton className="h-1 w-full mt-2" />
             </CardContent>
           </Card>
         ))}
@@ -129,16 +129,16 @@ export default function DashboardStats() {
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
       {statCards.map((stat, index) => {
         const Icon = stat.icon;
         return (
           <Card
             key={index}
-            className="border border-border overflow-hidden group cursor-default transition-all duration-500 hover:shadow-xl hover:shadow-primary/5 hover:border-primary/20 hover:-translate-y-1 relative"
+            className="border-border/40 bg-card/60 backdrop-blur-sm overflow-hidden group cursor-default transition-all duration-500 hover:shadow-lg hover:shadow-primary/5 hover:border-primary/20 hover:-translate-y-0.5 relative rounded-xl"
             style={{ animationDelay: `${index * 80}ms` }}
           >
-            <CardContent className="p-5 relative">
+            <CardContent className="p-3.5 relative">
               {/* Hover gradient */}
               <div className={`absolute inset-0 bg-gradient-to-br ${stat.accent} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
               
@@ -147,33 +147,33 @@ export default function DashboardStats() {
               
               <div className="relative flex items-start justify-between">
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1 flex items-center gap-1">
                     {stat.title}
                   </p>
-                  <h3 className="text-2xl font-bold text-foreground mb-1 tracking-tight">
+                  <h3 className="text-lg md:text-xl font-bold text-foreground mb-1 tracking-tight">
                     <AnimatedValue value={stat.value} />
                   </h3>
-                  <div className="flex items-center gap-2">
-                    <p className="text-xs text-muted-foreground">{stat.description}</p>
+                  <div className="flex items-center gap-1.5">
+                    <p className="text-[10px] text-muted-foreground truncate">{stat.description}</p>
                     {stat.trend !== "neutral" && (
-                      <span className={`inline-flex items-center gap-0.5 text-[10px] font-semibold px-1.5 py-0.5 rounded-md ${
+                      <span className={`inline-flex items-center gap-0.5 text-[9px] font-bold px-1 py-0.5 rounded ${
                         stat.trend === "up" ? "bg-green-500/10 text-green-600" : "bg-red-500/10 text-red-600"
                       }`}>
-                        {stat.trend === "up" ? <ArrowUpRight className="w-2.5 h-2.5" /> : <ArrowDownRight className="w-2.5 h-2.5" />}
+                        {stat.trend === "up" ? <ArrowUpRight className="w-2 h-2" /> : <ArrowDownRight className="w-2 h-2" />}
                         {stat.trendValue}
                       </span>
                     )}
                   </div>
                 </div>
-                <div className={`w-12 h-12 rounded-2xl ${stat.iconBg} flex items-center justify-center transition-all duration-500 group-hover:scale-110 group-hover:rotate-6 group-hover:shadow-lg flex-shrink-0`}>
-                  <Icon className={`h-5 w-5 ${stat.iconColor} transition-all duration-300`} />
+                <div className={`w-8 h-8 rounded-lg ${stat.iconBg} flex items-center justify-center transition-all duration-500 group-hover:scale-110 group-hover:rotate-6 group-hover:shadow-md flex-shrink-0`}>
+                  <Icon className={`h-4 w-4 ${stat.iconColor} transition-all duration-300`} />
                 </div>
               </div>
               
               {/* Progress bar */}
               {stat.progressMax > 0 && (
-                <div className="mt-4">
-                  <MiniProgressBar value={stat.progress} max={stat.progressMax} />
+                <div className="mt-2.5">
+                  <MiniProgressBar value={stat.progress} max={stat.progressMax} className="h-1" />
                 </div>
               )}
             </CardContent>

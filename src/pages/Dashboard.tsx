@@ -5,6 +5,7 @@ import { format } from "date-fns";
 import { Clock, Sparkles, Activity, ArrowUpRight, Zap } from "lucide-react";
 import DashboardStats from "@/components/dashboard/DashboardStats";
 import AnalyticsWidget from "@/components/dashboard/AnalyticsWidget";
+import ActivityFeed from "@/components/dashboard/ActivityFeed";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
@@ -41,10 +42,10 @@ export default function DashboardPage() {
 
   return (
     <Dashboard title="Dashboard">
-      <div className="space-y-6">
+      <div className="space-y-4">
         {/* Welcome Section */}
         <StaggerIn delay={0}>
-          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/8 via-card to-card border border-border shadow-lg group hover:shadow-xl hover:border-primary/20 transition-all duration-500">
+          <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-primary/8 via-card to-card border border-border shadow-sm group hover:shadow-md hover:border-primary/20 transition-all duration-500">
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,hsl(var(--primary)/0.06),transparent_60%)]" />
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,hsl(var(--primary)/0.03),transparent_60%)]" />
             <div className="absolute top-4 right-4 opacity-[0.03]">
@@ -54,40 +55,40 @@ export default function DashboardPage() {
             {/* Animated accent line */}
             <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-primary to-transparent opacity-50" />
             
-            <div className="relative p-8">
-              <div className="flex items-center justify-between flex-wrap gap-6">
-                <div className="flex items-center gap-6">
+            <div className="relative p-5">
+              <div className="flex items-center justify-between flex-wrap gap-4">
+                <div className="flex items-center gap-4">
                   {userProfile?.companies?.logo && (
                     <div className="relative">
                       <img 
                         src={userProfile.companies.logo} 
                         alt="Company Logo" 
-                        className="w-20 h-20 rounded-2xl object-cover ring-4 ring-primary/20 shadow-2xl transition-all duration-500 group-hover:scale-105 group-hover:ring-primary/30 group-hover:shadow-primary/10"
+                        className="w-12 h-12 rounded-xl object-cover ring-2 ring-primary/20 shadow-md transition-all duration-500 group-hover:scale-105 group-hover:ring-primary/30"
                       />
-                      <div className="absolute -bottom-2 -right-2 w-7 h-7 bg-green-500 rounded-full border-4 border-card flex items-center justify-center shadow-lg shadow-green-500/20">
-                        <div className="w-2 h-2 bg-primary-foreground rounded-full animate-pulse" />
+                      <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-card flex items-center justify-center shadow-sm">
+                        <div className="w-1.5 h-1.5 bg-primary-foreground rounded-full animate-pulse" />
                       </div>
                     </div>
                   )}
-                  <div className="space-y-2">
-                    <p className="text-sm text-muted-foreground font-medium flex items-center gap-2">
-                      <Zap className="w-3.5 h-3.5 text-primary" />
+                  <div className="space-y-1">
+                    <p className="text-[11px] text-muted-foreground font-medium flex items-center gap-1.5">
+                      <Zap className="w-3 h-3 text-primary" />
                       {greeting}
                     </p>
-                    <h1 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight">
+                    <h1 className="text-xl md:text-2xl font-bold text-foreground tracking-tight">
                       Welcome back{userProfile?.first_name ? `, ${userProfile.first_name}` : ''}!
                     </h1>
-                    <p className="text-muted-foreground text-base flex items-center gap-2">
+                    <p className="text-muted-foreground text-xs flex items-center gap-1.5">
                       {userProfile?.companies?.name ? (
                         <>
                           <span className="font-medium text-foreground/70">Managing</span>
-                          <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm font-semibold border border-primary/20 transition-all duration-300 hover:bg-primary/15 hover:scale-105 hover:shadow-md hover:shadow-primary/10 cursor-default">
+                          <span className="px-2 py-0.5 bg-primary/10 text-primary rounded-full text-[10px] font-semibold border border-primary/20 cursor-default">
                             {userProfile.companies.name}
                           </span>
                         </>
                       ) : (
-                        <span className="flex items-center gap-1.5">
-                          <Activity className="w-4 h-4 text-primary" />
+                        <span className="flex items-center gap-1">
+                          <Activity className="w-3 h-3 text-primary" />
                           Your HR management dashboard
                         </span>
                       )}
@@ -95,13 +96,13 @@ export default function DashboardPage() {
                   </div>
                 </div>
                 
-                <div className="flex items-center gap-3 px-5 py-3 bg-card/80 backdrop-blur-sm rounded-xl border border-border shadow-md transition-all duration-300 hover:shadow-lg hover:border-primary/20 hover:-translate-y-0.5 group/date cursor-default">
-                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center transition-all duration-300 group-hover/date:bg-primary/15 group-hover/date:scale-110 group-hover/date:rotate-3">
-                    <Clock className="h-5 w-5 text-primary" />
+                <div className="flex items-center gap-2.5 px-4 py-2 bg-card/80 backdrop-blur-sm rounded-lg border border-border shadow-sm transition-all duration-300 hover:shadow-md hover:border-primary/20 group/date cursor-default">
+                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center transition-all duration-300 group-hover/date:bg-primary/15 group-hover/date:scale-110 group-hover/date:rotate-3">
+                    <Clock className="h-4 w-4 text-primary" />
                   </div>
                   <div className="text-right">
-                    <p className="text-xs text-muted-foreground font-medium">Today</p>
-                    <p className="text-sm font-semibold text-foreground">{format(new Date(), 'EEEE, MMM d, yyyy')}</p>
+                    <p className="text-[10px] text-muted-foreground font-medium">Today</p>
+                    <p className="text-[11px] font-semibold text-foreground">{format(new Date(), 'EEEE, MMM d, yyyy')}</p>
                   </div>
                 </div>
               </div>
@@ -109,9 +110,8 @@ export default function DashboardPage() {
           </div>
         </StaggerIn>
 
-        {/* Quick Actions Bar */}
         <StaggerIn delay={150}>
-          <div className="flex items-center gap-3 overflow-x-auto pb-1 scrollbar-hide">
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide">
             {[
               { label: "Mark Attendance", icon: Activity, href: "/attendance" },
               { label: "View Employees", icon: Sparkles, href: "/employees" },
@@ -122,26 +122,33 @@ export default function DashboardPage() {
                 <Link
                   key={action.label}
                   to={action.href}
-                  className="flex items-center gap-2.5 px-5 py-2.5 rounded-xl bg-card border border-border text-sm font-medium text-muted-foreground hover:text-primary hover:border-primary/30 hover:bg-primary/5 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-0.5 transition-all duration-300 whitespace-nowrap group"
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-card border border-border text-[11px] font-medium text-muted-foreground hover:text-primary hover:border-primary/30 hover:bg-primary/5 hover:shadow-sm transition-all duration-300 whitespace-nowrap group"
                 >
-                  <Icon className="w-4 h-4 transition-all duration-300 group-hover:scale-110 group-hover:rotate-6" />
+                  <Icon className="w-3.5 h-3.5 transition-all duration-300 group-hover:scale-110 group-hover:rotate-6" />
                   {action.label}
-                  <ArrowUpRight className="w-3.5 h-3.5 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300" />
+                  <ArrowUpRight className="w-3 h-3 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300" />
                 </Link>
               );
             })}
           </div>
         </StaggerIn>
 
-        {/* Dashboard Stats */}
-        <StaggerIn delay={300}>
-          <DashboardStats />
-        </StaggerIn>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div className="lg:col-span-2 space-y-4">
+            <StaggerIn delay={300}>
+              <DashboardStats />
+            </StaggerIn>
 
-        {/* Analytics Widget */}
-        <StaggerIn delay={450}>
-          <AnalyticsWidget />
-        </StaggerIn>
+            <StaggerIn delay={450}>
+              <AnalyticsWidget />
+            </StaggerIn>
+          </div>
+          <div className="space-y-4">
+            <StaggerIn delay={600}>
+              <ActivityFeed />
+            </StaggerIn>
+          </div>
+        </div>
       </div>
     </Dashboard>
   );

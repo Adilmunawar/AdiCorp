@@ -60,9 +60,9 @@ export default function Dashboard({ children, title }: DashboardProps) {
 
       <div className={cn(
         "flex-1 h-screen min-w-0 flex flex-col overflow-hidden transition-all duration-300",
-        isMobile ? "ml-0" : sidebarCollapsed ? "ml-[60px]" : "ml-[252px]"
+        isMobile ? "ml-0" : sidebarCollapsed ? "ml-[60px]" : "ml-[220px]"
       )}>
-        <Header title={title} onMenuClick={handleSidebarToggle} showMenuButton />
+        <Header title={title} onMenuClick={handleSidebarToggle} showMenuButton={isMobile} />
         <main
           className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-4 md:p-6 transition-opacity duration-300 ease-out"
           style={{

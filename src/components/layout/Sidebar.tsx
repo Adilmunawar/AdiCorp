@@ -2,7 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import { 
   Calendar, Users, BarChart, Settings, Clock, ChartPie,
   UserCog, LogOut, Home, Shield, FileText, ChevronLeft,
-  ChevronRight, Lock, CalendarDays, Timer
+  ChevronRight, Lock, CalendarDays, Timer, ChevronsLeft, ChevronsRight
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ADICORP_LOGO_PATH } from "@/lib/branding";
@@ -58,19 +58,19 @@ export default function Sidebar({ collapsed, mobileOpen, onToggleCollapse }: Sid
         to={item.path}
         data-active={isActive ? "true" : "false"}
         className={cn(
-          "flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 group transition-all duration-200",
-          compact && "justify-center px-2",
+          "flex items-center gap-2.5 rounded-lg px-2 py-1 group transition-all duration-200",
+          compact && "justify-center px-1.5",
           isActive
             ? "bg-primary text-white shadow-sm"
             : "text-muted-foreground hover:text-foreground hover:bg-black/5"
         )}
       >
-        <item.icon size={15} className={cn(
+        <item.icon size={13} className={cn(
           "flex-shrink-0 transition-colors duration-200",
           !isActive && "group-hover:text-primary"
         )} />
         {!compact && (
-          <span className="text-[12px] font-medium tracking-tight truncate">{item.name}</span>
+          <span className="text-[11px] font-semibold tracking-tight truncate">{item.name}</span>
         )}
       </Link>
     );
@@ -91,9 +91,9 @@ export default function Sidebar({ collapsed, mobileOpen, onToggleCollapse }: Sid
   return (
     <div className={cn(
       "fixed left-0 top-0 flex flex-col z-40 bg-white border-r border-border/40 shadow-[10px_0_40px_-15px_rgba(0,0,0,0.05)] transition-[width,transform] duration-300",
-      "h-screen sm:h-[calc(100vh-2rem)] sm:my-4 sm:rounded-r-3xl",
+      "h-screen sm:rounded-r-2xl",
       isMobile
-        ? cn("w-[240px]", mobileOpen ? "translate-x-0" : "-translate-x-full", "h-screen rounded-none my-0")
+        ? cn("w-[240px]", mobileOpen ? "translate-x-0" : "-translate-x-full", "rounded-none")
         : collapsed ? "w-[60px]" : "w-[220px]"
     )}>
       {/* Brand */}
@@ -119,16 +119,7 @@ export default function Sidebar({ collapsed, mobileOpen, onToggleCollapse }: Sid
         )}
       </div>
 
-      {/* Collapse toggle */}
-      {!isMobile && (
-        <button
-          onClick={onToggleCollapse}
-          className="absolute -right-3 top-[50px] z-50 w-6 h-6 rounded-full bg-white border border-border flex items-center justify-center text-muted-foreground hover:text-primary transition-all shadow-sm"
-          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-        >
-          {collapsed ? <ChevronRight size={12} strokeWidth={3} /> : <ChevronLeft size={12} strokeWidth={3} />}
-        </button>
-      )}
+      {/* Collapse toggle removed from here */}
       
       {/* Navigation */}
       <div className="flex-1 overflow-y-auto py-2.5 px-2" style={{ scrollbarWidth: 'none' }}>
@@ -136,15 +127,11 @@ export default function Sidebar({ collapsed, mobileOpen, onToggleCollapse }: Sid
           const items = navItems.filter(i => i.group === group);
           if (items.length === 0) return null;
           return (
-            <div key={group} className={cn(gi > 0 && "mt-3")}>
-              {!compact ? (
-                <p className="px-2 mb-1.5 text-[9px] font-bold uppercase tracking-[0.15em] text-muted-foreground/60">
-                  {groupLabels[group]}
-                </p>
-              ) : (
-                gi > 0 && <div className="w-4 mx-auto mb-2 border-t border-border/50" />
+            <div key={group} className={cn(gi > 0 && "mt-1.5")}>
+              {compact && gi > 0 && (
+                <div className="w-4 mx-auto mb-1.5 border-t border-border/50" />
               )}
-              <nav className="space-y-0.5">
+              <nav className="space-y-px">
                 {items.map((item) => (
                   <NavItem key={item.name} item={item} />
                 ))}
@@ -201,11 +188,30 @@ export default function Sidebar({ collapsed, mobileOpen, onToggleCollapse }: Sid
           )}
         </div>
         
+        {!isMobile && (
+          <Tooltip delayDuration={0}>
+            <TooltipTrigger asChild>
+              <button 
+                className={cn(
+                  "flex items-center gap-2.5 px-2 py-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-black/5 transition-all duration-200 w-full mt-1.5 text-[12px] font-medium",
+                  compact && "justify-center px-2"
+                )}
+                onClick={onToggleCollapse}
+                type="button"
+              >
+                {collapsed ? <ChevronsRight size={14} className="flex-shrink-0" /> : <ChevronsLeft size={14} className="flex-shrink-0" />}
+                {!compact && <span>Collapse</span>}
+              </button>
+            </TooltipTrigger>
+            {compact && <TooltipContent side="right" sideOffset={8} className="text-[10px] py-1 px-2 font-semibold">Expand</TooltipContent>}
+          </Tooltip>
+        )}
+
         <Tooltip delayDuration={0}>
           <TooltipTrigger asChild>
             <button 
               className={cn(
-                "flex items-center gap-2.5 px-2 py-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all duration-200 w-full mt-1 text-[12px] font-medium",
+                "flex items-center gap-2.5 px-2 py-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all duration-200 w-full mt-0.5 text-[12px] font-medium",
                 compact && "justify-center px-2"
               )}
               onClick={() => signOut()}
