@@ -103,13 +103,13 @@ export default function DashboardStats() {
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
         {[...Array(6)].map((_, i) => (
           <Card key={i} className="border-border/40 overflow-hidden bg-card/50">
-            <CardContent className="p-4">
-              <Skeleton className="h-2 w-20 mb-2" />
-              <Skeleton className="h-5 w-14 mb-2" />
-              <Skeleton className="h-1 w-full mt-2" />
+            <CardContent className="p-2">
+              <Skeleton className="h-2 w-12 mb-1" />
+              <Skeleton className="h-4 w-10 mb-1" />
+              <Skeleton className="h-1 w-full mt-1" />
             </CardContent>
           </Card>
         ))}
@@ -129,51 +129,43 @@ export default function DashboardStats() {
   ];
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
       {statCards.map((stat, index) => {
         const Icon = stat.icon;
         return (
           <Card
             key={index}
-            className="border-border/40 bg-card/60 backdrop-blur-sm overflow-hidden group cursor-default transition-all duration-500 hover:shadow-lg hover:shadow-primary/5 hover:border-primary/20 hover:-translate-y-0.5 relative rounded-xl"
-            style={{ animationDelay: `${index * 80}ms` }}
+            className="border-border/60 bg-card overflow-hidden group cursor-default transition-none rounded-md shadow-sm"
           >
-            <CardContent className="p-3.5 relative">
-              {/* Hover gradient */}
-              <div className={`absolute inset-0 bg-gradient-to-br ${stat.accent} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
+            <CardContent className="p-3 flex flex-col justify-between h-full">
               
-              {/* Accent line */}
-              <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-primary/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className="flex items-center justify-between mb-2">
+                <div className={`w-6 h-6 rounded-md bg-muted flex items-center justify-center flex-shrink-0`}>
+                  <Icon className={`h-3 w-3 text-muted-foreground`} />
+                </div>
+                {stat.trend !== "neutral" && (
+                  <span className={`inline-flex items-center gap-0.5 text-[8px] font-bold px-1 py-0.5 rounded ${
+                    stat.trend === "up" ? "bg-green-500/10 text-green-600" : "bg-red-500/10 text-red-600"
+                  }`}>
+                    {stat.trend === "up" ? <ArrowUpRight className="w-2 h-2" /> : <ArrowDownRight className="w-2 h-2" />}
+                    {stat.trendValue}
+                  </span>
+                )}
+              </div>
               
-              <div className="relative flex items-start justify-between">
-                <div className="flex-1 min-w-0">
-                  <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1 flex items-center gap-1">
-                    {stat.title}
-                  </p>
-                  <h3 className="text-lg md:text-xl font-bold text-foreground mb-1 tracking-tight">
-                    <AnimatedValue value={stat.value} />
-                  </h3>
-                  <div className="flex items-center gap-1.5">
-                    <p className="text-[10px] text-muted-foreground truncate">{stat.description}</p>
-                    {stat.trend !== "neutral" && (
-                      <span className={`inline-flex items-center gap-0.5 text-[9px] font-bold px-1 py-0.5 rounded ${
-                        stat.trend === "up" ? "bg-green-500/10 text-green-600" : "bg-red-500/10 text-red-600"
-                      }`}>
-                        {stat.trend === "up" ? <ArrowUpRight className="w-2 h-2" /> : <ArrowDownRight className="w-2 h-2" />}
-                        {stat.trendValue}
-                      </span>
-                    )}
-                  </div>
-                </div>
-                <div className={`w-8 h-8 rounded-lg ${stat.iconBg} flex items-center justify-center transition-all duration-500 group-hover:scale-110 group-hover:rotate-6 group-hover:shadow-md flex-shrink-0`}>
-                  <Icon className={`h-4 w-4 ${stat.iconColor} transition-all duration-300`} />
-                </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-sm font-bold text-foreground mb-0.5 tracking-tight truncate">
+                  <AnimatedValue value={stat.value} />
+                </h3>
+                <p className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wider truncate">
+                  {stat.title}
+                </p>
               </div>
               
               {/* Progress bar */}
               {stat.progressMax > 0 && (
-                <div className="mt-2.5">
-                  <MiniProgressBar value={stat.progress} max={stat.progressMax} className="h-1" />
+                <div className="mt-1.5">
+                  <MiniProgressBar value={stat.progress} max={stat.progressMax} className="h-0.5" />
                 </div>
               )}
             </CardContent>

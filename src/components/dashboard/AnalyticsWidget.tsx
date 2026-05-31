@@ -126,48 +126,45 @@ export default function AnalyticsWidget() {
   ];
 
   return (
-    <Card className="border border-border bg-card shadow-lg overflow-hidden group/card hover:shadow-xl hover:border-primary/15 transition-all duration-500">
-      {/* Accent line */}
-      <div className="h-[2px] bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
-      
-      <CardHeader className="pb-2">
+    <Card className="border border-border/60 bg-card shadow-sm overflow-hidden h-full flex flex-col rounded-md">
+      <CardHeader className="pb-2 p-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2.5 text-foreground">
-            <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center transition-all duration-300 group-hover/card:bg-primary/15 group-hover/card:scale-105">
-              <TrendingUp className="h-4.5 w-4.5 text-primary" />
+          <CardTitle className="flex items-center gap-2 text-foreground">
+            <div className="w-7 h-7 rounded-md bg-muted flex items-center justify-center shrink-0">
+              <TrendingUp className="h-3.5 w-3.5 text-muted-foreground" />
             </div>
             <div>
-              <span className="text-lg font-bold">Analytics Overview</span>
-              <p className="text-xs text-muted-foreground font-normal mt-0.5">Real-time workforce insights</p>
+              <span className="text-sm font-bold leading-none block">Analytics Overview</span>
+              <span className="text-[9px] text-muted-foreground font-normal leading-none block mt-1">Workforce insights</span>
             </div>
           </CardTitle>
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/5 border border-primary/10">
-            <Sparkles className="w-3 h-3 text-primary" />
-            <span className="text-[10px] font-semibold text-primary uppercase tracking-wider">Live</span>
+          <div className="flex items-center gap-1 px-2 py-0.5 rounded bg-muted border border-border/50 shrink-0">
+            <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-wider">Live</span>
           </div>
         </div>
       </CardHeader>
-      <CardContent>
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-6 bg-muted/50 p-1 rounded-xl">
+      <CardContent className="p-3 pt-0 flex-1 flex flex-col min-h-0">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full h-full flex flex-col">
+          <TabsList className="grid w-full grid-cols-3 mb-2 bg-muted/40 p-1 rounded-lg h-8">
             {tabs.map((tab) => {
               const Icon = tab.icon;
               return (
                 <TabsTrigger
                   key={tab.value}
                   value={tab.value}
-                  className="flex items-center gap-2 rounded-lg data-[state=active]:bg-card data-[state=active]:shadow-md data-[state=active]:text-primary transition-all duration-300"
+                  className="flex items-center gap-1.5 rounded-md data-[state=active]:bg-card data-[state=active]:shadow-sm data-[state=active]:text-primary transition-all duration-300 text-[10px]"
                 >
-                  <Icon className="h-4 w-4" />
+                  <Icon className="h-3 w-3" />
                   <span className="hidden sm:inline">{tab.label}</span>
                 </TabsTrigger>
               );
             })}
           </TabsList>
 
-          <TabsContent value="attendance" className="space-y-4">
-            <div className="bg-muted/20 p-5 rounded-2xl border border-border/50">
-              <div className="flex items-center justify-between mb-5">
+          <div className="flex-1 min-h-0 relative">
+            <TabsContent value="attendance" className="absolute inset-0 m-0 border-none p-0 outline-none">
+              <div className="bg-muted/5 p-3 rounded-md border border-border/40 h-full flex flex-col">
+                <div className="flex items-center justify-between mb-2 shrink-0">
                 <h3 className="text-sm font-bold text-foreground">30-Day Attendance Trends</h3>
                 <div className="flex items-center gap-3">
                   {[
@@ -181,9 +178,9 @@ export default function AnalyticsWidget() {
                     </div>
                   ))}
                 </div>
-              </div>
-              <ResponsiveContainer width="100%" height={300}>
-                <AreaChart data={analyticsData.attendanceTrends}>
+                <div className="flex-1 min-h-0">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={analyticsData.attendanceTrends}>
                   <defs>
                     <linearGradient id="colorPresent" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor={COLORS[1]} stopOpacity={0.4}/>
@@ -204,17 +201,19 @@ export default function AnalyticsWidget() {
                   <Tooltip contentStyle={tooltipStyle} />
                   <Area type="monotone" dataKey="present" stroke={COLORS[1]} strokeWidth={2} fillOpacity={1} fill="url(#colorPresent)" name="Present" />
                   <Area type="monotone" dataKey="absent" stroke={COLORS[4]} strokeWidth={2} fillOpacity={1} fill="url(#colorAbsent)" name="Absent" />
-                  <Area type="monotone" dataKey="leave" stroke={COLORS[2]} strokeWidth={2} fillOpacity={1} fill="url(#colorLeave)" name="Leave" />
-                </AreaChart>
-              </ResponsiveContainer>
+                    <Area type="monotone" dataKey="leave" stroke={COLORS[2]} strokeWidth={2} fillOpacity={1} fill="url(#colorLeave)" name="Leave" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
             </div>
           </TabsContent>
 
-          <TabsContent value="salary" className="space-y-4">
-            <div className="bg-muted/20 p-5 rounded-2xl border border-border/50">
-              <h3 className="text-sm font-bold text-foreground mb-5">Salary Distribution by Rank</h3>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={analyticsData.salaryDistribution} barGap={8}>
+          <TabsContent value="salary" className="absolute inset-0 m-0 border-none p-0 outline-none">
+            <div className="bg-muted/5 p-3 rounded-md border border-border/40 h-full flex flex-col">
+              <h3 className="text-xs font-bold text-foreground mb-2 shrink-0">Salary Distribution by Rank</h3>
+              <div className="flex-1 min-h-0">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={analyticsData.salaryDistribution} barGap={4} margin={{ left: -20, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.5} />
                   <XAxis dataKey="rank" stroke="hsl(var(--muted-foreground))" fontSize={11} tickLine={false} axisLine={false} />
                   <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} tickLine={false} axisLine={false} />
@@ -222,16 +221,18 @@ export default function AnalyticsWidget() {
                   <Legend />
                   <Bar dataKey="avgWage" fill={COLORS[0]} radius={[8, 8, 0, 0]} name="Avg Wage" />
                   <Bar dataKey="employees" fill={COLORS[2]} radius={[8, 8, 0, 0]} name="Employees" />
-                </BarChart>
-              </ResponsiveContainer>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
             </div>
           </TabsContent>
 
-          <TabsContent value="performance" className="space-y-4">
-            <div className="bg-muted/20 p-5 rounded-2xl border border-border/50">
-              <h3 className="text-sm font-bold text-foreground mb-5">Weekly Attendance Rate</h3>
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={analyticsData.weeklyData}>
+          <TabsContent value="performance" className="absolute inset-0 m-0 border-none p-0 outline-none">
+            <div className="bg-muted/5 p-3 rounded-md border border-border/40 h-full flex flex-col">
+              <h3 className="text-xs font-bold text-foreground mb-2 shrink-0">Weekly Attendance Rate</h3>
+              <div className="flex-1 min-h-0">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={analyticsData.weeklyData} margin={{ left: -20, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.5} />
                   <XAxis dataKey="day" stroke="hsl(var(--muted-foreground))" fontSize={11} tickLine={false} axisLine={false} />
                   <YAxis stroke="hsl(var(--muted-foreground))" unit="%" fontSize={11} tickLine={false} axisLine={false} />
@@ -245,12 +246,14 @@ export default function AnalyticsWidget() {
                     activeDot={{ r: 8, stroke: COLORS[0], strokeWidth: 2, fill: "hsl(var(--card))" }}
                     name="Attendance %"
                   />
-                </LineChart>
-              </ResponsiveContainer>
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
             </div>
           </TabsContent>
-        </Tabs>
-      </CardContent>
-    </Card>
+        </div>
+      </Tabs>
+    </CardContent>
+  </Card>
   );
 }

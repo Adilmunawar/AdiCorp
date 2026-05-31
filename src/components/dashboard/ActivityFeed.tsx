@@ -58,14 +58,14 @@ export default function ActivityFeed() {
   });
 
   return (
-    <Card className="border-border/40 bg-card/60 backdrop-blur-sm shadow-sm h-full rounded-xl overflow-hidden">
-      <CardHeader className="p-4 border-b border-border/30 pb-3">
+    <Card className="border-border/60 bg-card shadow-sm h-full flex flex-col rounded-md overflow-hidden">
+      <CardHeader className="p-3 border-b border-border/30 shrink-0">
         <CardTitle className="text-sm font-bold flex items-center gap-2">
-          <Activity className="w-4 h-4 text-primary" />
+          <Activity className="w-4 h-4 text-muted-foreground" />
           Recent Activity
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-0">
+      <CardContent className="p-0 flex-1 overflow-y-auto scrollbar-hide">
         {isLoading ? (
           <div className="p-4 space-y-4">
             {[1, 2, 3].map(i => (
