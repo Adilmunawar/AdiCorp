@@ -70,17 +70,30 @@ export default function DashboardStats() {
 
       const totalEmployees = employees?.length || 0;
       const activeEmployees = employees?.filter(emp => emp.status === 'active').length || 0;
-      const todayAttendanceCount = todayAttendance?.length || 0;
-      const attendanceRate = activeEmployees > 0 ? Math.round((todayAttendanceCount / activeEmployees) * 100) : 0;
+      const todayAttendanceCount = todayAttendance?.filter(a => a.status === 'present' || a.status === 'late').length || 0;
 
       // Use ReportDataService for accurate, identical math as the Salary section
       const reportData = await ReportDataService.fetchReportData(userProfile.company_id, new Date());
+
+      // Calculate how many actual working days have been recorded so far this month
+      const startOfMonthString = format(new Date(todayString.slice(0,4) + '-' + todayString.slice(5,7) + '-01'), 'yyyy-MM-dd');
+      const { data: pastAttendance } = await supabase
+        .from('attendance')
+        .select('date, employees!inner(company_id)')
+        .eq('employees.company_id', userProfile.company_id)
+        .gte('date', startOfMonthString)
+        .lte('date', todayString);
+
+      const uniqueDatesPassed = new Set(pastAttendance?.map(a => a.date)).size || 1; // avoid division by zero
+      
+      // Monthly Average Attendance Rate (Average days attended per employee / Days passed so far)
+      const attendanceRate = Math.min(Math.round((reportData.stats.averageAttendance / uniqueDatesPassed) * 100), 100);
 
       return { 
         totalEmployees, 
         activeEmployees, 
         todayAttendance: todayAttendanceCount, 
-        monthlyAttendance: reportData.stats.averageAttendance, // Or we can use the count if we had it, but average is better
+        monthlyAttendance: reportData.stats.averageAttendance, 
         totalWageRate: reportData.stats.totalBudgetSalary, 
         attendanceRate,
         monthlyWageCalculated: reportData.stats.totalCalculatedSalary
@@ -124,7 +137,7 @@ export default function DashboardStats() {
     { title: "Calculated Wages", value: formatCurrency(stats.monthlyWageCalculated), description: "MTD Actual", icon: DollarSign, accent: "from-green-500/10 to-lime-500/10", iconBg: "bg-green-500/10", iconColor: "text-green-600", trend: "up" as const, trendValue: "On Track", progress: Math.min(Math.round((stats.monthlyWageCalculated / (stats.totalWageRate * 30 || 1)) * 100), 100), progressMax: 100 },
     { title: "Daily Wage Budget", value: formatCurrency(stats.totalWageRate), description: "Max possible", icon: DollarSign, accent: "from-blue-500/10 to-indigo-500/10", iconBg: "bg-blue-500/10", iconColor: "text-blue-600", trend: "neutral" as const, trendValue: "", progress: 0, progressMax: 0 },
     { title: "Current Date", value: format(new Date(), "MMM dd"), description: format(new Date(), "yyyy"), icon: Clock, accent: "from-orange-500/10 to-amber-500/10", iconBg: "bg-orange-500/10", iconColor: "text-orange-600", trend: "neutral" as const, trendValue: format(new Date(), "EEEE"), progress: 0, progressMax: 0 },
-    { title: "Attendance Rate", value: `${stats.attendanceRate}%`, description: "Today", icon: TrendingUp, accent: "from-pink-500/10 to-rose-500/10", iconBg: "bg-pink-500/10", iconColor: "text-pink-600", trend: stats.attendanceRate >= 80 ? "up" as const : "down" as const, trendValue: stats.attendanceRate >= 80 ? "Healthy" : "Low", progress: stats.attendanceRate, progressMax: 100 },
+    { title: "Avg Attendance Rate", value: `${stats.attendanceRate}%`, description: "This Month", icon: TrendingUp, accent: "from-pink-500/10 to-rose-500/10", iconBg: "bg-pink-500/10", iconColor: "text-pink-600", trend: stats.attendanceRate >= 80 ? "up" as const : "down" as const, trendValue: stats.attendanceRate >= 80 ? "Healthy" : "Low", progress: stats.attendanceRate, progressMax: 100 },
   ];
 
   return (

@@ -2,6 +2,7 @@ import Dashboard from "@/components/layout/Dashboard";
 import DashboardStats from "@/components/dashboard/DashboardStats";
 import AnalyticsWidget from "@/components/dashboard/AnalyticsWidget";
 import ActivityFeed from "@/components/dashboard/ActivityFeed";
+import TodayAttendanceChart from "@/components/dashboard/TodayAttendanceChart";
 import { useAuth } from "@/context/AuthContext";
 import { format } from "date-fns";
 import { Clock, Users, DollarSign } from "lucide-react";
@@ -61,8 +62,9 @@ export default function DashboardPage() {
             <AnalyticsWidget />
           </StaggerIn>
           
-          <StaggerIn delay={450} className="w-full h-full min-h-[500px]">
+          <StaggerIn delay={450} className="w-full h-full flex flex-col gap-5">
             <ActivityFeed />
+            <TodayAttendanceChart />
           </StaggerIn>
         </div>
       </div>
