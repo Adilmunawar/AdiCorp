@@ -135,10 +135,21 @@ export default function EmployeeImportExport({ onImportComplete, employees }: Em
   };
 
   const exportEmployees = async () => {
-    if (!employees.length) { toast.error("No employees to export"); return; }
     setExporting(true);
     try {
-      const exportData = employees.map(emp => ({ name: emp.name, rank: emp.rank, wage_rate: emp.wage_rate, status: emp.status, created_at: new Date(emp.created_at).toLocaleDateString() }));
+      if (!userProfile?.company_id) throw new Error("Company ID missing");
+      const { data: allEmployees, error } = await supabase
+        .from('employees')
+        .select('*')
+        .eq('company_id', userProfile.company_id);
+      
+      if (error) throw error;
+      if (!allEmployees || allEmployees.length === 0) {
+        toast.error("No employees to export");
+        return;
+      }
+
+      const exportData = allEmployees.map(emp => ({ name: emp.name, rank: emp.rank, wage_rate: emp.wage_rate, status: emp.status, created_at: new Date(emp.created_at).toLocaleDateString() }));
       const wb = XLSX.utils.book_new(); const ws = XLSX.utils.json_to_sheet(exportData);
       ws['!cols'] = [{ width: 20 }, { width: 15 }, { width: 15 }, { width: 10 }, { width: 15 }];
       XLSX.utils.book_append_sheet(wb, ws, "Employees");

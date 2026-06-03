@@ -45,7 +45,7 @@ export default function EmployeeList({ onAddEmployee, onEditEmployee }: Employee
         .eq('company_id', userProfile.company_id)
         .order('created_at', { ascending: false });
 
-      if (searchTerm) query = query.ilike('name', `%${searchTerm}%`);
+      if (searchTerm) query = query.or(`name.ilike.%${searchTerm}%,rank.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%,phone.ilike.%${searchTerm}%`);
 
       const from = (page - 1) * ITEMS_PER_PAGE;
       query = query.range(from, from + ITEMS_PER_PAGE - 1);
@@ -143,29 +143,6 @@ export default function EmployeeList({ onAddEmployee, onEditEmployee }: Employee
             </div>
           </div>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="search" className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground ml-1">Search Directory</Label>
-            <div className="relative group">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground h-3.5 w-3.5 group-focus-within:text-primary transition-colors" />
-              <Input
-                id="search"
-                placeholder="Find someone by name..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-8 pr-8 rounded-lg h-8 bg-muted/10 border-border/50 focus:bg-background focus:ring-primary/20 shadow-sm text-xs"
-              />
-              {searchTerm && (
-                <button
-                  type="button"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 h-6 w-6 inline-flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
-                  onClick={() => setSearchTerm("")}
-                  aria-label="Clear search"
-                >
-                  <X className="h-3.5 w-3.5" />
-                </button>
-              )}
-            </div>
-          </div>
         </CardContent>
       </Card>
 
@@ -174,6 +151,28 @@ export default function EmployeeList({ onAddEmployee, onEditEmployee }: Employee
       )}
 
       <Card className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
+        <div className="p-3 border-b border-border/50 bg-muted/5 flex items-center gap-4">
+          <div className="relative group w-full max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4 group-focus-within:text-primary transition-colors" />
+            <Input
+              id="search"
+              placeholder="Search by name, rank, phone, email..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-9 pr-8 rounded-xl h-10 bg-background border-border/50 focus:bg-background focus:ring-primary/20 shadow-sm text-xs"
+            />
+            {searchTerm && (
+              <button
+                type="button"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 h-6 w-6 inline-flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+                onClick={() => setSearchTerm("")}
+                aria-label="Clear search"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
+        </div>
         <CardContent className="p-0">
           {employees.length === 0 ? (
             <div className="p-8 text-center bg-muted/5 flex flex-col items-center justify-center">
