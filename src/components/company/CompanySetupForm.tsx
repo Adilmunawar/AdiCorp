@@ -230,7 +230,7 @@ export default function CompanySetupForm({ onComplete, isEmbedded = false }: Com
                 <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Finalizing Setup...</>
               ) : (
                 <span className="relative z-10 flex items-center justify-center w-full">
-                  Launch Workspace 
+                  Continue to Next Step 
                   <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                 </span>
               )}
