@@ -34,6 +34,7 @@ interface ProcessedEmployeeData {
   actualWorkingDays: number; // How many days they worked/earned
   expectedWorkingDays: number; // How many days they are expected to work in this month
   dailyRate: number;
+  overtimePay: number;
   calculatedSalary: number;
 }
 
@@ -56,10 +57,12 @@ export class ReportDataService {
     employee: any,
     attendance: any[],
     pendingLeaves: any[],
+    overtimeRecords: any[],
     month: Date
   ): ProcessedEmployeeData {
     const employeeAttendance = attendance.filter(att => att.employee_id === employee.id);
     const employeePendingLeaves = pendingLeaves.filter(req => req.employee_id === employee.id);
+    const employeeOvertime = overtimeRecords.filter(rec => rec.employee_id === employee.id);
     
     let presentDays = 0;
     let shortLeaveDays = 0;
@@ -93,7 +96,11 @@ export class ReportDataService {
 
     const dailyRate = monthlySalary / effectiveDivisor;
     const actualWorkingDays = presentDays + leaveDays + pendingLeaveDays + (shortLeaveDays * 0.5);
-    const calculatedSalary = dailyRate * actualWorkingDays;
+    
+    // Calculate approved overtime
+    const overtimePay = employeeOvertime.reduce((sum, rec) => sum + (Number(rec.total_amount) || 0), 0);
+    
+    const calculatedSalary = (dailyRate * actualWorkingDays) + overtimePay;
     
     return {
       employeeId: employee.id,
@@ -107,6 +114,7 @@ export class ReportDataService {
       actualWorkingDays,
       expectedWorkingDays,
       dailyRate,
+      overtimePay,
       calculatedSalary,
     };
   }
@@ -208,9 +216,22 @@ export class ReportDataService {
         console.error("Failed to fetch pending leaves:", pendingLeavesError);
       }
       
+      // Fetch approved overtime records
+      const { data: overtimeData, error: overtimeError } = await supabase
+        .from("overtime_records")
+        .select("employee_id, total_amount, status")
+        .in("employee_id", employeeIds)
+        .eq("status", "approved")
+        .gte("date", monthStart)
+        .lte("date", monthEnd);
+
+      if (overtimeError && overtimeError.code !== "PGRST116") {
+        console.error("Failed to fetch overtime:", overtimeError);
+      }
+      
       // Process all data client-side with new per-employee daily rate calculation
       const employeeData = employees.map(employee => 
-        this.calculateEmployeeData(employee, attendance || [], pendingLeavesData || [], month)
+        this.calculateEmployeeData(employee, attendance || [], pendingLeavesData || [], overtimeData || [], month)
       );
       
       const stats = this.calculateStats(employeeData, 0); // 0 passed because we average dynamically now

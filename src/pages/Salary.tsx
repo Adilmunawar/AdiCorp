@@ -26,7 +26,7 @@ export default function SalaryPage() {
   const navigate = useNavigate();
   
   const { employeeSalaryData, loading, stats, error, totalWorkingDaysThisMonth, currentMonthName, handleRetry } = useSalaryData(selectedMonth);
-  const { downloading, handleSalarySheetDownload, handlePayslipsDownload, handleIndividualPayslipDownload } = useSalaryDownloads(employeeSalaryData, totalWorkingDaysThisMonth, currentMonthName);
+  const { downloading, handleSalarySheetDownload, handlePayslipsDownload, handleIndividualPayslipDownload } = useSalaryDownloads(employeeSalaryData, totalWorkingDaysThisMonth, currentMonthName, userProfile?.companies || undefined);
 
   const handleGeneratePayslips = async () => {
     if (!userProfile?.company_id || employeeSalaryData.length === 0) return;

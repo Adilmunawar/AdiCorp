@@ -148,9 +148,20 @@ class DataIntegrationService {
     if (cached) return cached;
 
     try {
-      const [employees, attendance] = await Promise.all([
+      const monthStart = format(startOfMonth(month), 'yyyy-MM-dd');
+      const monthEnd = format(endOfMonth(month), 'yyyy-MM-dd');
+
+      const [employees, attendance, overtime] = await Promise.all([
         this.getEmployees(companyId),
-        this.getAttendanceForMonth(companyId, month)
+        this.getAttendanceForMonth(companyId, month),
+        supabase
+          .from("overtime_records")
+          .select("employee_id, hours, total_amount, status")
+          .eq("company_id", companyId)
+          .eq("status", "approved")
+          .gte("date", monthStart)
+          .lte("date", monthEnd)
+          .then(res => res.data || [])
       ]);
 
       const calculations: SalaryCalculation[] = employees.map(employee => {
@@ -170,9 +181,13 @@ class DataIntegrationService {
 
         const dailyRate = employee.wage_rate / effectiveDivisor;
         const basicSalary = dailyRate * actualWorkingDays;
-        const overtimeRate = dailyRate / 8 * 1.5; // 1.5x overtime rate per hour
-        const totalOvertimeHours = 0; // No overtime data in current schema
-        const overtimePay = totalOvertimeHours * overtimeRate;
+        
+        // Use actual overtime records
+        const employeeOvertime = overtime.filter(o => o.employee_id === employee.id);
+        const totalOvertimeHours = employeeOvertime.reduce((sum, o) => sum + (Number(o.hours) || 0), 0);
+        const overtimePay = employeeOvertime.reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0);
+        const overtimeRate = totalOvertimeHours > 0 ? (overtimePay / totalOvertimeHours) : (dailyRate / 8 * 1.5);
+        
         const grossSalary = basicSalary + overtimePay;
         
         // Basic deductions (can be enhanced)

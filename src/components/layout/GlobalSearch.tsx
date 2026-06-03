@@ -260,7 +260,7 @@ export default function GlobalSearch() {
     { id: 'attendance', title: 'Attendance', subtitle: 'Track daily attendance', type: 'page', action: () => navigate('/attendance'), icon: Clock },
     { id: 'salary', title: 'Salary Management', subtitle: 'Calculate and manage payroll', type: 'page', action: () => navigate('/salary'), icon: DollarSign },
     { id: 'events', title: 'Events & Holidays', subtitle: 'Manage company events', type: 'page', action: () => navigate('/events'), icon: Calendar },
-    { id: 'working-days', title: 'Working Days', subtitle: 'Configure work schedules', type: 'page', action: () => navigate('/working-days'), icon: Calendar },
+    { id: 'working-days', title: 'Shift Management', subtitle: 'Configure work schedules', type: 'page', action: () => navigate('/working-days'), icon: Calendar },
     { id: 'settings', title: 'Settings', subtitle: 'Application preferences', type: 'page', action: () => navigate('/settings'), icon: Settings },
   ], [navigate]);
 

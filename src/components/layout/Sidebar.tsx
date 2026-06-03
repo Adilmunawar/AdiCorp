@@ -23,7 +23,7 @@ const navItems = [
   { name: "Salary", icon: BarChart, path: "/salary", group: "finance" },
   { name: "Overtime", icon: Timer, path: "/overtime", group: "finance" },
   { name: "Reports", icon: ChartPie, path: "/reports", group: "finance" },
-  { name: "Working Days", icon: Calendar, path: "/working-days", group: "config" },
+  { name: "Shift Management", icon: Calendar, path: "/working-days", group: "config" },
   { name: "Events", icon: Shield, path: "/events", group: "config" },
   { name: "Timeline Logs", icon: FileText, path: "/timeline-logs", group: "system" },
   { name: "Settings", icon: Settings, path: "/settings", group: "system" },

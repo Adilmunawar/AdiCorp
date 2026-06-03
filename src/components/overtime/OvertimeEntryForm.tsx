@@ -26,7 +26,7 @@ export default function OvertimeEntryForm({ open, onOpenChange }: OvertimeEntryF
   const queryClient = useQueryClient();
   const [loading, setLoading] = useState(false);
   const [employees, setEmployees] = useState<any[]>([]);
-  const [tierConfigs, setTierConfigs] = useState<any[]>([]);
+  const [overtimeConfig, setOvertimeConfig] = useState<any>(null);
   const [employeeId, setEmployeeId] = useState("");
   const [date, setDate] = useState<Date>();
   const [hours, setHours] = useState("");
@@ -43,26 +43,24 @@ export default function OvertimeEntryForm({ open, onOpenChange }: OvertimeEntryF
     try {
       const [empRes, tierRes] = await Promise.all([
         supabase.from("employees").select("id, name, tier, wage_rate, salary_divisor, working_hours_per_day").eq("company_id", userProfile!.company_id!).eq("status", "active").order("name"),
-        supabase.from("tier_config").select("*").eq("company_id", userProfile!.company_id!),
+        supabase.from("overtime_config").select("*").eq("company_id", userProfile!.company_id!).maybeSingle(),
       ]);
 
       if (empRes.error) throw empRes.error;
       if (tierRes.error) throw tierRes.error;
 
       setEmployees(empRes.data || []);
-      setTierConfigs(tierRes.data || []);
+      setOvertimeConfig(tierRes.data || null);
     } catch (error: any) {
       toast({ title: "Failed to load overtime form data", description: error.message, variant: "destructive" });
     }
   };
 
   const selectedEmployee = employees.find((e) => e.id === employeeId);
-  const tierConfig = tierConfigs.find((t) => t.tier === selectedEmployee?.tier);
-
-  const multiplier = tierConfig
-    ? overtimeType === "weekend" ? Number(tierConfig.weekend_multiplier)
-    : overtimeType === "holiday" ? Number(tierConfig.holiday_multiplier)
-    : Number(tierConfig.regular_multiplier)
+  const multiplier = overtimeConfig
+    ? overtimeType === "weekend" ? Number(overtimeConfig.weekend_multiplier || 2.0)
+    : overtimeType === "holiday" ? Number(overtimeConfig.holiday_multiplier || 2.5)
+    : Number(overtimeConfig.regular_multiplier || 1.5)
     : 1.5;
 
   const hourlyRate = selectedEmployee

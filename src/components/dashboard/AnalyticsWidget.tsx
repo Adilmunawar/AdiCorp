@@ -65,7 +65,7 @@ export default function AnalyticsWidget() {
         return {
           date: format(new Date(date), 'MMM dd'),
           present: dayAttendance.filter(a => a.status === 'present').length,
-          absent: dayAttendance.filter(a => a.status === 'absent').length,
+          shortLeave: dayAttendance.filter(a => a.status === 'short_leave').length,
           leave: dayAttendance.filter(a => a.status === 'leave').length,
         };
       });
@@ -158,7 +158,7 @@ export default function AnalyticsWidget() {
             <div className="flex items-center gap-3 bg-background/50 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-border/50 shadow-sm">
               {[
                 { label: "Present", color: COLORS[1] },
-                { label: "Absent", color: COLORS[4] },
+                { label: "Short Leave", color: COLORS[4] },
                 { label: "Leave", color: COLORS[2] },
               ].map(l => (
                 <div key={l.label} className="flex items-center gap-1.5">
@@ -176,7 +176,7 @@ export default function AnalyticsWidget() {
                     <stop offset="5%" stopColor={COLORS[1]} stopOpacity={0.5}/>
                     <stop offset="95%" stopColor={COLORS[1]} stopOpacity={0}/>
                   </linearGradient>
-                  <linearGradient id="colorAbsent" x1="0" y1="0" x2="0" y2="1">
+                  <linearGradient id="colorShortLeave" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor={COLORS[4]} stopOpacity={0.5}/>
                     <stop offset="95%" stopColor={COLORS[4]} stopOpacity={0}/>
                   </linearGradient>
@@ -190,7 +190,7 @@ export default function AnalyticsWidget() {
                 <YAxis stroke="hsl(var(--muted-foreground))" fontSize={10} tickLine={false} axisLine={false} dx={-10} />
                 <Tooltip contentStyle={tooltipStyle} cursor={{ stroke: 'hsl(var(--primary))', strokeWidth: 1, strokeDasharray: '3 3' }} />
                 <Area type="monotone" dataKey="present" stroke={COLORS[1]} strokeWidth={3} fillOpacity={1} fill="url(#colorPresent)" name="Present" activeDot={{ r: 6, strokeWidth: 0, fill: COLORS[1] }} />
-                <Area type="monotone" dataKey="absent" stroke={COLORS[4]} strokeWidth={3} fillOpacity={1} fill="url(#colorAbsent)" name="Absent" activeDot={{ r: 6, strokeWidth: 0, fill: COLORS[4] }} />
+                <Area type="monotone" dataKey="shortLeave" stroke={COLORS[4]} strokeWidth={3} fillOpacity={1} fill="url(#colorShortLeave)" name="Short Leave" activeDot={{ r: 6, strokeWidth: 0, fill: COLORS[4] }} />
                 <Area type="monotone" dataKey="leave" stroke={COLORS[2]} strokeWidth={3} fillOpacity={1} fill="url(#colorLeave)" name="Leave" activeDot={{ r: 6, strokeWidth: 0, fill: COLORS[2] }} />
               </AreaChart>
             </ResponsiveContainer>

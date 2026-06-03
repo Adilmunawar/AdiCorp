@@ -27,7 +27,7 @@ export default function WorkingDaysPage() {
   }
 
   return (
-    <Dashboard title="Advanced Working Days & Time Management">
+    <Dashboard title="Shift Management">
       <div className="space-y-6">
         <div className="rounded-xl border border-border bg-card p-4 sm:p-5">
           <h2 className="text-lg font-semibold text-foreground">Day Management Center</h2>
