@@ -1,7 +1,7 @@
 
 import { useState, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { formatCurrency } from "@/utils/salaryCalculations";
+import { formatCurrencySync as formatCurrency } from "@/utils/salaryCalculations";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
