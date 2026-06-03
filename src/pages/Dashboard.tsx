@@ -14,15 +14,15 @@ export default function DashboardPage() {
 
   return (
     <Dashboard title="">
-      <div className="h-[calc(100vh-40px)] flex flex-col gap-4 p-4 overflow-hidden bg-background">
+      <div className="flex flex-col gap-5 p-4 lg:p-6 bg-background min-h-screen">
         {/* Command Bar: Plain Text Greeting + Professional Buttons */}
         <StaggerIn delay={0}>
-          <div className="flex items-center justify-between pb-2">
+          <div className="flex items-center justify-between pb-2 border-b border-border/40">
             <div className="flex flex-col">
-              <h1 className="text-xl font-bold text-foreground">
-                Welcome, {userProfile?.first_name || 'Admin'}!
+              <h1 className="text-2xl font-black text-foreground tracking-tight">
+                Welcome, {userProfile?.name || 'Admin'}!
               </h1>
-              <p className="text-xs text-muted-foreground flex items-center gap-1.5 mt-1">
+              <p className="text-xs text-muted-foreground flex items-center gap-1.5 mt-1 font-medium">
                 <Clock className="w-3.5 h-3.5" />
                 {format(new Date(), 'EEEE, MMMM d, yyyy')}
               </p>
@@ -39,7 +39,7 @@ export default function DashboardPage() {
                   <Link
                     key={action.label}
                     to={action.href}
-                    className="flex items-center gap-2 px-4 py-2 rounded-md bg-card border border-border text-xs font-medium text-foreground hover:bg-muted hover:border-border/80 transition-colors shadow-sm"
+                    className="flex items-center gap-2 px-4 py-2 rounded-xl bg-card border border-border text-xs font-semibold text-foreground hover:bg-muted hover:border-border/80 transition-all shadow-sm hover:shadow-md"
                   >
                     <Icon className="w-4 h-4 text-muted-foreground" />
                     {action.label}
@@ -56,12 +56,12 @@ export default function DashboardPage() {
         </StaggerIn>
 
         {/* Analytics & Activity Split */}
-        <div className="flex-1 grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-3 min-h-0">
-          <StaggerIn delay={300} className="h-full min-h-0">
+        <div className="grid grid-cols-1 xl:grid-cols-[1fr_350px] gap-5 items-start">
+          <StaggerIn delay={300} className="w-full">
             <AnalyticsWidget />
           </StaggerIn>
           
-          <StaggerIn delay={450} className="h-full min-h-0">
+          <StaggerIn delay={450} className="w-full h-full min-h-[500px]">
             <ActivityFeed />
           </StaggerIn>
         </div>

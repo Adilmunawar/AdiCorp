@@ -17,14 +17,14 @@ export default function ActivityFeed() {
       // We will mock this or fetch recent attendance and employees as "activity" since there isn't a dedicated activity table
       const { data: employees } = await supabase
         .from('employees')
-        .select('id, first_name, last_name, created_at')
+        .select('id, name, created_at')
         .eq('company_id', userProfile.company_id)
         .order('created_at', { ascending: false })
         .limit(3);
 
       const { data: attendance } = await supabase
         .from('attendance')
-        .select(`id, status, created_at, employees (first_name, last_name)`)
+        .select(`id, status, created_at, employees (name)`)
         .eq('employees.company_id', userProfile.company_id)
         .order('created_at', { ascending: false })
         .limit(4);
@@ -34,7 +34,7 @@ export default function ActivityFeed() {
           id: `emp-${e.id}`,
           type: 'new_employee',
           title: 'New Employee Added',
-          description: `${e.first_name} ${e.last_name || ''} joined the company`,
+          description: `${e.name} joined the company`,
           time: new Date(e.created_at || new Date()),
           icon: UserPlus,
           color: 'text-blue-500',
@@ -44,7 +44,7 @@ export default function ActivityFeed() {
           id: `att-${a.id}`,
           type: 'attendance',
           title: `Attendance Marked: ${a.status}`,
-          description: `${a.employees?.first_name || 'Employee'} marked as ${a.status}`,
+          description: `${a.employees?.name || 'Employee'} marked as ${a.status}`,
           time: new Date(a.created_at || new Date()),
           icon: Clock,
           color: 'text-emerald-500',

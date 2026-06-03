@@ -18,25 +18,28 @@ import { useActivityLogger } from "@/hooks/useActivityLogger";
 import { EmployeeRow } from "@/types/supabase";
 import EmployeeImportExport from "./EmployeeImportExport";
 import { useCurrency } from "@/hooks/useCurrency";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface EmployeeListProps { onAddEmployee?: () => void; onEditEmployee?: (id: string) => void; }
 
 export default function EmployeeList({ onAddEmployee, onEditEmployee }: EmployeeListProps) {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [page, setPage] = useState(1);
   const { userProfile } = useAuth();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [shiftFilter, setShiftFilter] = useState("all");
+  const [page, setPage] = useState(1);
   const ITEMS_PER_PAGE = 10;
   const { logEmployeeActivity } = useActivityLogger();
   const { currency } = useCurrency();
 
   useEffect(() => {
     setPage(1);
-  }, [searchTerm]);
+  }, [searchTerm, statusFilter, shiftFilter]);
 
   const { data: employeeData, isLoading, error, refetch } = useQuery({
-    queryKey: ['employees', userProfile?.company_id, searchTerm, page],
+    queryKey: ['employees', userProfile?.company_id, searchTerm, statusFilter, shiftFilter, page],
     queryFn: async () => {
       if (!userProfile?.company_id) return { rows: [], count: 0 };
       let query = supabase
@@ -46,6 +49,8 @@ export default function EmployeeList({ onAddEmployee, onEditEmployee }: Employee
         .order('created_at', { ascending: false });
 
       if (searchTerm) query = query.or(`name.ilike.%${searchTerm}%,rank.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%,phone.ilike.%${searchTerm}%`);
+      if (statusFilter !== "all") query = query.eq('status', statusFilter);
+      if (shiftFilter !== "all") query = query.eq('shift_type', shiftFilter);
 
       const from = (page - 1) * ITEMS_PER_PAGE;
       query = query.range(from, from + ITEMS_PER_PAGE - 1);
@@ -57,16 +62,27 @@ export default function EmployeeList({ onAddEmployee, onEditEmployee }: Employee
     enabled: !!userProfile?.company_id,
     placeholderData: keepPreviousData,
   });
-  const { data: totalPayroll = 0 } = useQuery({
-    queryKey: ['total-payroll', userProfile?.company_id],
+  const { data: companyStats = { payroll: 0, active: 0, inactive: 0 } } = useQuery({
+    queryKey: ['company-stats', userProfile?.company_id],
     queryFn: async () => {
-      if (!userProfile?.company_id) return 0;
+      if (!userProfile?.company_id) return { payroll: 0, active: 0, inactive: 0 };
       const { data, error } = await supabase
         .from('employees')
-        .select('wage_rate')
+        .select('wage_rate, status')
         .eq('company_id', userProfile.company_id);
-      if (error) return 0;
-      return data.reduce((sum, emp) => sum + Number(emp.wage_rate || 0), 0);
+      if (error) return { payroll: 0, active: 0, inactive: 0 };
+      
+      let payroll = 0;
+      let active = 0;
+      let inactive = 0;
+      
+      data.forEach(emp => {
+        payroll += Number(emp.wage_rate || 0);
+        if (emp.status === 'active') active++;
+        else inactive++;
+      });
+      
+      return { payroll, active, inactive };
     },
     enabled: !!userProfile?.company_id
   });
@@ -90,13 +106,6 @@ export default function EmployeeList({ onAddEmployee, onEditEmployee }: Employee
     try { return new Intl.NumberFormat('en-US', { style: 'currency', currency: currency || 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount); }
     catch { return `${currency || 'USD'} ${amount.toLocaleString()}`; }
   };
-
-  const summary = useMemo(() => {
-    const active = employees.filter((employee) => employee.status === 'active').length;
-    const inactive = employees.length - active;
-    const payroll = employees.reduce((sum, employee) => sum + Number(employee.wage_rate || 0), 0);
-    return { active, inactive, payroll };
-  }, [employees]);
 
   if (isLoading) {
     return (<div className="space-y-6"><Skeleton className="h-32 w-full rounded-3xl" /><Skeleton className="h-[500px] w-full rounded-3xl" /></div>);
@@ -146,13 +155,13 @@ export default function EmployeeList({ onAddEmployee, onEditEmployee }: Employee
             <div className="rounded-lg border border-border/50 bg-background/50 p-2.5 shadow-sm flex flex-col justify-center">
               <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Status Split</p>
               <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mt-1">
-                <div className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-green-500" /><span className="text-[10px] font-bold leading-tight">{summary.active} Active</span></div>
-                <div className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/50" /><span className="text-[10px] font-bold text-muted-foreground leading-tight">{summary.inactive} Inactive</span></div>
+                <div className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-green-500" /><span className="text-[10px] font-bold leading-tight">{companyStats.active} Active</span></div>
+                <div className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/50" /><span className="text-[10px] font-bold text-muted-foreground leading-tight">{companyStats.inactive} Inactive</span></div>
               </div>
             </div>
             <div className="col-span-2 lg:col-span-1 rounded-lg border border-border/50 bg-background/50 p-2.5 shadow-sm flex flex-col justify-center">
               <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Total Payroll</p>
-              <p className="text-lg font-extrabold text-primary mt-1 tracking-tight leading-none">{formatCurrency(totalPayroll)}</p>
+              <p className="text-lg font-extrabold text-primary mt-1 tracking-tight leading-none">{formatCurrency(companyStats.payroll)}</p>
             </div>
           </div>
 
@@ -164,26 +173,49 @@ export default function EmployeeList({ onAddEmployee, onEditEmployee }: Employee
       )}
 
       <Card className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
-        <div className="p-3 border-b border-border/50 bg-muted/5 flex items-center gap-4">
-          <div className="relative group w-full max-w-md">
+        <div className="p-3 border-b border-border/50 bg-muted/5 flex flex-wrap items-center gap-3">
+          <div className="relative group w-full sm:max-w-[280px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4 group-focus-within:text-primary transition-colors" />
             <Input
               id="search"
-              placeholder="Search by name, rank, phone, email..."
+              placeholder="Search directory..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-9 pr-8 rounded-xl h-10 bg-background border-border/50 focus:bg-background focus:ring-primary/20 shadow-sm text-xs"
+              className="pl-9 pr-8 rounded-xl h-9 bg-background border-border/50 focus:bg-background focus:ring-primary/20 shadow-sm text-xs"
             />
             {searchTerm && (
               <button
                 type="button"
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 h-6 w-6 inline-flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 h-6 w-6 inline-flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
                 onClick={() => setSearchTerm("")}
                 aria-label="Clear search"
               >
                 <X className="h-3.5 w-3.5" />
               </button>
             )}
+          </div>
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-[110px] h-9 text-xs rounded-xl bg-background border-border/50 shadow-sm">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all" className="text-xs">All Status</SelectItem>
+                <SelectItem value="active" className="text-xs">Active</SelectItem>
+                <SelectItem value="inactive" className="text-xs">Inactive</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={shiftFilter} onValueChange={setShiftFilter}>
+              <SelectTrigger className="w-[120px] h-9 text-xs rounded-xl bg-background border-border/50 shadow-sm">
+                <SelectValue placeholder="Shift" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all" className="text-xs">All Shifts</SelectItem>
+                <SelectItem value="morning" className="text-xs">Morning</SelectItem>
+                <SelectItem value="evening" className="text-xs">Evening</SelectItem>
+                <SelectItem value="night" className="text-xs">Night</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
         <CardContent className="p-0">

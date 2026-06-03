@@ -49,9 +49,7 @@ export default function DashboardStats() {
     queryFn: async () => {
       if (!userProfile?.company_id) return null;
 
-      const today = new Date();
-      const startOfToday = startOfDay(today);
-      const endOfToday = endOfDay(today);
+      const todayString = format(new Date(), 'yyyy-MM-dd');
 
       const { data: employees, error: employeesError } = await supabase
         .from('employees')
@@ -62,19 +60,20 @@ export default function DashboardStats() {
 
       const { data: todayAttendance, error: attendanceError } = await supabase
         .from('attendance')
-        .select(`id, employee_id, employees!inner(company_id)`)
+        .select(`id, employee_id, status, employees!inner(company_id)`)
         .eq('employees.company_id', userProfile.company_id)
-        .gte('date', startOfToday.toISOString().split('T')[0])
-        .lte('date', endOfToday.toISOString().split('T')[0]);
+        .eq('date', todayString)
+        .neq('status', 'not_set');
 
       if (attendanceError) throw attendanceError;
 
-      const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+      const startOfMonthString = format(new Date(todayString.slice(0,4) + '-' + todayString.slice(5,7) + '-01'), 'yyyy-MM-dd');
       const { data: monthlyAttendance, error: monthlyError } = await supabase
         .from('attendance')
-        .select(`id, employees!inner(company_id)`)
+        .select(`id, status, employees!inner(company_id)`)
         .eq('employees.company_id', userProfile.company_id)
-        .gte('date', startOfMonth.toISOString().split('T')[0]);
+        .gte('date', startOfMonthString)
+        .neq('status', 'not_set');
 
       if (monthlyError) throw monthlyError;
 

@@ -126,135 +126,135 @@ export default function AnalyticsWidget() {
   ];
 
   return (
-    <Card className="border border-border/60 bg-card shadow-sm overflow-hidden h-full flex flex-col rounded-md">
-      <CardHeader className="pb-2 p-3">
+    <Card className="border-border/60 bg-card shadow-sm overflow-hidden h-full flex flex-col rounded-xl">
+      <CardHeader className="pb-2 p-4 shrink-0 bg-gradient-to-r from-muted/50 to-transparent">
         <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2 text-foreground">
-            <div className="w-7 h-7 rounded-md bg-muted flex items-center justify-center shrink-0">
-              <TrendingUp className="h-3.5 w-3.5 text-muted-foreground" />
+          <CardTitle className="flex items-center gap-3 text-foreground">
+            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 shadow-sm border border-primary/20">
+              <TrendingUp className="h-4 w-4 text-primary" />
             </div>
             <div>
-              <span className="text-sm font-bold leading-none block">Analytics Overview</span>
-              <span className="text-[9px] text-muted-foreground font-normal leading-none block mt-1">Workforce insights</span>
+              <span className="text-base font-black leading-none block tracking-tight">Analytics Command Center</span>
+              <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider block mt-1.5">Live Workforce Insights</span>
             </div>
           </CardTitle>
-          <div className="flex items-center gap-1 px-2 py-0.5 rounded bg-muted border border-border/50 shrink-0">
-            <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-wider">Live</span>
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-500/10 border border-green-500/20 shrink-0">
+            <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+            <span className="text-[9px] font-extrabold text-green-600 uppercase tracking-widest">Live Sync</span>
           </div>
         </div>
       </CardHeader>
-      <CardContent className="p-3 pt-0 flex-1 flex flex-col min-h-0">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full h-full flex flex-col">
-          <TabsList className="grid w-full grid-cols-3 mb-2 bg-muted/40 p-1 rounded-lg h-8">
-            {tabs.map((tab) => {
-              const Icon = tab.icon;
-              return (
-                <TabsTrigger
-                  key={tab.value}
-                  value={tab.value}
-                  className="flex items-center gap-1.5 rounded-md data-[state=active]:bg-card data-[state=active]:shadow-sm data-[state=active]:text-primary transition-all duration-300 text-[10px]"
-                >
-                  <Icon className="h-3 w-3" />
-                  <span className="hidden sm:inline">{tab.label}</span>
-                </TabsTrigger>
-              );
-            })}
-          </TabsList>
-
-          <div className="flex-1 min-h-0 relative">
-            <TabsContent value="attendance" className="absolute inset-0 m-0 border-none p-0 outline-none">
-              <div className="bg-muted/5 p-3 rounded-md border border-border/40 h-full flex flex-col">
-                <div className="flex items-center justify-between mb-2 shrink-0">
-                <h3 className="text-sm font-bold text-foreground">30-Day Attendance Trends</h3>
-                <div className="flex items-center gap-3">
-                  {[
-                    { label: "Present", color: COLORS[1] },
-                    { label: "Absent", color: COLORS[4] },
-                    { label: "Leave", color: COLORS[2] },
-                  ].map(l => (
-                    <div key={l.label} className="flex items-center gap-1.5">
-                      <div className="w-2 h-2 rounded-full" style={{ backgroundColor: l.color }} />
-                      <span className="text-[10px] text-muted-foreground font-medium">{l.label}</span>
-                    </div>
-                  ))}
-                </div>
-                </div>
-                <div className="flex-1 min-h-0">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={analyticsData.attendanceTrends}>
-                  <defs>
-                    <linearGradient id="colorPresent" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor={COLORS[1]} stopOpacity={0.4}/>
-                      <stop offset="95%" stopColor={COLORS[1]} stopOpacity={0}/>
-                    </linearGradient>
-                    <linearGradient id="colorAbsent" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor={COLORS[4]} stopOpacity={0.4}/>
-                      <stop offset="95%" stopColor={COLORS[4]} stopOpacity={0}/>
-                    </linearGradient>
-                    <linearGradient id="colorLeave" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor={COLORS[2]} stopOpacity={0.3}/>
-                      <stop offset="95%" stopColor={COLORS[2]} stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.5} />
-                  <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" fontSize={11} tickLine={false} axisLine={false} />
-                  <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} tickLine={false} axisLine={false} />
-                  <Tooltip contentStyle={tooltipStyle} />
-                  <Area type="monotone" dataKey="present" stroke={COLORS[1]} strokeWidth={2} fillOpacity={1} fill="url(#colorPresent)" name="Present" />
-                  <Area type="monotone" dataKey="absent" stroke={COLORS[4]} strokeWidth={2} fillOpacity={1} fill="url(#colorAbsent)" name="Absent" />
-                    <Area type="monotone" dataKey="leave" stroke={COLORS[2]} strokeWidth={2} fillOpacity={1} fill="url(#colorLeave)" name="Leave" />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
+      
+      <CardContent className="p-4 flex-1 overflow-y-auto scrollbar-hide space-y-6">
+        
+        {/* Main Chart: Attendance Trends */}
+        <div className="bg-gradient-to-b from-muted/20 to-transparent p-4 rounded-xl border border-border/50 h-[300px] flex flex-col relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl" />
+          <div className="flex items-center justify-between mb-4 shrink-0 relative z-10">
+            <div>
+              <h3 className="text-sm font-black text-foreground">30-Day Attendance Velocity</h3>
+              <p className="text-[10px] text-muted-foreground font-medium mt-0.5">Historical presence vs absence</p>
             </div>
-          </TabsContent>
-
-          <TabsContent value="salary" className="absolute inset-0 m-0 border-none p-0 outline-none">
-            <div className="bg-muted/5 p-3 rounded-md border border-border/40 h-full flex flex-col">
-              <h3 className="text-xs font-bold text-foreground mb-2 shrink-0">Salary Distribution by Rank</h3>
-              <div className="flex-1 min-h-0">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={analyticsData.salaryDistribution} barGap={4} margin={{ left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.5} />
-                  <XAxis dataKey="rank" stroke="hsl(var(--muted-foreground))" fontSize={11} tickLine={false} axisLine={false} />
-                  <YAxis stroke="hsl(var(--muted-foreground))" fontSize={11} tickLine={false} axisLine={false} />
-                  <Tooltip contentStyle={tooltipStyle} />
-                  <Legend />
-                  <Bar dataKey="avgWage" fill={COLORS[0]} radius={[8, 8, 0, 0]} name="Avg Wage" />
-                  <Bar dataKey="employees" fill={COLORS[2]} radius={[8, 8, 0, 0]} name="Employees" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
+            <div className="flex items-center gap-3 bg-background/50 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-border/50 shadow-sm">
+              {[
+                { label: "Present", color: COLORS[1] },
+                { label: "Absent", color: COLORS[4] },
+                { label: "Leave", color: COLORS[2] },
+              ].map(l => (
+                <div key={l.label} className="flex items-center gap-1.5">
+                  <div className="w-2 h-2 rounded-full shadow-sm" style={{ backgroundColor: l.color }} />
+                  <span className="text-[10px] text-foreground font-bold">{l.label}</span>
+                </div>
+              ))}
             </div>
-          </TabsContent>
+          </div>
+          <div className="flex-1 min-h-0 relative z-10">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={analyticsData.attendanceTrends} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="colorPresent" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor={COLORS[1]} stopOpacity={0.5}/>
+                    <stop offset="95%" stopColor={COLORS[1]} stopOpacity={0}/>
+                  </linearGradient>
+                  <linearGradient id="colorAbsent" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor={COLORS[4]} stopOpacity={0.5}/>
+                    <stop offset="95%" stopColor={COLORS[4]} stopOpacity={0}/>
+                  </linearGradient>
+                  <linearGradient id="colorLeave" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor={COLORS[2]} stopOpacity={0.4}/>
+                    <stop offset="95%" stopColor={COLORS[2]} stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.4} vertical={false} />
+                <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" fontSize={10} tickLine={false} axisLine={false} dy={10} />
+                <YAxis stroke="hsl(var(--muted-foreground))" fontSize={10} tickLine={false} axisLine={false} dx={-10} />
+                <Tooltip contentStyle={tooltipStyle} cursor={{ stroke: 'hsl(var(--primary))', strokeWidth: 1, strokeDasharray: '3 3' }} />
+                <Area type="monotone" dataKey="present" stroke={COLORS[1]} strokeWidth={3} fillOpacity={1} fill="url(#colorPresent)" name="Present" activeDot={{ r: 6, strokeWidth: 0, fill: COLORS[1] }} />
+                <Area type="monotone" dataKey="absent" stroke={COLORS[4]} strokeWidth={3} fillOpacity={1} fill="url(#colorAbsent)" name="Absent" activeDot={{ r: 6, strokeWidth: 0, fill: COLORS[4] }} />
+                <Area type="monotone" dataKey="leave" stroke={COLORS[2]} strokeWidth={3} fillOpacity={1} fill="url(#colorLeave)" name="Leave" activeDot={{ r: 6, strokeWidth: 0, fill: COLORS[2] }} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
 
-          <TabsContent value="performance" className="absolute inset-0 m-0 border-none p-0 outline-none">
-            <div className="bg-muted/5 p-3 rounded-md border border-border/40 h-full flex flex-col">
-              <h3 className="text-xs font-bold text-foreground mb-2 shrink-0">Weekly Attendance Rate</h3>
-              <div className="flex-1 min-h-0">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={analyticsData.weeklyData} margin={{ left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.5} />
-                  <XAxis dataKey="day" stroke="hsl(var(--muted-foreground))" fontSize={11} tickLine={false} axisLine={false} />
-                  <YAxis stroke="hsl(var(--muted-foreground))" unit="%" fontSize={11} tickLine={false} axisLine={false} />
+        {/* Secondary Charts Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          
+          {/* Salary Distribution */}
+          <div className="bg-gradient-to-b from-muted/20 to-transparent p-4 rounded-xl border border-border/50 h-[220px] flex flex-col">
+            <div className="mb-3 shrink-0 flex items-center justify-between">
+              <div>
+                <h3 className="text-xs font-black text-foreground">Salary Distribution</h3>
+                <p className="text-[9px] text-muted-foreground mt-0.5 uppercase tracking-wider">Average wage by rank</p>
+              </div>
+              <DollarSign className="w-4 h-4 text-primary/50" />
+            </div>
+            <div className="flex-1 min-h-0">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={analyticsData.salaryDistribution} margin={{ left: -15, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} vertical={false} />
+                  <XAxis dataKey="rank" stroke="hsl(var(--muted-foreground))" fontSize={9} tickLine={false} axisLine={false} dy={5} />
+                  <YAxis stroke="hsl(var(--muted-foreground))" fontSize={9} tickLine={false} axisLine={false} dx={-5} />
+                  <Tooltip contentStyle={tooltipStyle} cursor={{ fill: 'hsl(var(--muted)/0.5)' }} />
+                  <Bar dataKey="avgWage" fill={COLORS[0]} radius={[4, 4, 0, 0]} name="Avg Wage" maxBarSize={40} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* Performance/Weekly Rate */}
+          <div className="bg-gradient-to-b from-muted/20 to-transparent p-4 rounded-xl border border-border/50 h-[220px] flex flex-col">
+            <div className="mb-3 shrink-0 flex items-center justify-between">
+              <div>
+                <h3 className="text-xs font-black text-foreground">Weekly Pulse</h3>
+                <p className="text-[9px] text-muted-foreground mt-0.5 uppercase tracking-wider">Attendance % by day</p>
+              </div>
+              <Users className="w-4 h-4 text-primary/50" />
+            </div>
+            <div className="flex-1 min-h-0">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={analyticsData.weeklyData} margin={{ left: -15, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} vertical={false} />
+                  <XAxis dataKey="day" stroke="hsl(var(--muted-foreground))" fontSize={9} tickLine={false} axisLine={false} dy={5} />
+                  <YAxis stroke="hsl(var(--muted-foreground))" unit="%" fontSize={9} tickLine={false} axisLine={false} dx={-5} />
                   <Tooltip contentStyle={tooltipStyle} />
                   <Line
                     type="monotone"
                     dataKey="rate"
-                    stroke={COLORS[0]}
+                    stroke={COLORS[3]}
                     strokeWidth={3}
-                    dot={{ fill: COLORS[0], r: 5, strokeWidth: 3, stroke: "hsl(var(--card))" }}
-                    activeDot={{ r: 8, stroke: COLORS[0], strokeWidth: 2, fill: "hsl(var(--card))" }}
+                    dot={{ fill: COLORS[3], r: 4, strokeWidth: 2, stroke: "hsl(var(--card))" }}
+                    activeDot={{ r: 6, stroke: COLORS[3], strokeWidth: 0 }}
                     name="Attendance %"
                   />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
+                </LineChart>
+              </ResponsiveContainer>
             </div>
-          </TabsContent>
+          </div>
+
         </div>
-      </Tabs>
-    </CardContent>
-  </Card>
+
+      </CardContent>
+    </Card>
   );
 }

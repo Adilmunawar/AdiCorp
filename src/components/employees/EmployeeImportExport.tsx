@@ -155,8 +155,8 @@ export default function EmployeeImportExport({ onImportComplete, employees }: Em
       XLSX.utils.book_append_sheet(wb, ws, "Employees");
       const fileName = `employees_export_${new Date().toISOString().split('T')[0]}.xlsx`;
       XLSX.writeFile(wb, fileName);
-      await logActivity({ actionType: 'employee_export', description: `Exported ${employees.length} employees to Excel file`, details: { file_name: fileName, employees_count: employees.length }, priority: 'low' });
-      toast.success("Export successful", { description: `Exported ${employees.length} employees to ${fileName}` });
+      await logActivity({ actionType: 'employee_export', description: `Exported ${allEmployees.length} employees to Excel file`, details: { file_name: fileName, employees_count: allEmployees.length }, priority: 'low' });
+      toast.success("Export successful", { description: `Exported ${allEmployees.length} employees to ${fileName}` });
     } catch (error) { console.error("Export error:", error); toast.error("Export failed"); }
     finally { setExporting(false); }
   };
@@ -189,10 +189,10 @@ export default function EmployeeImportExport({ onImportComplete, employees }: Em
             
             {importing && <div className="text-xs font-medium text-primary mt-2 flex items-center justify-center bg-primary/10 py-1.5 rounded-lg animate-pulse">Importing employees... Please wait.</div>}
           </div>
-          <div className="space-y-3 rounded-2xl border border-border bg-background p-4">
+          <div className="space-y-3 rounded-2xl border border-border bg-background p-4 flex flex-col justify-center">
             <h3 className="text-sm font-semibold flex items-center gap-2"><Download className="h-4 w-4 text-primary" />Export to Excel</h3>
-            <Button onClick={exportEmployees} disabled={exporting || employees.length === 0} className="rounded-xl">
-              <Users className="mr-2 h-4 w-4" />{exporting ? "Exporting..." : `Export ${employees.length} Employees`}
+            <Button onClick={exportEmployees} disabled={exporting} className="rounded-xl">
+              <Users className="mr-2 h-4 w-4" />{exporting ? "Exporting..." : `Export All Employees`}
             </Button>
           </div>
         </div>

@@ -1,18 +1,20 @@
 
 import { useState, useEffect, useMemo } from "react";
+import { format, addDays } from "date-fns";
+import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/components/ui/use-toast";
-import { Loader2, Save } from "lucide-react";
+import { Loader2, Save, Calendar as CalendarIcon, ChevronLeft, ChevronRight, CalendarDays } from "lucide-react";
 import { EmployeeRow } from "@/types/supabase";
 import { useNavigate } from "react-router-dom";
-import { AttendanceDatePanel } from "@/components/attendance/AttendanceDatePanel";
-import { AttendanceSummaryPanel } from "@/components/attendance/AttendanceSummaryPanel";
 import { ATTENDANCE_STATUS_OPTIONS, AttendanceRecord, AttendanceStatusValue } from "@/components/attendance/types";
 
 const isAttendanceStatus = (value: string): value is AttendanceStatusValue => {
@@ -141,22 +143,74 @@ export default function AttendanceTable() {
   
   return (
     <div className="space-y-4">
-      <Card className="border border-border bg-card shadow-sm rounded-2xl overflow-hidden">
-        <CardHeader className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between py-3 px-4 bg-muted/5 border-b border-border/50">
-          <div>
-            <CardTitle className="text-base text-foreground font-bold">Daily Attendance Tracker</CardTitle>
-            <p className="text-[10px] text-muted-foreground mt-0.5">Mark, review, and save attendance with clear daily status visibility.</p>
+      <Card className="border border-border bg-card shadow-sm rounded-2xl overflow-hidden mb-4">
+        <CardHeader className="flex flex-col gap-4 py-4 px-5 bg-muted/5 border-b border-border/50">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <CardTitle className="text-lg text-foreground font-bold flex items-center gap-2">
+                <CalendarDays className="h-5 w-5 text-primary" /> Daily Attendance
+              </CardTitle>
+              <p className="text-[11px] text-muted-foreground mt-1">Manage and track your daily workforce attendance.</p>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <div className="flex items-center bg-background border border-border/50 rounded-lg p-1 shadow-sm">
+                <Button variant="ghost" size="sm" className="h-7 px-2" onClick={() => handleDateChange(addDays(date, -1))}><ChevronLeft className="h-3.5 w-3.5" /></Button>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="ghost" size="sm" className={cn("h-7 px-3 text-[11px] font-semibold", !date && "text-muted-foreground")}>
+                      <CalendarIcon className="mr-2 h-3.5 w-3.5" />
+                      {date ? format(date, "PPP") : <span>Pick a date</span>}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="center">
+                    <Calendar
+                      mode="single"
+                      selected={date}
+                      onSelect={(selected) => selected && handleDateChange(selected)}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+                <Button variant="ghost" size="sm" className="h-7 px-2" onClick={() => handleDateChange(addDays(date, 1))}><ChevronRight className="h-3.5 w-3.5" /></Button>
+              </div>
+              
+              <Button onClick={saveAttendance} disabled={saving} className="h-9 text-xs rounded-lg shadow-sm font-semibold ml-2">
+                {saving ? (<><Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />Saving...</>) : (<><Save className="h-3.5 w-3.5 mr-1.5" />Save</>)}
+              </Button>
+            </div>
           </div>
-          <Button onClick={saveAttendance} disabled={saving} className="h-8 text-xs rounded-lg shadow-sm font-semibold">
-            {saving ? (<><Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />Saving...</>) : (<><Save className="h-3.5 w-3.5 mr-1.5" />Save Attendance</>)}
-          </Button>
+          
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-2 pt-2 border-t border-border/30">
+            <div className="bg-background border border-border/40 rounded-lg p-2 flex flex-col justify-center shadow-sm">
+              <span className="text-[9px] uppercase font-bold text-muted-foreground">Coverage</span>
+              <div className="flex items-end gap-1 mt-0.5">
+                <span className="text-sm font-bold">{employees.length > 0 ? Math.round(((employees.length - summary.notSet) / employees.length) * 100) : 0}%</span>
+              </div>
+            </div>
+            <div className="bg-background border border-green-500/20 rounded-lg p-2 flex flex-col justify-center shadow-sm relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-8 h-8 bg-green-500/10 rounded-bl-full" />
+              <span className="text-[9px] uppercase font-bold text-muted-foreground">Present</span>
+              <span className="text-sm font-bold text-green-600 mt-0.5">{summary.present}</span>
+            </div>
+            <div className="bg-background border border-amber-500/20 rounded-lg p-2 flex flex-col justify-center shadow-sm relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-8 h-8 bg-amber-500/10 rounded-bl-full" />
+              <span className="text-[9px] uppercase font-bold text-muted-foreground">Short Leave</span>
+              <span className="text-sm font-bold text-amber-600 mt-0.5">{summary.shortLeave}</span>
+            </div>
+            <div className="bg-background border border-red-500/20 rounded-lg p-2 flex flex-col justify-center shadow-sm relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-8 h-8 bg-red-500/10 rounded-bl-full" />
+              <span className="text-[9px] uppercase font-bold text-muted-foreground">Leave</span>
+              <span className="text-sm font-bold text-red-600 mt-0.5">{summary.leave}</span>
+            </div>
+            <div className="bg-background border border-slate-500/20 rounded-lg p-2 flex flex-col justify-center shadow-sm relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-8 h-8 bg-slate-500/10 rounded-bl-full" />
+              <span className="text-[9px] uppercase font-bold text-muted-foreground">Not Set</span>
+              <span className="text-sm font-bold text-slate-600 mt-0.5">{summary.notSet}</span>
+            </div>
+          </div>
         </CardHeader>
       </Card>
-
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-        <AttendanceDatePanel date={date} onDateChange={handleDateChange} />
-        <AttendanceSummaryPanel date={date} summary={summary} totalEmployees={employees.length} />
-      </div>
 
       <Card className="border border-border bg-card shadow-sm rounded-2xl overflow-hidden">
         <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-3 px-4 bg-muted/5 border-b border-border/50">
