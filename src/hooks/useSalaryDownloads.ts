@@ -3,7 +3,7 @@ import { useState, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { formatCurrency } from "@/utils/salaryCalculations";
 import jsPDF from "jspdf";
-import "jspdf-autotable";
+import autoTable from "jspdf-autotable";
 
 interface EmployeeSalaryData {
   employeeId: string;
@@ -106,7 +106,7 @@ export function useSalaryDownloads(
       doc.text(`Salary Slip for ${currentMonthName}`, 14, 30);
       
       // Employee Info Table
-      (doc as any).autoTable({
+      autoTable(doc, {
         startY: 40,
         head: [['Employee Details', '']],
         body: [
@@ -121,7 +121,7 @@ export function useSalaryDownloads(
       });
 
       // Attendance Info Table
-      (doc as any).autoTable({
+      autoTable(doc, {
         startY: (doc as any).lastAutoTable.finalY + 10,
         head: [['Attendance Details', '']],
         body: [
@@ -136,7 +136,7 @@ export function useSalaryDownloads(
       });
 
       // Final Calculation Table
-      (doc as any).autoTable({
+      autoTable(doc, {
         startY: (doc as any).lastAutoTable.finalY + 10,
         head: [['Salary Calculation', 'Amount']],
         body: [
