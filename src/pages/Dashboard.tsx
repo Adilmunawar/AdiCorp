@@ -63,8 +63,8 @@ export default function DashboardPage() {
           </StaggerIn>
           
           <StaggerIn delay={450} className="w-full h-full flex flex-col gap-5">
-            <ActivityFeed />
             <TodayAttendanceChart />
+            <ActivityFeed />
           </StaggerIn>
         </div>
       </div>

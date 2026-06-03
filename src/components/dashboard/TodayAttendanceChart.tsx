@@ -33,24 +33,22 @@ export default function TodayAttendanceChart() {
 
       const counts = {
         present: 0,
-        late: 0,
         leave: 0,
-        absent: 0,
         short_leave: 0
       };
 
       attendanceData?.forEach(record => {
-        if (record.status in counts) {
+        if (record.status === 'absent' || record.status === 'leave') {
+          counts.leave++;
+        } else if (record.status in counts) {
           counts[record.status as keyof typeof counts]++;
         }
       });
 
       const formattedData = [
         { name: 'Present', value: counts.present, color: '#10b981' }, // emerald-500
-        { name: 'Late', value: counts.late, color: '#f59e0b' }, // amber-500
-        { name: 'On Leave', value: counts.leave, color: '#8b5cf6' }, // violet-500
         { name: 'Short Leave', value: counts.short_leave, color: '#3b82f6' }, // blue-500
-        { name: 'Absent', value: counts.absent, color: '#ef4444' }, // red-500
+        { name: 'Leave', value: counts.leave, color: '#ef4444' }, // red-500
       ].filter(item => item.value > 0);
 
       // If no data for today, show an empty state placeholder

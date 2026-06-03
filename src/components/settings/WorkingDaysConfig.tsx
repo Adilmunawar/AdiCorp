@@ -148,47 +148,51 @@ export default function WorkingDaysConfig() {
 
   return (
     <ResponsiveContainer>
-      <Card className="glass-card transition-all duration-200 hover:shadow-lg">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
-            <Settings className="h-5 w-5 text-primary" />
-            Working Days Configuration
-          </CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Configure which days are considered working days for your company.
-          </p>
+      <Card className="border border-border bg-card shadow-sm rounded-2xl overflow-hidden transition-all duration-200 hover:shadow-lg">
+        <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-4 px-5 bg-muted/5 border-b border-border/50">
+          <div className="flex flex-col gap-1">
+            <CardTitle className="text-base font-bold text-foreground flex items-center gap-2">
+              <Settings className="h-4 w-4 text-primary" />
+              Working Days Configuration
+            </CardTitle>
+            <p className="text-[11px] text-muted-foreground mt-0.5">
+              Configure which days are considered working days for your company.
+            </p>
+          </div>
         </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="rounded-lg border border-border bg-muted/40 p-3">
-            <p className="text-xs font-medium text-foreground">Quick Templates</p>
-            <div className="mt-2 flex flex-wrap gap-2">
-              <Button type="button" variant="outline" size="sm" onClick={() => applyTemplate("mon_fri")}>Mon–Fri</Button>
-              <Button type="button" variant="outline" size="sm" onClick={() => applyTemplate("mon_sat")}>Mon–Sat</Button>
+        <CardContent className="p-5 md:p-6 space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="rounded-xl border border-border/50 bg-background shadow-sm p-3 flex flex-wrap items-center gap-3">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Quick Templates</p>
+              <div className="flex flex-wrap gap-2">
+                <Button type="button" variant="outline" className="h-7 px-3 text-[10px] rounded-lg border-border/60 bg-muted/20 hover:bg-muted/40 font-semibold" onClick={() => applyTemplate("mon_fri")}>Mon–Fri</Button>
+                <Button type="button" variant="outline" className="h-7 px-3 text-[10px] rounded-lg border-border/60 bg-muted/20 hover:bg-muted/40 font-semibold" onClick={() => applyTemplate("mon_sat")}>Mon–Sat</Button>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-2 rounded-xl border border-primary/20 bg-primary/5 px-4 py-2.5 shadow-sm shrink-0">
+              <AlertCircle className="h-4 w-4 text-primary" />
+              <span className="text-[11px] font-bold text-primary/80 uppercase tracking-wider">
+                {selectedDaysCount} {selectedDaysCount === 1 ? 'day' : 'days'} / week
+              </span>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/10 p-3">
-            <AlertCircle className="h-4 w-4 text-primary" />
-            <span className="text-sm text-muted-foreground">
-              {selectedDaysCount} working {selectedDaysCount === 1 ? 'day' : 'days'} per week selected
-            </span>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3 md:gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3">
             {days.map((day) => {
               const isChecked = config[day.key as keyof WorkingDayConfig] as boolean;
               return (
                 <div 
                   key={day.key} 
                   className={`
-                    flex flex-col items-center space-y-2 p-3 rounded-lg border transition-all duration-200
+                    relative flex flex-col items-center justify-center space-y-3 p-4 rounded-xl border transition-all duration-200 overflow-hidden
                     ${isChecked 
-                      ? 'bg-primary/10 border-primary/40' 
-                      : 'bg-card border-border'
+                      ? 'bg-primary/5 border-primary/30 shadow-sm' 
+                      : 'bg-background border-border/60 hover:border-border hover:bg-muted/10'
                     }
-                    hover:border-primary/60
                   `}
                 >
+                  {isChecked && <div className="absolute top-0 right-0 w-8 h-8 bg-primary/10 rounded-bl-xl" />}
                   <Switch
                     id={day.key}
                     checked={isChecked}
@@ -197,7 +201,7 @@ export default function WorkingDaysConfig() {
                   />
                   <Label 
                     htmlFor={day.key} 
-                    className="text-xs sm:text-sm font-medium text-center cursor-pointer select-none"
+                    className={`text-xs sm:text-sm font-bold text-center cursor-pointer select-none transition-colors ${isChecked ? 'text-primary' : 'text-foreground'}`}
                   >
                     <span className="block sm:hidden">{day.shortLabel}</span>
                     <span className="hidden sm:block">{day.label}</span>
@@ -207,40 +211,21 @@ export default function WorkingDaysConfig() {
             })}
           </div>
 
-          <div className="rounded-lg border border-border bg-muted/40 p-4">
+          <div className="rounded-xl border border-blue-500/20 bg-blue-500/5 p-4 shadow-sm">
             <div className="flex items-start gap-3">
-              <AlertCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-primary" />
-              <div className="space-y-1">
-                <p className="text-sm font-medium text-foreground">Important Notes:</p>
-                <ul className="list-inside list-disc space-y-1 text-sm text-muted-foreground">
-                  <li>Employees will only appear in attendance for configured working days</li>
-                  <li>Salary calculations will be based on selected working days</li>
-                  <li>Changes take effect immediately after saving</li>
+              <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-blue-600" />
+              <div className="space-y-1.5">
+                <p className="text-xs font-bold text-blue-700 uppercase tracking-wider">Important Notes</p>
+                <ul className="list-inside list-disc space-y-1 text-[11px] text-blue-700/80 font-medium">
+                  <li>Employees will only appear in attendance for configured working days.</li>
+                  <li>Salary calculations will be based on selected working days.</li>
+                  <li>Changes take effect immediately after saving.</li>
                 </ul>
               </div>
             </div>
           </div>
           
-          <div className="flex flex-col gap-3 border-t border-border pt-4 sm:flex-row">
-            <Button 
-              onClick={handleSave}
-              disabled={saving || !hasChanges}
-              className="flex-1 sm:flex-none"
-              aria-label="Save working days configuration"
-            >
-              {saving ? (
-                <>
-                  <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-foreground/40 border-t-transparent" />
-                  Saving...
-                </>
-              ) : (
-                <>
-                  <Check className="h-4 w-4 mr-2" />
-                  Save Configuration
-                </>
-              )}
-            </Button>
-            
+          <div className="flex flex-col gap-3 border-t border-border/50 pt-5 sm:flex-row sm:justify-end">
             {hasChanges && (
               <Button 
                 variant="outline" 
@@ -248,10 +233,29 @@ export default function WorkingDaysConfig() {
                   fetchConfig();
                   setHasChanges(false);
                 }}
+                className="rounded-xl h-9 px-4 text-xs font-bold border-border/60"
               >
                 Reset Changes
               </Button>
             )}
+            <Button 
+              onClick={handleSave}
+              disabled={saving || !hasChanges}
+              className="rounded-xl h-9 px-6 text-xs font-bold shadow-sm"
+              aria-label="Save working days configuration"
+            >
+              {saving ? (
+                <>
+                  <div className="mr-2 h-3.5 w-3.5 animate-spin rounded-full border-2 border-primary-foreground/40 border-t-transparent" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Check className="h-3.5 w-3.5 mr-1.5" />
+                  Save Configuration
+                </>
+              )}
+            </Button>
           </div>
         </CardContent>
       </Card>

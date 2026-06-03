@@ -23,6 +23,10 @@ export default function AttendanceBulkActions({ selectedDate, employees, onAtten
 
   const handleBulkAction = async () => {
     if (!bulkAction || employees.length === 0) return;
+    if (selectedDate.getDay() === 0) {
+      toast({ title: "Off-Day", description: "Attendance cannot be bulk saved on a Sunday.", variant: "destructive" });
+      return;
+    }
     try {
       setProcessing(true);
       const dateStr = format(selectedDate, 'yyyy-MM-dd');

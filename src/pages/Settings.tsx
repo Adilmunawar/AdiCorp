@@ -12,21 +12,20 @@ import BackupManager from "@/components/backup/BackupManager";
 import SecuritySettings from "@/components/settings/SecuritySettings";
 
 export default function SettingsPage() {
-  return (
     <Dashboard title="Settings">
-      <div className="max-w-7xl mx-auto">
-        <div className="mb-8">
-          <div className="glass-card p-6 mb-6">
-            <h1 className="text-3xl font-bold mb-2 text-foreground">System Settings</h1>
-            <p className="text-muted-foreground text-lg">
+      <div className="max-w-7xl mx-auto space-y-6">
+        <div className="rounded-3xl border border-border bg-card p-5 md:p-6 shadow-sm">
+          <div className="flex flex-col gap-1">
+            <h1 className="text-2xl font-bold text-foreground">System Settings</h1>
+            <p className="text-sm text-muted-foreground">
               Configure your company settings, preferences, and system parameters
             </p>
           </div>
         </div>
 
         <Tabs defaultValue="company" className="space-y-6">
-          <div className="glass-card p-2">
-            <TabsList className="bg-muted/50 grid grid-cols-4 md:grid-cols-8 p-1.5 gap-1 h-auto">
+          <div className="rounded-2xl border border-border bg-card shadow-sm p-2 overflow-x-auto hide-scrollbar">
+            <TabsList className="bg-transparent flex md:grid md:grid-cols-8 gap-2 h-auto min-w-max md:min-w-0 p-0">
               {[
                 { value: "company", icon: Building, label: "Company" },
                 { value: "currency", icon: DollarSign, label: "Currency" },
@@ -42,10 +41,10 @@ export default function SettingsPage() {
                   <TabsTrigger
                     key={tab.value}
                     value={tab.value}
-                    className="flex flex-col items-center gap-2 p-3 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-muted-foreground hover:text-foreground transition-all duration-200 rounded-lg"
+                    className="flex flex-col items-center gap-1.5 py-3 px-4 md:px-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-sm text-muted-foreground hover:bg-muted/50 transition-all duration-200 rounded-xl"
                   >
                     <Icon className="h-4 w-4" />
-                    <span className="text-xs font-medium">{tab.label}</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider">{tab.label}</span>
                   </TabsTrigger>
                 );
               })}
@@ -64,18 +63,20 @@ export default function SettingsPage() {
           ].map((tab) => {
             const Icon = tab.icon;
             return (
-              <TabsContent key={tab.value} value={tab.value} className="space-y-6">
-                <div className="glass-card p-6">
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className={`p-2 rounded-lg ${tab.bg}`}>
-                      <Icon className={`h-6 w-6 ${tab.color}`} />
+              <TabsContent key={tab.value} value={tab.value} className="animate-fade-in focus-visible:outline-none focus-visible:ring-0 space-y-6">
+                <div className="rounded-3xl border border-border bg-card shadow-sm overflow-hidden">
+                  <div className="flex items-center gap-4 px-6 py-5 bg-muted/5 border-b border-border/50">
+                    <div className={`p-2.5 rounded-xl ${tab.bg} shadow-sm`}>
+                      <Icon className={`h-5 w-5 ${tab.color}`} />
                     </div>
                     <div>
-                      <h2 className="text-2xl font-semibold text-foreground">{tab.title}</h2>
-                      <p className="text-muted-foreground">{tab.desc}</p>
+                      <h2 className="text-lg font-bold text-foreground">{tab.title}</h2>
+                      <p className="text-xs text-muted-foreground mt-0.5">{tab.desc}</p>
                     </div>
                   </div>
-                  {tab.content}
+                  <div className="p-6">
+                    {tab.content}
+                  </div>
                 </div>
               </TabsContent>
             );

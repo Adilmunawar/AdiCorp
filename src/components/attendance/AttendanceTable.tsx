@@ -90,6 +90,10 @@ export default function AttendanceTable() {
   };
 
   const saveAttendance = async () => {
+    if (date.getDay() === 0) {
+      toast({ title: "Off-Day", description: "Attendance cannot be saved on a Sunday.", variant: "destructive" });
+      return;
+    }
     try {
       setSaving(true);
       const updates = attendanceData.filter(record => record.status !== 'not_set').map(record => ({ employee_id: record.employeeId, date: record.date, status: record.status }));
@@ -212,20 +216,27 @@ export default function AttendanceTable() {
         </CardHeader>
       </Card>
 
-      <Card className="border border-border bg-card shadow-sm rounded-2xl overflow-hidden">
+      <Card className="border border-border bg-card shadow-sm rounded-2xl overflow-hidden mt-4">
         <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-3 px-4 bg-muted/5 border-b border-border/50">
           <div>
             <CardTitle className="text-sm font-bold text-foreground">Employee Attendance Matrix</CardTitle>
             <p className="mt-0.5 text-[10px] text-muted-foreground">Use quick actions to mark everyone, then adjust individual records if needed.</p>
           </div>
-          <div className="flex flex-wrap items-center gap-1.5 bg-background p-1 rounded-xl border border-border/50 shadow-sm">
-            <span className="text-[9px] uppercase font-bold text-muted-foreground px-2">Apply to all</span>
-            <div className="h-4 w-[1px] bg-border/50 mx-0.5"></div>
-            <Button size="sm" variant="ghost" className="h-6 text-[10px] rounded-md px-2 hover:bg-green-500/10 hover:text-green-600" onClick={() => applyStatusToAll("present")}>Present</Button>
-            <Button size="sm" variant="ghost" className="h-6 text-[10px] rounded-md px-2 hover:bg-amber-500/10 hover:text-amber-600" onClick={() => applyStatusToAll("short_leave")}>Short Leave</Button>
-            <Button size="sm" variant="ghost" className="h-6 text-[10px] rounded-md px-2 hover:bg-red-500/10 hover:text-red-600" onClick={() => applyStatusToAll("leave")}>Leave</Button>
-            <Button size="sm" variant="ghost" className="h-6 text-[10px] rounded-md px-2 hover:bg-slate-500/10" onClick={() => applyStatusToAll("not_set")}>Reset</Button>
-          </div>
+          
+          {date.getDay() === 0 ? (
+            <div className="bg-amber-500/10 text-amber-600 border border-amber-500/20 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5">
+              <CalendarIcon className="w-3.5 h-3.5" /> Sunday is a designated Off-Day. Attendance tracking is disabled.
+            </div>
+          ) : (
+            <div className="flex flex-wrap items-center gap-1.5 bg-background p-1 rounded-xl border border-border/50 shadow-sm">
+              <span className="text-[9px] uppercase font-bold text-muted-foreground px-2">Apply to all</span>
+              <div className="h-4 w-[1px] bg-border/50 mx-0.5"></div>
+              <Button size="sm" variant="ghost" className="h-6 text-[10px] rounded-md px-2 hover:bg-green-500/10 hover:text-green-600" onClick={() => applyStatusToAll("present")}>Present</Button>
+              <Button size="sm" variant="ghost" className="h-6 text-[10px] rounded-md px-2 hover:bg-amber-500/10 hover:text-amber-600" onClick={() => applyStatusToAll("short_leave")}>Short Leave</Button>
+              <Button size="sm" variant="ghost" className="h-6 text-[10px] rounded-md px-2 hover:bg-red-500/10 hover:text-red-600" onClick={() => applyStatusToAll("leave")}>Leave</Button>
+              <Button size="sm" variant="ghost" className="h-6 text-[10px] rounded-md px-2 hover:bg-slate-500/10" onClick={() => applyStatusToAll("not_set")}>Reset</Button>
+            </div>
+          )}
         </CardHeader>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
@@ -248,24 +259,30 @@ export default function AttendanceTable() {
                     </TableCell>
                     <TableCell className="py-1">
                       <div className="flex items-center gap-2">
-                        <div className="flex items-center gap-0.5 border border-border/60 rounded-lg p-0.5 bg-muted/10 shadow-sm w-fit">
-                          <button 
-                            onClick={() => handleStatusChange(record.employeeId, 'present')} 
-                            className={`px-2.5 py-1 text-[10px] font-bold rounded-md transition-all ${record.status === 'present' ? 'bg-green-500 text-white shadow-sm' : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'}`}
-                          >Present</button>
-                          <button 
-                            onClick={() => handleStatusChange(record.employeeId, 'short_leave')} 
-                            className={`px-2.5 py-1 text-[10px] font-bold rounded-md transition-all ${record.status === 'short_leave' ? 'bg-amber-500 text-white shadow-sm' : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'}`}
-                          >Short</button>
-                          <button 
-                            onClick={() => handleStatusChange(record.employeeId, 'leave')} 
-                            className={`px-2.5 py-1 text-[10px] font-bold rounded-md transition-all ${record.status === 'leave' ? 'bg-red-500 text-white shadow-sm' : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'}`}
-                          >Leave</button>
-                          <button 
-                            onClick={() => handleStatusChange(record.employeeId, 'not_set')} 
-                            className={`px-2.5 py-1 text-[10px] font-bold rounded-md transition-all ${record.status === 'not_set' ? 'bg-slate-500 text-white shadow-sm' : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'}`}
-                          >Unset</button>
-                        </div>
+                        {date.getDay() === 0 ? (
+                          <div className="flex items-center gap-0.5 border border-border/60 rounded-lg p-0.5 bg-muted shadow-sm w-fit opacity-50 cursor-not-allowed">
+                            <span className="px-3 py-1 text-[10px] font-bold text-muted-foreground">Disabled (Off-Day)</span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-0.5 border border-border/60 rounded-lg p-0.5 bg-muted/10 shadow-sm w-fit">
+                            <button 
+                              onClick={() => handleStatusChange(record.employeeId, 'present')} 
+                              className={`px-2.5 py-1 text-[10px] font-bold rounded-md transition-all ${record.status === 'present' ? 'bg-green-500 text-white shadow-sm' : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'}`}
+                            >Present</button>
+                            <button 
+                              onClick={() => handleStatusChange(record.employeeId, 'short_leave')} 
+                              className={`px-2.5 py-1 text-[10px] font-bold rounded-md transition-all ${record.status === 'short_leave' ? 'bg-amber-500 text-white shadow-sm' : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'}`}
+                            >Short</button>
+                            <button 
+                              onClick={() => handleStatusChange(record.employeeId, 'leave')} 
+                              className={`px-2.5 py-1 text-[10px] font-bold rounded-md transition-all ${record.status === 'leave' ? 'bg-red-500 text-white shadow-sm' : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'}`}
+                            >Leave</button>
+                            <button 
+                              onClick={() => handleStatusChange(record.employeeId, 'not_set')} 
+                              className={`px-2.5 py-1 text-[10px] font-bold rounded-md transition-all ${record.status === 'not_set' ? 'bg-slate-500 text-white shadow-sm' : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'}`}
+                            >Unset</button>
+                          </div>
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>
