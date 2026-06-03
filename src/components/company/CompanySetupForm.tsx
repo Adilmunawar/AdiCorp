@@ -12,12 +12,18 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const formSchema = z.object({
   name: z.string().min(1, { message: "Company name is required" }),
   phone: z.string().optional(),
-  website: z.string().url({ message: "Please enter a valid URL" }).optional().or(z.literal('')),
+  website: z.string().refine((val) => {
+    if (!val) return true;
+    return /^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/.*)?$/.test(val);
+  }, { message: "Please enter a valid website URL" }).optional().or(z.literal('')),
   address: z.string().optional(),
+  company_size: z.string().optional(),
+  company_type: z.string().optional(),
 });
 type FormValues = z.infer<typeof formSchema>;
 
@@ -33,7 +39,7 @@ export default function CompanySetupForm({ onComplete, isEmbedded = false }: Com
   const [isLoading, setIsLoading] = useState(false);
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
-  const form = useForm<FormValues>({ resolver: zodResolver(formSchema), defaultValues: { name: "", phone: "", website: "", address: "" } });
+  const form = useForm<FormValues>({ resolver: zodResolver(formSchema), defaultValues: { name: "", phone: "", website: "", address: "", company_size: "", company_type: "" } });
 
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -55,7 +61,17 @@ export default function CompanySetupForm({ onComplete, isEmbedded = false }: Com
         const { data: { publicUrl } } = supabase.storage.from('logos').getPublicUrl(filePath);
         logoUrl = publicUrl;
       }
-      const { data: companyData, error: companyError } = await supabase.from('companies').insert({ name: values.name, phone: values.phone || null, website: values.website || null, address: values.address || null, logo: logoUrl }).select('*').single();
+      const formattedWebsite = values.website ? (values.website.startsWith('http') ? values.website : `https://${values.website}`) : null;
+      
+      const { data: companyData, error: companyError } = await supabase.from('companies').insert({ 
+        name: values.name, 
+        phone: values.phone || null, 
+        website: formattedWebsite, 
+        address: values.address || null, 
+        company_size: values.company_size || null, 
+        company_type: values.company_type || null, 
+        logo: logoUrl 
+      }).select('*').single();
       if (companyError) throw companyError;
       const { error: profileError } = await supabase.from('profiles').update({ company_id: companyData.id, is_admin: true }).eq('id', user.id);
       if (profileError) throw profileError;
@@ -129,6 +145,51 @@ export default function CompanySetupForm({ onComplete, isEmbedded = false }: Com
                 <FormMessage />
               </FormItem>
             )} />
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+              <FormField control={form.control} name="company_type" render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-semibold text-foreground">Industry Category</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger className="h-10 sm:h-11 bg-background/50 border-border/60 hover:border-border focus:ring-primary/20 rounded-xl shadow-sm">
+                        <SelectValue placeholder="Select industry" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="technology">Technology & IT</SelectItem>
+                      <SelectItem value="manufacturing">Manufacturing</SelectItem>
+                      <SelectItem value="retail">Retail & E-commerce</SelectItem>
+                      <SelectItem value="healthcare">Healthcare</SelectItem>
+                      <SelectItem value="finance">Finance & Banking</SelectItem>
+                      <SelectItem value="education">Education</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )} />
+              <FormField control={form.control} name="company_size" render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-semibold text-foreground">Company Size</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger className="h-10 sm:h-11 bg-background/50 border-border/60 hover:border-border focus:ring-primary/20 rounded-xl shadow-sm">
+                        <SelectValue placeholder="Select size" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="1-10">1-10 employees</SelectItem>
+                      <SelectItem value="11-50">11-50 employees</SelectItem>
+                      <SelectItem value="51-200">51-200 employees</SelectItem>
+                      <SelectItem value="201-500">201-500 employees</SelectItem>
+                      <SelectItem value="500+">500+ employees</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )} />
+            </div>
             
             <div className="space-y-2 pt-1">
               <Label className="text-sm font-semibold text-foreground">Brand Logo</Label>

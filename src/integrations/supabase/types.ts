@@ -94,6 +94,8 @@ export type Database = {
       companies: {
         Row: {
           address: string | null
+          company_size: string | null
+          company_type: string | null
           created_at: string
           currency: string | null
           id: string
@@ -104,6 +106,8 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          company_size?: string | null
+          company_type?: string | null
           created_at?: string
           currency?: string | null
           id?: string
@@ -114,6 +118,8 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          company_size?: string | null
+          company_type?: string | null
           created_at?: string
           currency?: string | null
           id?: string
