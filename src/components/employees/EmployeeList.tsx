@@ -19,6 +19,7 @@ import { EmployeeRow } from "@/types/supabase";
 import EmployeeImportExport from "./EmployeeImportExport";
 import { useCurrency } from "@/hooks/useCurrency";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ReportDataService } from "@/services/reportDataService";
 
 interface EmployeeListProps { onAddEmployee?: () => void; onEditEmployee?: (id: string) => void; }
 
@@ -83,6 +84,15 @@ export default function EmployeeList({ onAddEmployee, onEditEmployee }: Employee
       });
       
       return { payroll, active, inactive };
+    },
+    enabled: !!userProfile?.company_id
+  });
+
+  const { data: currentMonthReportData } = useQuery({
+    queryKey: ['employee-wages-report', userProfile?.company_id],
+    queryFn: async () => {
+      if (!userProfile?.company_id) return null;
+      return await ReportDataService.fetchReportData(userProfile.company_id, new Date());
     },
     enabled: !!userProfile?.company_id
   });
@@ -244,7 +254,12 @@ export default function EmployeeList({ onAddEmployee, onEditEmployee }: Employee
                   <TableHead className="font-semibold py-1 text-[10px] uppercase tracking-wider">Employee</TableHead>
                   <TableHead className="font-semibold py-1 text-[10px] uppercase tracking-wider">Role</TableHead>
                   <TableHead className="font-semibold py-1 text-[10px] uppercase tracking-wider">Schedule</TableHead>
-                  {userProfile?.is_admin && <TableHead className="font-semibold py-1 text-[10px] uppercase tracking-wider">Wage Rate</TableHead>}
+                  {userProfile?.is_admin && (
+                    <>
+                      <TableHead className="font-semibold py-1 text-[10px] uppercase tracking-wider">Wage Rate</TableHead>
+                      <TableHead className="font-semibold py-1 text-[10px] uppercase tracking-wider text-green-600">Calculated (MTD)</TableHead>
+                    </>
+                  )}
                   <TableHead className="font-semibold py-1 text-[10px] uppercase tracking-wider">Status</TableHead>
                   <TableHead className="text-right pr-3 py-1 font-semibold text-[10px] uppercase tracking-wider">Actions</TableHead>
                 </TableRow>
@@ -294,9 +309,14 @@ export default function EmployeeList({ onAddEmployee, onEditEmployee }: Employee
                       </div>
                     </TableCell>
                     {userProfile?.is_admin && (
-                      <TableCell className="py-1 font-bold text-foreground text-[10px]">
-                        {formatCurrency(employee.wage_rate)}
-                      </TableCell>
+                      <>
+                        <TableCell className="py-1 font-bold text-foreground text-[10px]">
+                          {formatCurrency(employee.wage_rate)}
+                        </TableCell>
+                        <TableCell className="py-1 font-bold text-green-600 bg-green-500/5 text-[10px]">
+                          {formatCurrency(currentMonthReportData?.employeeData.find(e => e.employeeId === employee.id)?.calculatedSalary || 0)}
+                        </TableCell>
+                      </>
                     )}
                     <TableCell className="py-1">
                       <Badge variant={employee.status === 'active' ? 'default' : 'secondary'} className="capitalize shadow-sm font-semibold text-[9px] px-1 py-0">

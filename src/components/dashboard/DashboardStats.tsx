@@ -8,6 +8,7 @@ import { format, startOfDay, endOfDay } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useEffect, useState } from "react";
+import { ReportDataService } from "@/services/reportDataService";
 
 function AnimatedValue({ value, className = "" }: { value: string | number; className?: string }) {
   const [displayed, setDisplayed] = useState(false);
@@ -67,24 +68,23 @@ export default function DashboardStats() {
 
       if (attendanceError) throw attendanceError;
 
-      const startOfMonthString = format(new Date(todayString.slice(0,4) + '-' + todayString.slice(5,7) + '-01'), 'yyyy-MM-dd');
-      const { data: monthlyAttendance, error: monthlyError } = await supabase
-        .from('attendance')
-        .select(`id, status, employees!inner(company_id)`)
-        .eq('employees.company_id', userProfile.company_id)
-        .gte('date', startOfMonthString)
-        .neq('status', 'not_set');
-
-      if (monthlyError) throw monthlyError;
-
       const totalEmployees = employees?.length || 0;
       const activeEmployees = employees?.filter(emp => emp.status === 'active').length || 0;
-      const totalWageRate = employees?.reduce((sum, emp) => sum + emp.wage_rate, 0) || 0;
       const todayAttendanceCount = todayAttendance?.length || 0;
-      const monthlyAttendanceCount = monthlyAttendance?.length || 0;
       const attendanceRate = activeEmployees > 0 ? Math.round((todayAttendanceCount / activeEmployees) * 100) : 0;
 
-      return { totalEmployees, activeEmployees, todayAttendance: todayAttendanceCount, monthlyAttendance: monthlyAttendanceCount, totalWageRate, attendanceRate };
+      // Use ReportDataService for accurate, identical math as the Salary section
+      const reportData = await ReportDataService.fetchReportData(userProfile.company_id, new Date());
+
+      return { 
+        totalEmployees, 
+        activeEmployees, 
+        todayAttendance: todayAttendanceCount, 
+        monthlyAttendance: reportData.stats.averageAttendance, // Or we can use the count if we had it, but average is better
+        totalWageRate: reportData.stats.totalBudgetSalary, 
+        attendanceRate,
+        monthlyWageCalculated: reportData.stats.totalCalculatedSalary
+      };
     },
     enabled: !!userProfile?.company_id,
   });
@@ -121,8 +121,8 @@ export default function DashboardStats() {
   const statCards = [
     { title: "Total Employees", value: stats.totalEmployees, description: `${stats.activeEmployees} active`, icon: Users, accent: "from-teal-500/10 to-emerald-500/10", iconBg: "bg-teal-500/10", iconColor: "text-teal-600", trend: "up" as const, trendValue: "+12%", progress: stats.activeEmployees, progressMax: stats.totalEmployees },
     { title: "Today's Attendance", value: stats.todayAttendance, description: `${stats.attendanceRate}% rate`, icon: UserCheck, accent: "from-blue-500/10 to-cyan-500/10", iconBg: "bg-blue-500/10", iconColor: "text-blue-600", trend: "up" as const, trendValue: `${stats.attendanceRate}%`, progress: stats.todayAttendance, progressMax: stats.activeEmployees || 1 },
-    { title: "Monthly Attendance", value: stats.monthlyAttendance, description: "This month", icon: Calendar, accent: "from-violet-500/10 to-purple-500/10", iconBg: "bg-violet-500/10", iconColor: "text-violet-600", trend: "up" as const, trendValue: "+5%", progress: 65, progressMax: 100 },
-    { title: "Wage Budget", value: formatCurrency(stats.totalWageRate), description: "Combined rates", icon: DollarSign, accent: "from-green-500/10 to-lime-500/10", iconBg: "bg-green-500/10", iconColor: "text-green-600", trend: "up" as const, trendValue: "On Track", progress: 78, progressMax: 100 },
+    { title: "Calculated Wages", value: formatCurrency(stats.monthlyWageCalculated), description: "MTD Actual", icon: DollarSign, accent: "from-green-500/10 to-lime-500/10", iconBg: "bg-green-500/10", iconColor: "text-green-600", trend: "up" as const, trendValue: "On Track", progress: Math.min(Math.round((stats.monthlyWageCalculated / (stats.totalWageRate * 30 || 1)) * 100), 100), progressMax: 100 },
+    { title: "Daily Wage Budget", value: formatCurrency(stats.totalWageRate), description: "Max possible", icon: DollarSign, accent: "from-blue-500/10 to-indigo-500/10", iconBg: "bg-blue-500/10", iconColor: "text-blue-600", trend: "neutral" as const, trendValue: "", progress: 0, progressMax: 0 },
     { title: "Current Date", value: format(new Date(), "MMM dd"), description: format(new Date(), "yyyy"), icon: Clock, accent: "from-orange-500/10 to-amber-500/10", iconBg: "bg-orange-500/10", iconColor: "text-orange-600", trend: "neutral" as const, trendValue: format(new Date(), "EEEE"), progress: 0, progressMax: 0 },
     { title: "Attendance Rate", value: `${stats.attendanceRate}%`, description: "Today", icon: TrendingUp, accent: "from-pink-500/10 to-rose-500/10", iconBg: "bg-pink-500/10", iconColor: "text-pink-600", trend: stats.attendanceRate >= 80 ? "up" as const : "down" as const, trendValue: stats.attendanceRate >= 80 ? "Healthy" : "Low", progress: stats.attendanceRate, progressMax: 100 },
   ];

@@ -15,6 +15,10 @@ interface RawReportData {
     status: string;
     date: string;
   }>;
+  leave_requests?: Array<{
+    employee_id: string;
+    days_count: number;
+  }>;
 }
 
 interface ProcessedEmployeeData {
@@ -25,6 +29,7 @@ interface ProcessedEmployeeData {
   presentDays: number;
   shortLeaveDays: number;
   leaveDays: number;
+  pendingLeaveDays: number;
   actualWorkingDays: number;
   dailyRate: number;
   calculatedSalary: number;
@@ -76,9 +81,11 @@ export class ReportDataService {
   private static calculateEmployeeData(
     employee: any,
     attendance: any[],
+    pendingLeaves: any[],
     globalDailyRateDivisor: number
   ): ProcessedEmployeeData {
     const employeeAttendance = attendance.filter(att => att.employee_id === employee.id);
+    const employeePendingLeaves = pendingLeaves.filter(req => req.employee_id === employee.id);
     
     let presentDays = 0;
     let shortLeaveDays = 0;
@@ -98,11 +105,16 @@ export class ReportDataService {
       }
     });
     
+    let pendingLeaveDays = 0;
+    employeePendingLeaves.forEach(req => {
+      pendingLeaveDays += (req.days_count || 0);
+    });
+    
     const monthlySalary = Number(employee.wage_rate) || 0;
     // Use employee's specific divisor if available, otherwise fallback to global
     const effectiveDivisor = employee.salary_divisor || globalDailyRateDivisor;
     const dailyRate = monthlySalary / effectiveDivisor;
-    const actualWorkingDays = presentDays + (shortLeaveDays * 0.5);
+    const actualWorkingDays = presentDays + leaveDays + pendingLeaveDays + (shortLeaveDays * 0.5);
     const calculatedSalary = dailyRate * actualWorkingDays;
     
     return {
@@ -113,6 +125,7 @@ export class ReportDataService {
       presentDays,
       shortLeaveDays,
       leaveDays,
+      pendingLeaveDays,
       actualWorkingDays,
       dailyRate,
       calculatedSalary,
@@ -203,9 +216,22 @@ export class ReportDataService {
         throw new Error(`Failed to fetch attendance: ${attendanceError.message}`);
       }
       
+      // Fetch pending leave requests
+      const { data: pendingLeavesData, error: pendingLeavesError } = await supabase
+        .from("leave_requests")
+        .select("employee_id, days_count")
+        .in("employee_id", employeeIds)
+        .eq("status", "pending")
+        .gte("end_date", monthStart)
+        .lte("start_date", monthEnd);
+
+      if (pendingLeavesError && pendingLeavesError.code !== "PGRST116") {
+        console.error("Failed to fetch pending leaves:", pendingLeavesError);
+      }
+      
       // Process all data client-side with new daily rate calculation
       const employeeData = employees.map(employee => 
-        this.calculateEmployeeData(employee, attendance || [], dailyRateDivisor)
+        this.calculateEmployeeData(employee, attendance || [], pendingLeavesData || [], dailyRateDivisor)
       );
       
       const stats = this.calculateStats(employeeData, totalWorkingDays);
