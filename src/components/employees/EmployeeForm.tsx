@@ -190,93 +190,93 @@ export default function EmployeeForm({ employee, onSuccess, onCancel, isOpen, on
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
         
         {/* Massive Single Page Grid Container */}
-        <div className="h-[60vh] overflow-y-auto px-4 sm:px-6 pb-6 space-y-10 custom-scrollbar">
+        <div className="h-[60vh] overflow-y-auto px-4 sm:px-6 pb-6 space-y-6 custom-scrollbar">
           
           {/* Section: Personal Info */}
-          <div className="space-y-5">
-            <div className="flex items-center gap-2 text-primary font-semibold border-b border-border/50 pb-2">
-              <User className="h-4 w-4" /> Personal Details
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 text-primary font-semibold border-b border-border/50 pb-1 text-sm">
+              <User className="h-3.5 w-3.5" /> Personal Details
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
               <FormField control={form.control} name="name" render={({ field }) => (
-                <FormItem><FormLabel className="text-xs">Full Name *</FormLabel><FormControl><Input placeholder="John Doe" {...field} className="rounded-xl bg-muted/20" /></FormControl><FormMessage /></FormItem>
+                <FormItem className="space-y-1"><FormLabel className="text-[10px]">Full Name *</FormLabel><FormControl><Input placeholder="John Doe" {...field} className="rounded-lg bg-muted/20 h-8 text-[11px]" /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="father_name" render={({ field }) => (
-                <FormItem><FormLabel className="text-xs">Father's Name</FormLabel><FormControl><Input placeholder="Father's Name" {...field} className="rounded-xl bg-muted/20" /></FormControl><FormMessage /></FormItem>
+                <FormItem className="space-y-1"><FormLabel className="text-[10px]">Father's Name</FormLabel><FormControl><Input placeholder="Father's Name" {...field} className="rounded-lg bg-muted/20 h-8 text-[11px]" /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="date_of_birth" render={({ field }) => (
-                <FormItem><FormLabel className="text-xs">Date of Birth</FormLabel><FormControl><Input type="date" {...field} className="rounded-xl bg-muted/20" /></FormControl><FormMessage /></FormItem>
+                <FormItem className="space-y-1"><FormLabel className="text-[10px]">Date of Birth</FormLabel><FormControl><Input type="date" {...field} className="rounded-lg bg-muted/20 h-8 text-[11px]" /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="cnic" render={({ field }) => (
-                <FormItem><FormLabel className="text-xs">CNIC / National ID</FormLabel><FormControl><Input placeholder="00000-0000000-0" {...field} className="rounded-xl bg-muted/20" /></FormControl><FormMessage /></FormItem>
+                <FormItem className="space-y-1"><FormLabel className="text-[10px]">CNIC / National ID</FormLabel><FormControl><Input placeholder="00000-0000000-0" {...field} className="rounded-lg bg-muted/20 h-8 text-[11px]" /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="education" render={({ field }) => (
-                <FormItem><FormLabel className="text-xs">Education</FormLabel><FormControl><Input placeholder="BS Computer Science" {...field} className="rounded-xl bg-muted/20" /></FormControl><FormMessage /></FormItem>
+                <FormItem className="space-y-1"><FormLabel className="text-[10px]">Education</FormLabel><FormControl><Input placeholder="BS Computer Science" {...field} className="rounded-lg bg-muted/20 h-8 text-[11px]" /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="email" render={({ field }) => (
-                <FormItem><FormLabel className="text-xs">Email Address</FormLabel><FormControl><Input placeholder="john@example.com" type="email" {...field} className="rounded-xl bg-muted/20" /></FormControl><FormMessage /></FormItem>
+                <FormItem className="space-y-1"><FormLabel className="text-[10px]">Email Address</FormLabel><FormControl><Input placeholder="john@example.com" type="email" {...field} className="rounded-lg bg-muted/20 h-8 text-[11px]" /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="phone" render={({ field }) => (
-                <FormItem><FormLabel className="text-xs">Phone Number</FormLabel><FormControl><Input placeholder="+1234567890" {...field} className="rounded-xl bg-muted/20" /></FormControl><FormMessage /></FormItem>
+                <FormItem className="space-y-1"><FormLabel className="text-[10px]">Phone Number</FormLabel><FormControl><Input placeholder="+1234567890" {...field} className="rounded-lg bg-muted/20 h-8 text-[11px]" /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="emergency_contact" render={({ field }) => (
-                <FormItem><FormLabel className="text-xs">Emergency Contact</FormLabel><FormControl><Input placeholder="Name & Phone" {...field} className="rounded-xl bg-muted/20" /></FormControl><FormMessage /></FormItem>
+                <FormItem className="space-y-1"><FormLabel className="text-[10px]">Emergency Contact</FormLabel><FormControl><Input placeholder="Name & Phone" {...field} className="rounded-lg bg-muted/20 h-8 text-[11px]" /></FormControl><FormMessage /></FormItem>
               )} />
             </div>
           </div>
 
           {/* Section: Employment & Schedule */}
-          <div className="space-y-5">
-            <div className="flex items-center gap-2 text-primary font-semibold border-b border-border/50 pb-2">
-              <Briefcase className="h-4 w-4" /> Employment & Schedule
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 text-primary font-semibold border-b border-border/50 pb-1 text-sm">
+              <Briefcase className="h-3.5 w-3.5" /> Employment & Schedule
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
               <FormField control={form.control} name="rank" render={({ field }) => (
-                <FormItem><FormLabel className="text-xs">Position / Rank *</FormLabel><FormControl><Input placeholder="Software Engineer" {...field} className="rounded-xl bg-muted/20" /></FormControl><FormMessage /></FormItem>
+                <FormItem className="space-y-1"><FormLabel className="text-[10px]">Position / Rank *</FormLabel><FormControl><Input placeholder="Software Engineer" {...field} className="rounded-lg bg-muted/20 h-8 text-[11px]" /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="shift_type" render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-xs">Shift Timing</FormLabel>
+                <FormItem className="space-y-1">
+                  <FormLabel className="text-[10px]">Shift Timing</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl><SelectTrigger className="rounded-xl bg-muted/20"><SelectValue placeholder="Select shift" /></SelectTrigger></FormControl>
+                    <FormControl><SelectTrigger className="rounded-lg bg-muted/20 h-8 text-[11px]"><SelectValue placeholder="Select shift" /></SelectTrigger></FormControl>
                     <SelectContent>
-                      <SelectItem value="Morning">Morning</SelectItem>
-                      <SelectItem value="Evening">Evening</SelectItem>
-                      <SelectItem value="Night">Night</SelectItem>
+                      <SelectItem value="Morning" className="text-[11px]">Morning</SelectItem>
+                      <SelectItem value="Evening" className="text-[11px]">Evening</SelectItem>
+                      <SelectItem value="Night" className="text-[11px]">Night</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
                 </FormItem>
               )} />
               <FormField control={form.control} name="status" render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-xs">Status</FormLabel>
+                <FormItem className="space-y-1">
+                  <FormLabel className="text-[10px]">Status</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl><SelectTrigger className="rounded-xl bg-muted/20"><SelectValue placeholder="Select status" /></SelectTrigger></FormControl>
-                    <SelectContent><SelectItem value="active">Active</SelectItem><SelectItem value="inactive">Inactive</SelectItem></SelectContent>
+                    <FormControl><SelectTrigger className="rounded-lg bg-muted/20 h-8 text-[11px]"><SelectValue placeholder="Select status" /></SelectTrigger></FormControl>
+                    <SelectContent><SelectItem value="active" className="text-[11px]">Active</SelectItem><SelectItem value="inactive" className="text-[11px]">Inactive</SelectItem></SelectContent>
                   </Select>
                   <FormMessage />
                 </FormItem>
               )} />
             </div>
 
-            <div className="bg-muted/10 rounded-2xl p-5 border border-border/40 mt-4">
+            <div className="bg-muted/10 rounded-xl p-3 border border-border/40 mt-2">
               <FormField control={form.control} name="saturday_schedule" render={({ field }) => (
-                <FormItem className="space-y-3">
-                  <FormLabel className="text-sm font-semibold">Weekend Configuration (Saturday)</FormLabel>
+                <FormItem className="space-y-2">
+                  <FormLabel className="text-[11px] font-semibold">Weekend Configuration (Saturday)</FormLabel>
                   <FormControl>
-                    <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                      <FormItem className="flex items-center space-x-3 space-y-0 rounded-xl border border-border/40 p-4 bg-background/50 cursor-pointer">
-                        <FormControl><RadioGroupItem value="follow_company" /></FormControl>
-                        <div className="space-y-0.5"><FormLabel className="text-xs font-semibold cursor-pointer">Follow Default</FormLabel><p className="text-[10px] text-muted-foreground">Uses global settings.</p></div>
+                    <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                      <FormItem className="flex items-center space-x-2 space-y-0 rounded-lg border border-border/40 p-2 bg-background/50 cursor-pointer">
+                        <FormControl><RadioGroupItem value="follow_company" className="h-3 w-3" /></FormControl>
+                        <div className="space-y-0"><FormLabel className="text-[10px] font-semibold cursor-pointer">Follow Default</FormLabel><p className="text-[9px] text-muted-foreground leading-tight">Uses global settings.</p></div>
                       </FormItem>
-                      <FormItem className="flex items-center space-x-3 space-y-0 rounded-xl border border-border/40 p-4 bg-background/50 cursor-pointer">
-                        <FormControl><RadioGroupItem value="force_off" /></FormControl>
-                        <div className="space-y-0.5"><FormLabel className="text-xs font-semibold cursor-pointer">5-Day Week</FormLabel><p className="text-[10px] text-muted-foreground">Saturday is always OFF.</p></div>
+                      <FormItem className="flex items-center space-x-2 space-y-0 rounded-lg border border-border/40 p-2 bg-background/50 cursor-pointer">
+                        <FormControl><RadioGroupItem value="force_off" className="h-3 w-3" /></FormControl>
+                        <div className="space-y-0"><FormLabel className="text-[10px] font-semibold cursor-pointer">5-Day Week</FormLabel><p className="text-[9px] text-muted-foreground leading-tight">Saturday is OFF.</p></div>
                       </FormItem>
-                      <FormItem className="flex items-center space-x-3 space-y-0 rounded-xl border border-border/40 p-4 bg-background/50 cursor-pointer">
-                        <FormControl><RadioGroupItem value="force_on" /></FormControl>
-                        <div className="space-y-0.5"><FormLabel className="text-xs font-semibold cursor-pointer">6-Day Week</FormLabel><p className="text-[10px] text-muted-foreground">Saturday is always ON.</p></div>
+                      <FormItem className="flex items-center space-x-2 space-y-0 rounded-lg border border-border/40 p-2 bg-background/50 cursor-pointer">
+                        <FormControl><RadioGroupItem value="force_on" className="h-3 w-3" /></FormControl>
+                        <div className="space-y-0"><FormLabel className="text-[10px] font-semibold cursor-pointer">6-Day Week</FormLabel><p className="text-[9px] text-muted-foreground leading-tight">Saturday is ON.</p></div>
                       </FormItem>
                     </RadioGroup>
                   </FormControl>
@@ -287,44 +287,44 @@ export default function EmployeeForm({ employee, onSuccess, onCancel, isOpen, on
           </div>
 
           {/* Section: Finance */}
-          <div className="space-y-5">
-            <div className="flex items-center gap-2 text-primary font-semibold border-b border-border/50 pb-2">
-              <CreditCard className="h-4 w-4" /> Financial Details
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 text-primary font-semibold border-b border-border/50 pb-1 text-sm">
+              <CreditCard className="h-3.5 w-3.5" /> Financial Details
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <FormField control={form.control} name="wage_rate" render={({ field }) => (
-                <FormItem><FormLabel className="text-xs">Monthly Salary *</FormLabel><FormControl><Input type="number" step="0.01" placeholder="Enter salary" {...field} className="rounded-xl bg-muted/20" onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)} /></FormControl><FormMessage /></FormItem>
+                <FormItem className="space-y-1"><FormLabel className="text-[10px]">Monthly Salary *</FormLabel><FormControl><Input type="number" step="0.01" placeholder="Enter salary" {...field} className="rounded-lg bg-muted/20 h-8 text-[11px]" onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="bank_name" render={({ field }) => (
-                <FormItem><FormLabel className="text-xs">Bank Name</FormLabel><FormControl><Input placeholder="e.g. Chase Bank" {...field} className="rounded-xl bg-muted/20" /></FormControl><FormMessage /></FormItem>
+                <FormItem className="space-y-1"><FormLabel className="text-[10px]">Bank Name</FormLabel><FormControl><Input placeholder="e.g. Chase Bank" {...field} className="rounded-lg bg-muted/20 h-8 text-[11px]" /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="bank_account_number" render={({ field }) => (
-                <FormItem><FormLabel className="text-xs">Account Number (IBAN)</FormLabel><FormControl><Input placeholder="XXXX-XXXX-XXXX" {...field} className="rounded-xl bg-muted/20" /></FormControl><FormMessage /></FormItem>
+                <FormItem className="space-y-1"><FormLabel className="text-[10px]">Account Number (IBAN)</FormLabel><FormControl><Input placeholder="XXXX-XXXX-XXXX" {...field} className="rounded-lg bg-muted/20 h-8 text-[11px]" /></FormControl><FormMessage /></FormItem>
               )} />
             </div>
           </div>
 
           {/* Section: Inline Documents Upload */}
-          <div className="space-y-5 pt-4">
-            <div className="flex items-center gap-2 text-primary font-semibold border-b border-border/50 pb-2">
-              <UploadCloud className="h-4 w-4" /> Employee Documents
+          <div className="space-y-3 pt-2">
+            <div className="flex items-center gap-2 text-primary font-semibold border-b border-border/50 pb-1 text-sm">
+              <UploadCloud className="h-3.5 w-3.5" /> Employee Documents
             </div>
-            <p className="text-xs text-muted-foreground">Attach necessary documents. They will be saved to the employee's permanent record.</p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <p className="text-[10px] text-muted-foreground">Attach necessary documents. They will be saved to the employee's permanent record.</p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               
-              <div className="border border-border/50 bg-background/50 p-4 rounded-2xl flex flex-col items-start gap-3">
-                <div className="flex items-center gap-2 text-sm font-semibold"><User className="h-4 w-4 text-primary" /> CNIC / ID Card</div>
-                <Input type="file" className="text-xs file:text-xs file:bg-primary/10 file:text-primary file:border-0 file:rounded-md file:px-3 file:py-1 rounded-lg" onChange={(e) => setCnicFile(e.target.files?.[0] || null)} />
+              <div className="border border-border/50 bg-background/50 p-2.5 rounded-xl flex flex-col items-start gap-2">
+                <div className="flex items-center gap-1.5 text-xs font-semibold"><User className="h-3.5 w-3.5 text-primary" /> CNIC / ID Card</div>
+                <Input type="file" className="text-[10px] h-7 file:text-[10px] file:bg-primary/10 file:text-primary file:border-0 file:rounded file:px-2 file:py-0.5 rounded-md p-1" onChange={(e) => setCnicFile(e.target.files?.[0] || null)} />
               </div>
 
-              <div className="border border-border/50 bg-background/50 p-4 rounded-2xl flex flex-col items-start gap-3">
-                <div className="flex items-center gap-2 text-sm font-semibold"><GraduationCap className="h-4 w-4 text-primary" /> Education Degree</div>
-                <Input type="file" className="text-xs file:text-xs file:bg-primary/10 file:text-primary file:border-0 file:rounded-md file:px-3 file:py-1 rounded-lg" onChange={(e) => setDegreeFile(e.target.files?.[0] || null)} />
+              <div className="border border-border/50 bg-background/50 p-2.5 rounded-xl flex flex-col items-start gap-2">
+                <div className="flex items-center gap-1.5 text-xs font-semibold"><GraduationCap className="h-3.5 w-3.5 text-primary" /> Education Degree</div>
+                <Input type="file" className="text-[10px] h-7 file:text-[10px] file:bg-primary/10 file:text-primary file:border-0 file:rounded file:px-2 file:py-0.5 rounded-md p-1" onChange={(e) => setDegreeFile(e.target.files?.[0] || null)} />
               </div>
 
-              <div className="border border-border/50 bg-background/50 p-4 rounded-2xl flex flex-col items-start gap-3">
-                <div className="flex items-center gap-2 text-sm font-semibold"><Briefcase className="h-4 w-4 text-primary" /> Employee Contract</div>
-                <Input type="file" className="text-xs file:text-xs file:bg-primary/10 file:text-primary file:border-0 file:rounded-md file:px-3 file:py-1 rounded-lg" onChange={(e) => setContractFile(e.target.files?.[0] || null)} />
+              <div className="border border-border/50 bg-background/50 p-2.5 rounded-xl flex flex-col items-start gap-2">
+                <div className="flex items-center gap-1.5 text-xs font-semibold"><Briefcase className="h-3.5 w-3.5 text-primary" /> Employee Contract</div>
+                <Input type="file" className="text-[10px] h-7 file:text-[10px] file:bg-primary/10 file:text-primary file:border-0 file:rounded file:px-2 file:py-0.5 rounded-md p-1" onChange={(e) => setContractFile(e.target.files?.[0] || null)} />
               </div>
 
             </div>
@@ -332,12 +332,12 @@ export default function EmployeeForm({ employee, onSuccess, onCancel, isOpen, on
 
         </div>
 
-        <div className="flex gap-3 pt-5 px-6 border-t border-border/50 bg-muted/10 pb-6 rounded-b-3xl">
-          <Button type="button" variant="outline" onClick={handleCancel} className="flex-1 rounded-xl h-12 shadow-sm font-semibold">
+        <div className="flex gap-2 pt-4 px-4 border-t border-border/50 bg-muted/10 pb-4 rounded-b-xl">
+          <Button type="button" variant="outline" onClick={handleCancel} className="flex-1 rounded-lg h-9 text-xs shadow-sm font-semibold">
             Cancel
           </Button>
-          <Button type="submit" disabled={loading} className="flex-[2] rounded-xl h-12 shadow-md shadow-primary/20 font-bold text-base">
-            {loading ? "Processing..." : currentEmployee ? "Update Employee Record" : "Create Employee Record"}
+          <Button type="submit" disabled={loading} className="flex-[2] rounded-lg h-9 text-xs shadow-md shadow-primary/20 font-bold">
+            {loading ? "Processing..." : currentEmployee ? "Update Record" : "Create Record"}
           </Button>
         </div>
       </form>
@@ -347,15 +347,15 @@ export default function EmployeeForm({ employee, onSuccess, onCancel, isOpen, on
   if (isOpen !== undefined) {
     return (
       <Dialog open={isOpen} onOpenChange={(open) => !open && onClose?.()}>
-        <DialogContent className="max-w-4xl rounded-3xl border border-border bg-card shadow-2xl p-0 overflow-hidden gap-0 w-[95vw]">
-          <DialogHeader className="p-6 pb-4 bg-muted/10 border-b border-border/50">
-            <DialogTitle className="flex items-center gap-3 text-2xl font-bold">
-              <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary inline-flex items-center justify-center">
-                {currentEmployee ? <Save className="h-5 w-5" /> : <UserPlus className="h-5 w-5" />}
+        <DialogContent className="max-w-3xl rounded-2xl border border-border bg-card shadow-2xl p-0 overflow-hidden gap-0 w-[95vw]">
+          <DialogHeader className="p-4 pb-3 bg-muted/10 border-b border-border/50">
+            <DialogTitle className="flex items-center gap-2 text-lg font-bold">
+              <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary inline-flex items-center justify-center">
+                {currentEmployee ? <Save className="h-4 w-4" /> : <UserPlus className="h-4 w-4" />}
               </div>
               {currentEmployee ? "Edit Employee Profile" : "Onboard New Employee"}
             </DialogTitle>
-            <DialogDescription className="text-sm">
+            <DialogDescription className="text-xs">
               {currentEmployee ? "Update the employee's details and configuration below." : "Fill out the form below to create a comprehensive employee record."}
             </DialogDescription>
           </DialogHeader>

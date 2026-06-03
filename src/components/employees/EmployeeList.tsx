@@ -91,28 +91,28 @@ export default function EmployeeList({ onAddEmployee, onEditEmployee }: Employee
   if (error) { return (<Card className="border border-border bg-card"><CardContent className="p-6 text-center"><p className="text-destructive">Error loading employees</p></CardContent></Card>); }
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <Card className="rounded-3xl border border-border bg-card shadow-sm overflow-hidden relative">
+    <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <Card className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden relative">
         {/* Subtle decorative background */}
         <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -z-10 pointer-events-none translate-x-1/2 -translate-y-1/2" />
         
-        <CardHeader className="pb-4 pt-6 border-b border-border/40 bg-muted/10">
-          <CardTitle className="flex items-center justify-between gap-4 flex-wrap relative z-10">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shadow-sm border border-primary/20">
-                <User className="h-6 w-6" />
+        <CardHeader className="pb-3 pt-4 border-b border-border/40 bg-muted/10">
+          <CardTitle className="flex items-center justify-between gap-3 flex-wrap relative z-10">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center shadow-sm border border-primary/20">
+                <User className="h-4 w-4" />
               </div>
               <div>
-                <p className="text-xl font-bold text-foreground">Team Directory</p>
-                <p className="text-sm font-medium text-muted-foreground">Manage your workforce profiles and schedules</p>
+                <p className="text-base font-bold text-foreground">Team Directory</p>
+                <p className="text-[10px] font-medium text-muted-foreground">Manage your workforce profiles and schedules</p>
               </div>
             </div>
 
             {userProfile?.is_admin && (
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
                 {onAddEmployee && (
-                  <Button onClick={onAddEmployee} className="rounded-xl h-11 px-5 shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 transition-all font-semibold">
-                    <Plus className="h-5 w-5 mr-2" />
+                  <Button onClick={onAddEmployee} className="rounded-lg h-8 px-3 text-xs shadow-sm hover:shadow-md transition-all font-semibold">
+                    <Plus className="h-3.5 w-3.5 mr-1.5" />
                     Onboard Employee
                   </Button>
                 )}
@@ -120,47 +120,47 @@ export default function EmployeeList({ onAddEmployee, onEditEmployee }: Employee
             )}
           </CardTitle>
         </CardHeader>
-        <CardContent className="pt-6 relative z-10">
-          <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 mb-5">
-            <div className="rounded-xl border border-border/50 bg-background/50 p-4 shadow-sm">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Team Size</p>
-              <div className="flex items-end gap-1.5 mt-1.5">
-                <p className="text-2xl font-extrabold text-foreground">{totalCount}</p>
-                <p className="text-xs text-muted-foreground mb-1 font-medium">members</p>
+        <CardContent className="pt-4 relative z-10">
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 mb-4">
+            <div className="rounded-lg border border-border/50 bg-background/50 p-2.5 shadow-sm flex flex-col justify-center">
+              <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Team Size</p>
+              <div className="flex items-end gap-1 mt-1">
+                <p className="text-lg font-extrabold text-foreground leading-none">{totalCount}</p>
+                <p className="text-[10px] text-muted-foreground font-medium leading-tight">members</p>
               </div>
             </div>
-            <div className="rounded-xl border border-border/50 bg-background/50 p-4 shadow-sm">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Status Split</p>
-              <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 mt-1.5">
-                <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-green-500" /><span className="text-xs font-bold">{summary.active} Active</span></div>
-                <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-muted-foreground/50" /><span className="text-xs font-bold text-muted-foreground">{summary.inactive} Inactive</span></div>
+            <div className="rounded-lg border border-border/50 bg-background/50 p-2.5 shadow-sm flex flex-col justify-center">
+              <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Status Split</p>
+              <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mt-1">
+                <div className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-green-500" /><span className="text-[10px] font-bold leading-tight">{summary.active} Active</span></div>
+                <div className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/50" /><span className="text-[10px] font-bold text-muted-foreground leading-tight">{summary.inactive} Inactive</span></div>
               </div>
             </div>
-            <div className="col-span-2 lg:col-span-1 rounded-xl border border-border/50 bg-background/50 p-4 shadow-sm">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Visible Payroll</p>
-              <p className="text-xl font-extrabold text-primary mt-1.5 tracking-tight">{formatCurrency(summary.payroll)}</p>
+            <div className="col-span-2 lg:col-span-1 rounded-lg border border-border/50 bg-background/50 p-2.5 shadow-sm flex flex-col justify-center">
+              <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Visible Payroll</p>
+              <p className="text-lg font-extrabold text-primary mt-1 tracking-tight leading-none">{formatCurrency(summary.payroll)}</p>
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="search" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground ml-1">Search Directory</Label>
+          <div className="space-y-1.5">
+            <Label htmlFor="search" className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground ml-1">Search Directory</Label>
             <div className="relative group">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4 group-focus-within:text-primary transition-colors" />
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground h-3.5 w-3.5 group-focus-within:text-primary transition-colors" />
               <Input
                 id="search"
                 placeholder="Find someone by name..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9 pr-9 rounded-xl h-10 bg-muted/10 border-border/50 focus:bg-background focus:ring-primary/20 shadow-sm text-sm"
+                className="pl-8 pr-8 rounded-lg h-8 bg-muted/10 border-border/50 focus:bg-background focus:ring-primary/20 shadow-sm text-xs"
               />
               {searchTerm && (
                 <button
                   type="button"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 h-8 w-8 inline-flex items-center justify-center rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 h-6 w-6 inline-flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
                   onClick={() => setSearchTerm("")}
                   aria-label="Clear search"
                 >
-                  <X className="h-4 w-4" />
+                  <X className="h-3.5 w-3.5" />
                 </button>
               )}
             </div>
@@ -172,90 +172,90 @@ export default function EmployeeList({ onAddEmployee, onEditEmployee }: Employee
         <EmployeeImportExport onImportComplete={() => refetch()} employees={employees} />
       )}
 
-      <Card className="rounded-3xl border border-border bg-card shadow-sm overflow-hidden">
+      <Card className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden">
         <CardContent className="p-0">
           {employees.length === 0 ? (
-            <div className="p-12 text-center bg-muted/5 flex flex-col items-center justify-center">
-              <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                <Search className="h-8 w-8 text-primary/60" />
+            <div className="p-8 text-center bg-muted/5 flex flex-col items-center justify-center">
+              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-3">
+                <Search className="h-5 w-5 text-primary/60" />
               </div>
-              <p className="text-xl font-bold text-foreground">No matching employees</p>
-              <p className="text-sm text-muted-foreground mt-2 max-w-sm mx-auto">
+              <p className="text-base font-bold text-foreground">No matching employees</p>
+              <p className="text-[10px] text-muted-foreground mt-1.5 max-w-sm mx-auto">
                 {searchTerm ? "We couldn't find anyone matching that name. Try adjusting your search." : "Your directory is empty. Onboard your first team member to get started."}
               </p>
               {userProfile?.is_admin && onAddEmployee && !searchTerm && (
-                <Button onClick={onAddEmployee} className="mt-6 rounded-xl h-11 px-6 shadow-sm">
-                  <Plus className="h-5 w-5 mr-2" />
+                <Button onClick={onAddEmployee} className="mt-4 rounded-lg h-9 px-4 text-xs shadow-sm">
+                  <Plus className="h-3.5 w-3.5 mr-1.5" />
                   Onboard First Employee
                 </Button>
               )}
             </div>
           ) : (
           <div className="overflow-x-auto w-full -mx-4 px-4 sm:mx-0 sm:px-0">
-            <Table className="min-w-[600px]">
+            <Table className="min-w-[500px]">
               <TableHeader className="bg-muted/30 border-b border-border/50">
-                <TableRow className="hover:bg-transparent">
-                  <TableHead className="w-[50px] pl-4 sm:pl-6 py-2.5 font-semibold text-xs">Avatar</TableHead>
-                  <TableHead className="font-semibold py-2.5 text-xs">Employee Details</TableHead>
-                  <TableHead className="font-semibold py-2.5 text-xs">Role</TableHead>
-                  <TableHead className="font-semibold py-2.5 text-xs">Schedule</TableHead>
-                  {userProfile?.is_admin && <TableHead className="font-semibold py-2.5 text-xs">Wage Rate</TableHead>}
-                  <TableHead className="font-semibold py-2.5 text-xs">Status</TableHead>
-                  <TableHead className="text-right pr-4 sm:pr-6 py-2.5 font-semibold text-xs">Actions</TableHead>
+                <TableRow className="hover:bg-transparent h-8">
+                  <TableHead className="w-[40px] pl-3 py-1 font-semibold text-[10px] uppercase tracking-wider">Avatar</TableHead>
+                  <TableHead className="font-semibold py-1 text-[10px] uppercase tracking-wider">Employee</TableHead>
+                  <TableHead className="font-semibold py-1 text-[10px] uppercase tracking-wider">Role</TableHead>
+                  <TableHead className="font-semibold py-1 text-[10px] uppercase tracking-wider">Schedule</TableHead>
+                  {userProfile?.is_admin && <TableHead className="font-semibold py-1 text-[10px] uppercase tracking-wider">Wage Rate</TableHead>}
+                  <TableHead className="font-semibold py-1 text-[10px] uppercase tracking-wider">Status</TableHead>
+                  <TableHead className="text-right pr-3 py-1 font-semibold text-[10px] uppercase tracking-wider">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {employees.map((employee) => (
-                  <TableRow key={employee.id} className="hover:bg-muted/10 transition-colors border-b border-border/30 group">
-                    <TableCell className="pl-4 sm:pl-6 py-2">
-                      <Avatar className="h-8 w-8 border-2 border-background shadow-sm group-hover:border-primary/20 transition-colors">
-                        <AvatarFallback className="font-bold bg-primary/10 text-primary text-xs">
+                  <TableRow key={employee.id} className="hover:bg-muted/10 transition-colors border-b border-border/30 group h-10">
+                    <TableCell className="pl-3 py-1">
+                      <Avatar className="h-6 w-6 border border-background shadow-sm group-hover:border-primary/20 transition-colors">
+                        <AvatarFallback className="font-bold bg-primary/10 text-primary text-[10px]">
                           {employee.name.charAt(0).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
                     </TableCell>
-                    <TableCell className="py-2">
+                    <TableCell className="py-1">
                       <div className="flex flex-col">
-                        <span className="font-semibold text-foreground cursor-pointer text-sm hover:text-primary transition-colors" onClick={() => navigate(`/employees/${employee.id}`)}>
+                        <span className="font-semibold text-foreground cursor-pointer text-xs hover:text-primary transition-colors leading-tight" onClick={() => navigate(`/employees/${employee.id}`)}>
                           {employee.name}
                         </span>
-                        {employee.email && <span className="text-[10px] text-muted-foreground">{employee.email}</span>}
+                        {employee.email && <span className="text-[9px] text-muted-foreground leading-tight">{employee.email}</span>}
                       </div>
                     </TableCell>
-                    <TableCell className="py-2">
-                      <Badge variant="outline" className="font-medium bg-background shadow-sm text-[10px] px-1.5 py-0">{employee.rank}</Badge>
+                    <TableCell className="py-1">
+                      <Badge variant="outline" className="font-medium bg-background shadow-sm text-[9px] px-1 py-0">{employee.rank}</Badge>
                     </TableCell>
-                    <TableCell className="py-2">
+                    <TableCell className="py-1">
                       <div className="flex flex-col gap-0.5 items-start">
                         {employee.salary_divisor === 26 ? (
-                          <Badge variant="secondary" className="text-[9px] px-1 py-0 bg-blue-500/10 text-blue-600 hover:bg-blue-500/20"><Calendar className="h-2.5 w-2.5 mr-0.5"/> 6 Days / Week</Badge>
+                          <Badge variant="secondary" className="text-[9px] px-1 py-0 bg-blue-500/10 text-blue-600 hover:bg-blue-500/20"><Calendar className="h-2 w-2 mr-0.5"/> 6 Days</Badge>
                         ) : employee.salary_divisor === 22 ? (
-                          <Badge variant="secondary" className="text-[9px] px-1 py-0 bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20"><Calendar className="h-2.5 w-2.5 mr-0.5"/> 5 Days / Week</Badge>
+                          <Badge variant="secondary" className="text-[9px] px-1 py-0 bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20"><Calendar className="h-2 w-2 mr-0.5"/> 5 Days</Badge>
                         ) : (
-                          <Badge variant="outline" className="text-[9px] px-1 py-0 text-muted-foreground"><Calendar className="h-2.5 w-2.5 mr-0.5"/> Default</Badge>
+                          <Badge variant="outline" className="text-[9px] px-1 py-0 text-muted-foreground"><Calendar className="h-2 w-2 mr-0.5"/> Default</Badge>
                         )}
                         {employee.weekend_saturday !== null && (
                           <span className="text-[9px] text-muted-foreground italic flex items-center mt-0.5">
-                            {employee.weekend_saturday ? "Saturday OFF" : "Saturday ON"}
+                            {employee.weekend_saturday ? "Sat OFF" : "Sat ON"}
                           </span>
                         )}
                       </div>
                     </TableCell>
                     {userProfile?.is_admin && (
-                      <TableCell className="py-2 font-bold text-foreground text-xs">
+                      <TableCell className="py-1 font-bold text-foreground text-[10px]">
                         {formatCurrency(employee.wage_rate)}
                       </TableCell>
                     )}
-                    <TableCell className="py-2">
-                      <Badge variant={employee.status === 'active' ? 'default' : 'secondary'} className="capitalize shadow-sm font-semibold text-[10px] px-1.5 py-0">
+                    <TableCell className="py-1">
+                      <Badge variant={employee.status === 'active' ? 'default' : 'secondary'} className="capitalize shadow-sm font-semibold text-[9px] px-1 py-0">
                         {employee.status}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-right pr-4 sm:pr-6 py-2">
+                    <TableCell className="text-right pr-3 py-1">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-7 w-7 p-0 rounded-lg hover:bg-primary/10 hover:text-primary transition-colors">
-                            <MoreHorizontal className="h-4 w-4" />
+                          <Button variant="ghost" className="h-6 w-6 p-0 rounded-md hover:bg-primary/10 hover:text-primary transition-colors">
+                            <MoreHorizontal className="h-3.5 w-3.5" />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-40 rounded-xl shadow-xl">
