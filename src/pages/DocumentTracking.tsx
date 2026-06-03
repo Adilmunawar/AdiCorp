@@ -12,10 +12,12 @@ import { Input } from "@/components/ui/input";
 import { useState, useRef } from "react";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function DocumentTracking() {
   const { userProfile } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
+  const [filterStatus, setFilterStatus] = useState("all");
   const [uploading, setUploading] = useState(false);
   const [uploadTarget, setUploadTarget] = useState<{ employeeId: string, type: string } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -92,10 +94,11 @@ export default function DocumentTracking() {
           employee_id: uploadTarget.employeeId,
           company_id: userProfile.company_id,
           document_type: uploadTarget.type,
+          document_name: file.name,
           file_name: file.name,
           file_path: filePath,
-          content_type: file.type || 'application/octet-stream',
-          size_bytes: file.size,
+          mime_type: file.type || 'application/octet-stream',
+          file_size: file.size,
           uploaded_by: userProfile?.id
         });
 
@@ -126,13 +129,22 @@ export default function DocumentTracking() {
   const employees = employeesData || [];
   const documents = documentsData || [];
 
-  const filteredEmployees = employees.filter(emp => 
-    emp.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
   const getDocForEmployee = (empId: string, type: string) => {
     return documents.find(d => d.employee_id === empId && d.document_type === type);
   };
+
+  const filteredEmployees = employees.filter(emp => {
+    const matchesSearch = emp.name.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    if (filterStatus === "all") return matchesSearch;
+    
+    const missingDocs = (!getDocForEmployee(emp.id, 'id_copy')) || (!getDocForEmployee(emp.id, 'certificate')) || (!getDocForEmployee(emp.id, 'contract'));
+    
+    if (filterStatus === "complete") return matchesSearch && !missingDocs;
+    if (filterStatus === "missing") return matchesSearch && missingDocs;
+    
+    return matchesSearch;
+  });
 
   const getMissingCount = () => {
     let count = 0;
@@ -185,14 +197,26 @@ export default function DocumentTracking() {
               <CardTitle className="text-lg">Compliance Matrix</CardTitle>
               <p className="text-xs text-muted-foreground mt-0.5">Track required documents across all employees.</p>
             </div>
-            <div className="relative max-w-sm w-full">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground h-3.5 w-3.5" />
-              <Input
-                placeholder="Search employees..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-8 rounded-lg h-8 text-xs bg-background border-border/50"
-              />
+            <div className="flex items-center gap-2 max-w-sm w-full">
+              <div className="relative flex-1">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground h-3.5 w-3.5" />
+                <Input
+                  placeholder="Search employees..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-8 rounded-lg h-8 text-xs bg-background border-border/50"
+                />
+              </div>
+              <Select value={filterStatus} onValueChange={setFilterStatus}>
+                <SelectTrigger className="h-8 text-xs w-[130px] rounded-lg">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="complete">Complete</SelectItem>
+                  <SelectItem value="missing">Missing</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </CardHeader>
           <CardContent className="p-0">
@@ -215,7 +239,7 @@ export default function DocumentTracking() {
                     const renderDocStatus = (doc: any, label: string, type: string) => {
                       if (doc) {
                         return (
-                          <div className="flex flex-col items-center gap-1.5">
+                          <div className="flex flex-row items-center justify-center gap-2">
                             <Badge variant="outline" className="text-[10px] bg-green-500/10 text-green-700 border-green-500/20 gap-1 pl-1 pr-1.5 py-0 h-5">
                               <CheckCircle2 className="h-2.5 w-2.5" /> Uploaded
                             </Badge>
@@ -234,8 +258,8 @@ export default function DocumentTracking() {
                       const isThisUploading = uploading && uploadTarget?.employeeId === emp.id && uploadTarget?.type === type;
                       
                       return (
-                        <div className="flex flex-col items-center group/upload cursor-pointer" onClick={() => !isThisUploading && handleUploadClick(emp.id, type)}>
-                          <Badge variant="outline" className="text-[10px] bg-destructive/10 text-destructive border-destructive/20 gap-1 pl-1 pr-1.5 py-0 h-5 mb-1 transition-transform group-hover/upload:scale-105">
+                        <div className="flex flex-row items-center justify-center gap-2 group/upload cursor-pointer" onClick={() => !isThisUploading && handleUploadClick(emp.id, type)}>
+                          <Badge variant="outline" className="text-[10px] bg-destructive/10 text-destructive border-destructive/20 gap-1 pl-1 pr-1.5 py-0 h-5 transition-transform group-hover/upload:scale-105">
                             <XCircle className="h-2.5 w-2.5" /> Missing
                           </Badge>
                           <div className="h-6 flex items-center justify-center">
