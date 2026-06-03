@@ -140,67 +140,80 @@ export default function AttendanceTable() {
   }
   
   return (
-    <div className="space-y-6">
-      <Card className="border border-border bg-card shadow-sm">
-        <CardHeader className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+    <div className="space-y-4">
+      <Card className="border border-border bg-card shadow-sm rounded-2xl overflow-hidden">
+        <CardHeader className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between py-3 px-4 bg-muted/5 border-b border-border/50">
           <div>
-            <CardTitle className="text-foreground">Daily Attendance Tracker</CardTitle>
-            <p className="text-sm text-muted-foreground mt-1">Mark, review, and save attendance with clear daily status visibility.</p>
+            <CardTitle className="text-base text-foreground font-bold">Daily Attendance Tracker</CardTitle>
+            <p className="text-[10px] text-muted-foreground mt-0.5">Mark, review, and save attendance with clear daily status visibility.</p>
           </div>
-          <Button onClick={saveAttendance} disabled={saving}>
-            {saving ? (<><Loader2 className="h-4 w-4 mr-2 animate-spin" />Saving...</>) : (<><Save className="h-4 w-4 mr-2" />Save Attendance</>)}
+          <Button onClick={saveAttendance} disabled={saving} className="h-8 text-xs rounded-lg shadow-sm font-semibold">
+            {saving ? (<><Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />Saving...</>) : (<><Save className="h-3.5 w-3.5 mr-1.5" />Save Attendance</>)}
           </Button>
         </CardHeader>
       </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-      <AttendanceDatePanel date={date} onDateChange={handleDateChange} />
-      <AttendanceSummaryPanel date={date} summary={summary} totalEmployees={employees.length} />
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+        <AttendanceDatePanel date={date} onDateChange={handleDateChange} />
+        <AttendanceSummaryPanel date={date} summary={summary} totalEmployees={employees.length} />
       </div>
 
-      <Card className="border border-border bg-card shadow-sm">
-        <CardHeader className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+      <Card className="border border-border bg-card shadow-sm rounded-2xl overflow-hidden">
+        <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 py-3 px-4 bg-muted/5 border-b border-border/50">
           <div>
-            <CardTitle className="text-foreground">Employee Attendance Matrix</CardTitle>
-            <p className="mt-1 text-sm text-muted-foreground">Use quick actions to mark everyone, then adjust individual records if needed.</p>
+            <CardTitle className="text-sm font-bold text-foreground">Employee Attendance Matrix</CardTitle>
+            <p className="mt-0.5 text-[10px] text-muted-foreground">Use quick actions to mark everyone, then adjust individual records if needed.</p>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-xs uppercase tracking-[0.08em] text-muted-foreground">Apply to all</span>
-            <Button size="sm" onClick={() => applyStatusToAll("present")}>Present</Button>
-            <Button size="sm" variant="secondary" onClick={() => applyStatusToAll("short_leave")}>Short Leave</Button>
-            <Button size="sm" variant="destructive" onClick={() => applyStatusToAll("leave")}>Leave</Button>
-            <Button size="sm" variant="outline" onClick={() => applyStatusToAll("not_set")}>Reset</Button>
+          <div className="flex flex-wrap items-center gap-1.5 bg-background p-1 rounded-xl border border-border/50 shadow-sm">
+            <span className="text-[9px] uppercase font-bold text-muted-foreground px-2">Apply to all</span>
+            <div className="h-4 w-[1px] bg-border/50 mx-0.5"></div>
+            <Button size="sm" variant="ghost" className="h-6 text-[10px] rounded-md px-2 hover:bg-green-500/10 hover:text-green-600" onClick={() => applyStatusToAll("present")}>Present</Button>
+            <Button size="sm" variant="ghost" className="h-6 text-[10px] rounded-md px-2 hover:bg-amber-500/10 hover:text-amber-600" onClick={() => applyStatusToAll("short_leave")}>Short Leave</Button>
+            <Button size="sm" variant="ghost" className="h-6 text-[10px] rounded-md px-2 hover:bg-red-500/10 hover:text-red-600" onClick={() => applyStatusToAll("leave")}>Leave</Button>
+            <Button size="sm" variant="ghost" className="h-6 text-[10px] rounded-md px-2 hover:bg-slate-500/10" onClick={() => applyStatusToAll("not_set")}>Reset</Button>
           </div>
         </CardHeader>
-        <CardContent>
-          <div className="overflow-hidden rounded-xl border border-border bg-background">
-            <Table>
-              <TableHeader className="bg-muted/40">
-                <TableRow className="border-border hover:bg-transparent">
-                  <TableHead>Employee</TableHead><TableHead>Position</TableHead><TableHead>Status</TableHead><TableHead>Date</TableHead>
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <Table className="min-w-[500px]">
+              <TableHeader className="bg-muted/30">
+                <TableRow className="border-border/50 hover:bg-transparent h-8">
+                  <TableHead className="py-1 pl-4 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Employee</TableHead>
+                  <TableHead className="py-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Position</TableHead>
+                  <TableHead className="py-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Status</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {attendanceData.map((record) => (
-                  <TableRow key={record.employeeId} className="border-border hover:bg-muted/30 transition-colors">
-                    <TableCell className="font-medium">{record.employeeName}</TableCell>
-                    <TableCell>{employeeRankMap.get(record.employeeId) || 'N/A'}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                      <Select value={record.status} onValueChange={(value) => handleStatusChange(record.employeeId, value as AttendanceStatusValue)}>
-                        <SelectTrigger className="w-[170px] bg-background border-border">
-                          <SelectValue placeholder="Select status" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {ATTENDANCE_STATUS_OPTIONS.map((option) => (
-                            <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      {getStatusBadge(record.status)}
+                  <TableRow key={record.employeeId} className="border-border/30 hover:bg-muted/10 transition-colors h-10">
+                    <TableCell className="pl-4 py-1">
+                      <p className="font-semibold text-xs text-foreground leading-tight">{record.employeeName}</p>
+                    </TableCell>
+                    <TableCell className="py-1">
+                      <Badge variant="outline" className="text-[9px] bg-background shadow-sm px-1.5 py-0 h-4">{employeeRankMap.get(record.employeeId) || 'N/A'}</Badge>
+                    </TableCell>
+                    <TableCell className="py-1">
+                      <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-0.5 border border-border/60 rounded-lg p-0.5 bg-muted/10 shadow-sm w-fit">
+                          <button 
+                            onClick={() => handleStatusChange(record.employeeId, 'present')} 
+                            className={`px-2.5 py-1 text-[10px] font-bold rounded-md transition-all ${record.status === 'present' ? 'bg-green-500 text-white shadow-sm' : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'}`}
+                          >Present</button>
+                          <button 
+                            onClick={() => handleStatusChange(record.employeeId, 'short_leave')} 
+                            className={`px-2.5 py-1 text-[10px] font-bold rounded-md transition-all ${record.status === 'short_leave' ? 'bg-amber-500 text-white shadow-sm' : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'}`}
+                          >Short</button>
+                          <button 
+                            onClick={() => handleStatusChange(record.employeeId, 'leave')} 
+                            className={`px-2.5 py-1 text-[10px] font-bold rounded-md transition-all ${record.status === 'leave' ? 'bg-red-500 text-white shadow-sm' : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'}`}
+                          >Leave</button>
+                          <button 
+                            onClick={() => handleStatusChange(record.employeeId, 'not_set')} 
+                            className={`px-2.5 py-1 text-[10px] font-bold rounded-md transition-all ${record.status === 'not_set' ? 'bg-slate-500 text-white shadow-sm' : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'}`}
+                          >Unset</button>
+                        </div>
                       </div>
                     </TableCell>
-                    <TableCell>{date.toLocaleDateString()}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

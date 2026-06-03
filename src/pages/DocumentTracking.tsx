@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import DashboardLayout from "@/components/layout/Dashboard";
@@ -6,16 +6,20 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { FileText, Download, AlertCircle, CheckCircle2, XCircle, Search } from "lucide-react";
+import { FileText, Download, AlertCircle, CheckCircle2, XCircle, Search, Upload, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 export default function DocumentTracking() {
   const { userProfile } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const [uploadTarget, setUploadTarget] = useState<{ employeeId: string, type: string } | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const queryClient = useQueryClient();
 
   const { data: employeesData, isLoading: employeesLoading } = useQuery({
     queryKey: ['doc-tracking-employees', userProfile?.company_id],
@@ -59,6 +63,55 @@ export default function DocumentTracking() {
     }
   };
 
+  const handleUploadClick = (employeeId: string, type: string) => {
+    setUploadTarget({ employeeId, type });
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !uploadTarget || !userProfile?.company_id) return;
+    
+    setUploading(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${uploadTarget.employeeId}-${uploadTarget.type}-${Date.now()}.${fileExt}`;
+      const filePath = `${userProfile.company_id}/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('employee-documents')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { error: dbError } = await supabase
+        .from('employee_documents')
+        .insert({
+          employee_id: uploadTarget.employeeId,
+          company_id: userProfile.company_id,
+          document_type: uploadTarget.type,
+          file_name: file.name,
+          file_path: filePath,
+          content_type: file.type || 'application/octet-stream',
+          size_bytes: file.size,
+          uploaded_by: userProfile?.id
+        });
+
+      if (dbError) throw dbError;
+
+      toast.success("Document uploaded successfully");
+      queryClient.invalidateQueries({ queryKey: ['doc-tracking-documents'] });
+    } catch (error: any) {
+      toast.error(`Upload failed: ${error.message}`);
+    } finally {
+      setUploading(false);
+      setUploadTarget(null);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
   if (employeesLoading || documentsLoading) {
     return (
       <DashboardLayout title="Document Tracking">
@@ -95,6 +148,7 @@ export default function DocumentTracking() {
 
   return (
     <DashboardLayout title="Document Tracking">
+      <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileChange} accept=".pdf,.png,.jpg,.jpeg,.doc,.docx" />
       <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
         
         {/* Header Stats */}
@@ -158,7 +212,7 @@ export default function DocumentTracking() {
                     const degreeDoc = getDocForEmployee(emp.id, 'certificate');
                     const contractDoc = getDocForEmployee(emp.id, 'contract');
 
-                    const renderDocStatus = (doc: any, label: string) => {
+                    const renderDocStatus = (doc: any, label: string, type: string) => {
                       if (doc) {
                         return (
                           <div className="flex flex-col items-center gap-1.5">
@@ -176,11 +230,23 @@ export default function DocumentTracking() {
                           </div>
                         );
                       }
+                      
+                      const isThisUploading = uploading && uploadTarget?.employeeId === emp.id && uploadTarget?.type === type;
+                      
                       return (
-                        <div className="flex flex-col items-center">
-                          <Badge variant="outline" className="text-[10px] bg-destructive/10 text-destructive border-destructive/20 gap-1 pl-1 pr-1.5 py-0 h-5">
+                        <div className="flex flex-col items-center group/upload cursor-pointer" onClick={() => !isThisUploading && handleUploadClick(emp.id, type)}>
+                          <Badge variant="outline" className="text-[10px] bg-destructive/10 text-destructive border-destructive/20 gap-1 pl-1 pr-1.5 py-0 h-5 mb-1 transition-transform group-hover/upload:scale-105">
                             <XCircle className="h-2.5 w-2.5" /> Missing
                           </Badge>
+                          <div className="h-6 flex items-center justify-center">
+                            {isThisUploading ? (
+                              <Loader2 className="h-3.5 w-3.5 text-primary animate-spin" />
+                            ) : (
+                              <span className="text-[10px] font-medium text-primary opacity-0 group-hover/upload:opacity-100 transition-opacity flex items-center bg-primary/5 px-2 py-0.5 rounded-full">
+                                <Upload className="h-2.5 w-2.5 mr-1" /> Upload
+                              </span>
+                            )}
+                          </div>
                         </div>
                       );
                     };
@@ -201,13 +267,13 @@ export default function DocumentTracking() {
                           </div>
                         </TableCell>
                         <TableCell className="py-2 align-middle">
-                          <div className="flex justify-center">{renderDocStatus(cnicDoc, 'CNIC')}</div>
+                          <div className="flex justify-center">{renderDocStatus(cnicDoc, 'CNIC', 'id_copy')}</div>
                         </TableCell>
                         <TableCell className="py-2 align-middle">
-                          <div className="flex justify-center">{renderDocStatus(degreeDoc, 'Degree')}</div>
+                          <div className="flex justify-center">{renderDocStatus(degreeDoc, 'Degree', 'certificate')}</div>
                         </TableCell>
                         <TableCell className="py-2 align-middle">
-                          <div className="flex justify-center">{renderDocStatus(contractDoc, 'Contract')}</div>
+                          <div className="flex justify-center">{renderDocStatus(contractDoc, 'Contract', 'contract')}</div>
                         </TableCell>
                       </TableRow>
                     );

@@ -57,6 +57,19 @@ export default function EmployeeList({ onAddEmployee, onEditEmployee }: Employee
     enabled: !!userProfile?.company_id,
     placeholderData: keepPreviousData,
   });
+  const { data: totalPayroll = 0 } = useQuery({
+    queryKey: ['total-payroll', userProfile?.company_id],
+    queryFn: async () => {
+      if (!userProfile?.company_id) return 0;
+      const { data, error } = await supabase
+        .from('employees')
+        .select('wage_rate')
+        .eq('company_id', userProfile.company_id);
+      if (error) return 0;
+      return data.reduce((sum, emp) => sum + Number(emp.wage_rate || 0), 0);
+    },
+    enabled: !!userProfile?.company_id
+  });
 
   const employees = employeeData?.rows || [];
   const totalCount = employeeData?.count || 0;
@@ -138,8 +151,8 @@ export default function EmployeeList({ onAddEmployee, onEditEmployee }: Employee
               </div>
             </div>
             <div className="col-span-2 lg:col-span-1 rounded-lg border border-border/50 bg-background/50 p-2.5 shadow-sm flex flex-col justify-center">
-              <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Visible Payroll</p>
-              <p className="text-lg font-extrabold text-primary mt-1 tracking-tight leading-none">{formatCurrency(summary.payroll)}</p>
+              <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Total Payroll</p>
+              <p className="text-lg font-extrabold text-primary mt-1 tracking-tight leading-none">{formatCurrency(totalPayroll)}</p>
             </div>
           </div>
 

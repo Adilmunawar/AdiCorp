@@ -11,6 +11,8 @@ import { useBiometric } from "@/hooks/useBiometric";
 import { Loader2 } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 const navItems = [
   { name: "Dashboard", icon: Home, path: "/dashboard", group: "main" },
@@ -50,6 +52,32 @@ export default function Sidebar({ collapsed, mobileOpen, onToggleCollapse }: Sid
 
   const groups = Object.keys(groupLabels);
 
+  const { data: missingDocsCount } = useQuery({
+    queryKey: ['sidebar-missing-docs', user?.id],
+    queryFn: async () => {
+      const { data: profile } = await supabase.from('profiles').select('company_id').eq('id', user?.id).single();
+      if (!profile?.company_id) return 0;
+      
+      const { data: employees } = await supabase.from('employees').select('id').eq('company_id', profile.company_id);
+      if (!employees || employees.length === 0) return 0;
+      
+      const { data: documents } = await supabase.from('employee_documents').select('employee_id, document_type').eq('company_id', profile.company_id);
+      
+      let count = 0;
+      employees.forEach(emp => {
+        const hasId = documents?.some(d => d.employee_id === emp.id && d.document_type === 'id_copy');
+        const hasCert = documents?.some(d => d.employee_id === emp.id && d.document_type === 'certificate');
+        const hasContract = documents?.some(d => d.employee_id === emp.id && d.document_type === 'contract');
+        
+        if (!hasId) count++;
+        if (!hasCert) count++;
+        if (!hasContract) count++;
+      });
+      return count;
+    },
+    enabled: !!user,
+  });
+
   const NavItem = ({ item }: { item: typeof navItems[0] }) => {
     const isActive = item.path === "/dashboard"
       ? location.pathname === item.path
@@ -71,7 +99,12 @@ export default function Sidebar({ collapsed, mobileOpen, onToggleCollapse }: Sid
           !isActive && "group-hover:text-primary"
         )} />
         {!compact && (
-          <span className="text-[11px] font-semibold tracking-tight truncate">{item.name}</span>
+          <span className="text-[11px] font-semibold tracking-tight truncate flex-grow">{item.name}</span>
+        )}
+        {!compact && item.name === "Documents" && (missingDocsCount ?? 0) > 0 && (
+          <span className="ml-auto bg-destructive text-destructive-foreground text-[9px] font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center shadow-sm">
+            {missingDocsCount}
+          </span>
         )}
       </Link>
     );
