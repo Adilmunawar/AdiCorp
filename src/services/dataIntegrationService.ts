@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { getWorkingDaysInMonth, getWorkingDatesInMonth, getDailyRateDivisor } from "@/utils/workingDays";
+import { calculateWorkingDaysInMonth, getEffectiveSalaryDivisor } from "@/utils/workingDays";
 import { format, startOfMonth, endOfMonth } from "date-fns";
 
 export interface EmployeeData {
@@ -148,11 +148,9 @@ class DataIntegrationService {
     if (cached) return cached;
 
     try {
-      const [employees, attendance, workingDays, dailyRateDivisor] = await Promise.all([
+      const [employees, attendance] = await Promise.all([
         this.getEmployees(companyId),
-        this.getAttendanceForMonth(companyId, month),
-        getWorkingDaysInMonth(month, companyId),
-        getDailyRateDivisor(companyId)
+        this.getAttendanceForMonth(companyId, month)
       ]);
 
       const calculations: SalaryCalculation[] = employees.map(employee => {
@@ -160,9 +158,17 @@ class DataIntegrationService {
         const presentDays = employeeAttendance.filter(a => a.status === 'present').length;
         const shortLeaveDays = employeeAttendance.filter(a => a.status === 'short_leave').length;
         const actualWorkingDays = presentDays + (shortLeaveDays * 0.5);
+        
+        // Per-employee divisor and expected working days
+        // @ts-ignore - working_days_per_week exists but maybe not typed in EmployeeData interface yet
+        const workingDaysPerWeek = employee.working_days_per_week || 6; 
+        // @ts-ignore
+        const effectiveDivisor = getEffectiveSalaryDivisor(employee.salary_divisor, workingDaysPerWeek);
+        const workingDays = calculateWorkingDaysInMonth(month, workingDaysPerWeek);
+        
         const absentDays = workingDays - actualWorkingDays;
 
-        const dailyRate = employee.wage_rate / dailyRateDivisor;
+        const dailyRate = employee.wage_rate / effectiveDivisor;
         const basicSalary = dailyRate * actualWorkingDays;
         const overtimeRate = dailyRate / 8 * 1.5; // 1.5x overtime rate per hour
         const totalOvertimeHours = 0; // No overtime data in current schema
@@ -205,16 +211,24 @@ class DataIntegrationService {
     if (cached) return cached;
 
     try {
-      const [employees, attendance, salaries, workingDays] = await Promise.all([
+      const [employees, attendance, salaries] = await Promise.all([
         this.getEmployees(companyId),
         this.getAttendanceForMonth(companyId, month),
-        this.calculateSalariesForMonth(companyId, month),
-        getWorkingDaysInMonth(month, companyId)
+        this.calculateSalariesForMonth(companyId, month)
       ]);
 
       const totalEmployees = employees.length;
+      
+      // Calculate dynamic average working days
+      const totalWorkingDays = employees.reduce((sum, emp) => {
+        // @ts-ignore
+        const wd = emp.working_days_per_week || 6;
+        return sum + calculateWorkingDaysInMonth(month, wd);
+      }, 0);
+      const avgWorkingDays = totalEmployees > 0 ? Math.round(totalWorkingDays / totalEmployees) : 26;
+
       const presentRecords = attendance.filter(a => a.status === 'present').length;
-      const totalPossibleAttendance = totalEmployees * workingDays;
+      const totalPossibleAttendance = totalWorkingDays;
       const averageAttendance = totalPossibleAttendance > 0 ? (presentRecords / totalPossibleAttendance) * 100 : 0;
       const totalSalaryExpense = salaries.reduce((sum, s) => sum + s.net_salary, 0);
       const totalOvertimeHours = salaries.reduce((sum, s) => sum + s.overtime_hours, 0);
@@ -224,7 +238,7 @@ class DataIntegrationService {
         averageAttendance: Math.round(averageAttendance * 100) / 100,
         totalSalaryExpense: Math.round(totalSalaryExpense * 100) / 100,
         totalOvertimeHours: Math.round(totalOvertimeHours * 100) / 100,
-        workingDays,
+        workingDays: avgWorkingDays,
         presentEmployees: new Set(attendance.filter(a => a.status === 'present').map(a => a.employee_id)).size,
         absentEmployees: totalEmployees - new Set(attendance.filter(a => a.status === 'present').map(a => a.employee_id)).size
       };

@@ -50,31 +50,50 @@ export default function PayslipHistory() {
   }
 
   return (
-    <Card className="border border-border bg-card shadow-sm">
-      <CardHeader className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <CardTitle className="flex items-center gap-2"><History className="h-5 w-5" />Payslip History <Badge variant="outline">{payslips?.length || 0}</Badge></CardTitle>
-        <MonthSelector selectedMonth={selectedMonth} onMonthChange={setSelectedMonth} />
+    <Card className="border border-border bg-card shadow-sm rounded-2xl overflow-hidden">
+      <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between py-4 px-5 bg-muted/5 border-b border-border/50">
+        <CardTitle className="text-base font-bold flex items-center gap-2 text-foreground">
+          <History className="h-4 w-4 text-primary" />
+          Payslip History
+          <Badge variant="outline" className="ml-1 rounded-md bg-background px-1.5 font-bold text-xs">
+            {payslips?.length || 0}
+          </Badge>
+        </CardTitle>
+        <div className="shrink-0 bg-background rounded-lg border border-border/50 p-1 shadow-sm">
+          <MonthSelector selectedMonth={selectedMonth} onMonthChange={setSelectedMonth} />
+        </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-5 md:p-6 bg-muted/5">
         <div className="space-y-3">
           {payslips?.map((ps: any) => (
-            <div key={ps.id} className="flex items-center justify-between p-4 rounded-xl bg-muted/30 border border-border/50 hover:bg-muted/50 transition-colors">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+            <div key={ps.id} className="flex items-center justify-between p-4 rounded-xl bg-card border border-border/50 shadow-sm hover:border-primary/30 hover:shadow-md transition-all duration-300 group">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 border border-primary/10 group-hover:bg-primary/20 transition-colors">
                   <FileText className="h-5 w-5 text-primary" />
                 </div>
-                <div>
-                  <p className="font-semibold text-foreground">{ps.employees?.name}</p>
-                  <p className="text-xs text-muted-foreground">{ps.employees?.rank} • {ps.present_days}P / {ps.short_leave_days}SL • {ps.days_worked} days worked</p>
+                <div className="flex flex-col gap-0.5">
+                  <p className="font-bold text-foreground text-sm">{ps.employees?.name}</p>
+                  <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">{ps.employees?.rank}</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5 font-medium">
+                    {ps.present_days}P / {ps.short_leave_days}SL <span className="mx-1.5 opacity-50">•</span> {ps.days_worked} days earned
+                  </p>
                 </div>
               </div>
-              <div className="text-right">
-                <p className="font-bold text-foreground">{formatAmount(Number(ps.net_salary))}</p>
-                <p className="text-xs text-muted-foreground">Gross: {formatAmount(Number(ps.gross_salary))}</p>
+              <div className="flex flex-col items-end gap-1">
+                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Net Payout</span>
+                <p className="font-black text-primary text-base">{formatAmount(Number(ps.net_salary))}</p>
               </div>
             </div>
           ))}
-          {(!payslips || payslips.length === 0) && <p className="text-center text-muted-foreground py-8">No payslips generated for this month</p>}
+          {(!payslips || payslips.length === 0) && (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mb-3">
+                <History className="h-8 w-8 text-muted-foreground/50" />
+              </div>
+              <p className="text-sm font-semibold text-foreground">No History Found</p>
+              <p className="text-xs text-muted-foreground mt-1">No payslips have been generated for {format(selectedMonth, "MMMM yyyy")}.</p>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

@@ -1,8 +1,6 @@
 
 import Dashboard from "@/components/layout/Dashboard";
-import CompanyWorkingSettings from "@/components/settings/CompanyWorkingSettings";
-import MonthlyWorkingDaysManager from "@/components/settings/MonthlyWorkingDaysManager";
-import WorkingDaysConfig from "@/components/settings/WorkingDaysConfig";
+
 import ShiftManagement from "@/components/settings/ShiftManagement";
 import WorkingTimePolicies from "@/components/settings/WorkingTimePolicies";
 import { useAuth } from "@/context/AuthContext";
@@ -38,12 +36,8 @@ export default function WorkingDaysPage() {
           </p>
         </div>
 
-        <Tabs defaultValue="basic" className="space-y-4">
-          <TabsList className="grid h-auto w-full grid-cols-2 gap-2 p-1 lg:grid-cols-4">
-            <TabsTrigger value="basic" className="px-3 py-2 text-xs sm:text-sm">
-              <Settings className="mr-2 h-4 w-4" />
-              Basic Setup
-            </TabsTrigger>
+        <Tabs defaultValue="shifts" className="space-y-4">
+          <TabsList className="grid h-auto w-full grid-cols-2 gap-2 p-1">
             <TabsTrigger value="shifts" className="px-3 py-2 text-xs sm:text-sm">
               <Clock className="mr-2 h-4 w-4" />
               Shift Management
@@ -52,19 +46,10 @@ export default function WorkingDaysPage() {
               <Shield className="mr-2 h-4 w-4" />
               Time Policies
             </TabsTrigger>
-            <TabsTrigger value="monthly" className="px-3 py-2 text-xs sm:text-sm">
-              <Calendar className="mr-2 h-4 w-4" />
-              Monthly Config
-            </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="basic" className="space-y-6">
-            <CompanyWorkingSettings />
-            <WorkingDaysConfig />
-          </TabsContent>
           <TabsContent value="shifts"><ShiftManagement /></TabsContent>
           <TabsContent value="policies"><WorkingTimePolicies /></TabsContent>
-          <TabsContent value="monthly"><MonthlyWorkingDaysManager /></TabsContent>
         </Tabs>
       </div>
     </Dashboard>

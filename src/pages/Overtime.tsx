@@ -35,11 +35,13 @@ export default function OvertimePage() {
           </div>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className={`grid mb-4 h-auto gap-1 ${isAdmin ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1'}`}>
-            <TabsTrigger value="records" className="gap-2"><Clock className="h-4 w-4" />Records</TabsTrigger>
-            {isAdmin && <TabsTrigger value="config" className="gap-2"><Settings2 className="h-4 w-4" />Configuration</TabsTrigger>}
-          </TabsList>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <div className="rounded-2xl border border-border bg-card shadow-sm p-2 overflow-x-auto hide-scrollbar">
+            <TabsList className="bg-transparent flex sm:grid sm:grid-cols-2 gap-2 h-auto min-w-max sm:min-w-0 p-0">
+              <TabsTrigger value="records" className="flex items-center justify-center gap-2 py-2.5 px-4 sm:px-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-sm text-muted-foreground hover:bg-muted/50 transition-all duration-200 rounded-xl text-xs font-bold uppercase tracking-wider"><Clock className="h-4 w-4" />Records</TabsTrigger>
+              {isAdmin && <TabsTrigger value="config" className="flex items-center justify-center gap-2 py-2.5 px-4 sm:px-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-sm text-muted-foreground hover:bg-muted/50 transition-all duration-200 rounded-xl text-xs font-bold uppercase tracking-wider"><Settings2 className="h-4 w-4" />Configuration</TabsTrigger>}
+            </TabsList>
+          </div>
 
           <TabsContent value="records" className="animate-fade-in"><OvertimeRecordsList /></TabsContent>
           {isAdmin && <TabsContent value="config" className="animate-fade-in"><OvertimeConfigPanel /></TabsContent>}

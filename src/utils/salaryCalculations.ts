@@ -1,6 +1,4 @@
-
 import { dataIntegrationService } from "@/services/dataIntegrationService";
-import { getDailyRateDivisor } from "@/utils/workingDays";
 import { supabase } from "@/integrations/supabase/client";
 
 export interface SalaryData {
@@ -240,32 +238,20 @@ export const calculateMonthlySalaries = async (
   }
 };
 
-export const calculateDailySalary = async (
+export const calculateDailySalary = (
   baseSalary: number,
-  companyId: string
-): Promise<number> => {
-  try {
-    const dailyRateDivisor = await getDailyRateDivisor(companyId);
-    return Math.round((baseSalary / dailyRateDivisor) * 100) / 100;
-  } catch (error) {
-    console.error('Error calculating daily salary:', error);
-    return baseSalary / 22; // fallback
-  }
+  effectiveDivisor: number = 26
+): number => {
+  return Math.round((baseSalary / effectiveDivisor) * 100) / 100;
 };
 
-export const calculateOvertimePay = async (
+export const calculateOvertimePay = (
   baseSalary: number,
   overtimeHours: number,
-  companyId: string,
+  effectiveDivisor: number = 26,
   overtimeMultiplier: number = 1.5
-): Promise<number> => {
-  try {
-    const dailyRateDivisor = await getDailyRateDivisor(companyId);
-    const hourlyRate = baseSalary / (dailyRateDivisor * 8); // 8 hours per day
-    const overtimeRate = hourlyRate * overtimeMultiplier;
-    return Math.round(overtimeRate * overtimeHours * 100) / 100;
-  } catch (error) {
-    console.error('Error calculating overtime pay:', error);
-    return 0;
-  }
+): number => {
+  const hourlyRate = baseSalary / (effectiveDivisor * 8); // 8 hours per day
+  const overtimeRate = hourlyRate * overtimeMultiplier;
+  return Math.round(overtimeRate * overtimeHours * 100) / 100;
 };

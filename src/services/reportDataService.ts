@@ -1,6 +1,6 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { format, startOfMonth, endOfMonth } from "date-fns";
+import { calculateWorkingDaysInMonth, getEffectiveSalaryDivisor } from "@/utils/workingDays";
 
 interface RawReportData {
   employees: Array<{
@@ -9,6 +9,7 @@ interface RawReportData {
     rank: string;
     wage_rate: number;
     salary_divisor?: number | null;
+    working_days_per_week?: number | null;
   }>;
   attendance: Array<{
     employee_id: string;
@@ -30,7 +31,8 @@ interface ProcessedEmployeeData {
   shortLeaveDays: number;
   leaveDays: number;
   pendingLeaveDays: number;
-  actualWorkingDays: number;
+  actualWorkingDays: number; // How many days they worked/earned
+  expectedWorkingDays: number; // How many days they are expected to work in this month
   dailyRate: number;
   calculatedSalary: number;
 }
@@ -49,40 +51,12 @@ const dataCache = new Map<string, { data: any; timestamp: number }>();
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
 export class ReportDataService {
-  private static async getWorkingDaysInMonth(companyId: string, month: Date): Promise<{ totalWorkingDays: number; dailyRateDivisor: number }> {
-    try {
-      // Use the new database function to get accurate working days
-      const { data, error } = await supabase.rpc('get_working_days_for_month', {
-        target_company_id: companyId,
-        target_month: format(month, 'yyyy-MM-dd')
-      });
-
-      if (error) {
-        console.error("Error getting working days:", error);
-        // Fallback to default
-        return { totalWorkingDays: 22, dailyRateDivisor: 26 };
-      }
-
-      if (data && data.length > 0) {
-        return {
-          totalWorkingDays: data[0].total_working_days,
-          dailyRateDivisor: data[0].daily_rate_divisor
-        };
-      }
-
-      // Default fallback
-      return { totalWorkingDays: 22, dailyRateDivisor: 26 };
-    } catch (error) {
-      console.error("Error in getWorkingDaysInMonth:", error);
-      return { totalWorkingDays: 22, dailyRateDivisor: 26 };
-    }
-  }
 
   private static calculateEmployeeData(
     employee: any,
     attendance: any[],
     pendingLeaves: any[],
-    globalDailyRateDivisor: number
+    month: Date
   ): ProcessedEmployeeData {
     const employeeAttendance = attendance.filter(att => att.employee_id === employee.id);
     const employeePendingLeaves = pendingLeaves.filter(req => req.employee_id === employee.id);
@@ -111,8 +85,12 @@ export class ReportDataService {
     });
     
     const monthlySalary = Number(employee.wage_rate) || 0;
-    // Use employee's specific divisor if available, otherwise fallback to global
-    const effectiveDivisor = employee.salary_divisor || globalDailyRateDivisor;
+    
+    // Per-employee divisor and expected working days
+    const workingDaysPerWeek = employee.working_days_per_week || 6; // Default to 6-day week if not set
+    const effectiveDivisor = getEffectiveSalaryDivisor(employee.salary_divisor, workingDaysPerWeek);
+    const expectedWorkingDays = calculateWorkingDaysInMonth(month, workingDaysPerWeek);
+
     const dailyRate = monthlySalary / effectiveDivisor;
     const actualWorkingDays = presentDays + leaveDays + pendingLeaveDays + (shortLeaveDays * 0.5);
     const calculatedSalary = dailyRate * actualWorkingDays;
@@ -127,6 +105,7 @@ export class ReportDataService {
       leaveDays,
       pendingLeaveDays,
       actualWorkingDays,
+      expectedWorkingDays,
       dailyRate,
       calculatedSalary,
     };
@@ -142,6 +121,9 @@ export class ReportDataService {
     const averageDailyRate = totalEmployees > 0
       ? employeeData.reduce((sum, emp) => sum + emp.dailyRate, 0) / totalEmployees
       : 0;
+    // For global stats where a single "totalWorkingDaysThisMonth" is needed, we average the expected days.
+    const totalExpectedDays = employeeData.reduce((sum, emp) => sum + emp.expectedWorkingDays, 0);
+    const avgWorkingDaysThisMonth = totalEmployees > 0 ? Math.round(totalExpectedDays / totalEmployees) : 26;
     
     return {
       totalCalculatedSalary,
@@ -149,7 +131,7 @@ export class ReportDataService {
       totalEmployees,
       averageAttendance,
       averageDailyRate,
-      totalWorkingDaysThisMonth: totalWorkingDays,
+      totalWorkingDaysThisMonth: avgWorkingDaysThisMonth,
     };
   }
 
@@ -173,13 +155,10 @@ export class ReportDataService {
     const monthEnd = format(endOfMonth(month), 'yyyy-MM-dd');
 
     try {
-      // Get working days configuration
-      const { totalWorkingDays, dailyRateDivisor } = await this.getWorkingDaysInMonth(companyId, month);
-
       // Single optimized query for employees
       const { data: employees, error: employeesError } = await supabase
         .from("employees")
-        .select("id, name, rank, wage_rate, salary_divisor")
+        .select("id, name, rank, wage_rate, salary_divisor, working_days_per_week")
         .eq("company_id", companyId)
         .eq("status", "active");
 
@@ -196,7 +175,7 @@ export class ReportDataService {
             totalEmployees: 0,
             averageAttendance: 0,
             averageDailyRate: 0,
-            totalWorkingDaysThisMonth: totalWorkingDays,
+            totalWorkingDaysThisMonth: 26,
           },
         };
         dataCache.set(cacheKey, { data: emptyResult, timestamp: Date.now() });
@@ -229,12 +208,12 @@ export class ReportDataService {
         console.error("Failed to fetch pending leaves:", pendingLeavesError);
       }
       
-      // Process all data client-side with new daily rate calculation
+      // Process all data client-side with new per-employee daily rate calculation
       const employeeData = employees.map(employee => 
-        this.calculateEmployeeData(employee, attendance || [], pendingLeavesData || [], dailyRateDivisor)
+        this.calculateEmployeeData(employee, attendance || [], pendingLeavesData || [], month)
       );
       
-      const stats = this.calculateStats(employeeData, totalWorkingDays);
+      const stats = this.calculateStats(employeeData, 0); // 0 passed because we average dynamically now
       
       const result = { employeeData, stats };
       

@@ -15,7 +15,6 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 const formSchema = z.object({
   currency: z.string().min(1, { message: "Base currency is required" }),
-  weekend_policy: z.enum(["off_for_all", "mixed"]),
 });
 type FormValues = z.infer<typeof formSchema>;
 
@@ -33,7 +32,6 @@ export default function WorkspaceSettingsForm({ onComplete, isEmbedded = false }
     resolver: zodResolver(formSchema), 
     defaultValues: { 
       currency: "PKR", 
-      weekend_policy: "off_for_all", 
     } 
   });
 
@@ -53,23 +51,6 @@ export default function WorkspaceSettingsForm({ onComplete, isEmbedded = false }
         .eq('id', userProfile.company_id);
         
       if (companyError) throw companyError;
-
-      // Insert or update company_working_settings
-      const isSaturdayOff = values.weekend_policy === "off_for_all";
-      const workingDays = isSaturdayOff ? 5 : 6; // Sunday is always off
-      
-      const { error: settingsError } = await supabase
-        .from('company_working_settings')
-        .upsert({ 
-          company_id: userProfile.company_id,
-          default_working_days_per_week: workingDays,
-          default_working_days_per_month: Math.round(workingDays * 4.33), // approximation rounded to nearest integer
-          salary_divisor: workingDays === 5 ? 22 : 26,
-          weekend_saturday: isSaturdayOff,
-          weekend_sunday: true // Sunday is universally closed
-        }, { onConflict: 'company_id' });
-        
-      if (settingsError) throw settingsError;
 
       sonnerToast.success("Workspace settings saved", { description: "Your core preferences have been stored." });
       
@@ -122,56 +103,6 @@ export default function WorkspaceSettingsForm({ onComplete, isEmbedded = false }
                   <FormMessage />
                 </FormItem>
               )} />
-            </div>
-
-            <div className="p-5 rounded-2xl border border-border/50 bg-muted/10 space-y-5">
-              <div className="flex flex-col gap-1.5">
-                <h4 className="font-semibold text-sm text-foreground">Weekend Configuration</h4>
-                <p className="text-xs text-muted-foreground">Select which days are considered standard weekends for your organization.</p>
-              </div>
-              
-              <div className="space-y-4 pt-1">
-                <FormField control={form.control} name="weekend_policy" render={({ field }) => (
-                  <FormItem className="space-y-3">
-                    <FormControl>
-                      <RadioGroup
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                        className="flex flex-col space-y-3"
-                      >
-                        <FormItem className="flex items-center space-x-3 space-y-0 rounded-xl border border-border/40 p-4 bg-background/50 shadow-sm hover:border-primary/20 transition-colors cursor-pointer">
-                          <FormControl>
-                            <RadioGroupItem value="off_for_all" />
-                          </FormControl>
-                          <div className="space-y-0.5 leading-none w-full">
-                            <FormLabel className="text-sm font-semibold text-foreground cursor-pointer block">
-                              Saturday is OFF for all (5-Day Week)
-                            </FormLabel>
-                            <p className="text-xs text-muted-foreground mt-1.5">
-                              Standard Saturday and Sunday weekends. Perfect for traditional schedules.
-                            </p>
-                          </div>
-                        </FormItem>
-                        
-                        <FormItem className="flex items-center space-x-3 space-y-0 rounded-xl border border-border/40 p-4 bg-background/50 shadow-sm hover:border-primary/20 transition-colors cursor-pointer">
-                          <FormControl>
-                            <RadioGroupItem value="mixed" />
-                          </FormControl>
-                          <div className="space-y-0.5 leading-none w-full">
-                            <FormLabel className="text-sm font-semibold text-foreground cursor-pointer block">
-                              Mixed Configuration (6-Day Default)
-                            </FormLabel>
-                            <p className="text-xs text-muted-foreground mt-1.5">
-                              Sunday is OFF. You can customize Saturday availability on a per-employee basis later.
-                            </p>
-                          </div>
-                        </FormItem>
-                      </RadioGroup>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )} />
-              </div>
             </div>
 
           </CardContent>
