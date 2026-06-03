@@ -3,6 +3,7 @@ import DashboardStats from "@/components/dashboard/DashboardStats";
 import AnalyticsWidget from "@/components/dashboard/AnalyticsWidget";
 import ActivityFeed from "@/components/dashboard/ActivityFeed";
 import TodayAttendanceChart from "@/components/dashboard/TodayAttendanceChart";
+import RecentDocumentsWidget from "@/components/dashboard/RecentDocumentsWidget";
 import { useAuth } from "@/context/AuthContext";
 import { format } from "date-fns";
 import { Clock, Users, DollarSign } from "lucide-react";
@@ -58,8 +59,9 @@ export default function DashboardPage() {
 
         {/* Analytics & Activity Split */}
         <div className="grid grid-cols-1 xl:grid-cols-[1fr_350px] gap-5 items-start">
-          <StaggerIn delay={300} className="w-full">
+          <StaggerIn delay={300} className="w-full h-full flex flex-col gap-5">
             <AnalyticsWidget />
+            <RecentDocumentsWidget />
           </StaggerIn>
           
           <StaggerIn delay={450} className="w-full h-full flex flex-col gap-5">
