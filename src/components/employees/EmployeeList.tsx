@@ -1,4 +1,3 @@
-
 import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
@@ -8,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Edit, Trash2, User, Search, MoreHorizontal, Eye, Plus, ChevronLeft, ChevronRight, X } from "lucide-react";
+import { Edit, Trash2, User, Search, MoreHorizontal, Eye, Plus, ChevronLeft, ChevronRight, X, Calendar } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
@@ -82,81 +81,82 @@ export default function EmployeeList({ onAddEmployee, onEditEmployee }: Employee
     const active = employees.filter((employee) => employee.status === 'active').length;
     const inactive = employees.length - active;
     const payroll = employees.reduce((sum, employee) => sum + Number(employee.wage_rate || 0), 0);
-
-    return {
-      active,
-      inactive,
-      payroll,
-    };
+    return { active, inactive, payroll };
   }, [employees]);
 
   if (isLoading) {
-    return (<div className="space-y-4">{[...Array(5)].map((_, i) => (<Card key={i} className="glass-card"><CardContent className="p-4"><div className="flex items-center gap-4"><Skeleton className="w-10 h-10 rounded-full" /><div className="flex-1 space-y-2"><Skeleton className="h-4 w-3/4" /><Skeleton className="h-3 w-1/2" /></div><Skeleton className="h-4 w-20" /></div></CardContent></Card>))}</div>);
+    return (<div className="space-y-6"><Skeleton className="h-32 w-full rounded-3xl" /><Skeleton className="h-[500px] w-full rounded-3xl" /></div>);
   }
 
   if (error) { return (<Card className="border border-border bg-card"><CardContent className="p-6 text-center"><p className="text-destructive">Error loading employees</p></CardContent></Card>); }
 
   return (
-    <div className="space-y-6">
-      <Card className="border border-border bg-card shadow-sm">
-        <CardHeader className="pb-4">
-          <CardTitle className="flex items-center justify-between gap-4 flex-wrap">
-            <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
-                <User className="h-4 w-4" />
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <Card className="rounded-3xl border border-border bg-card shadow-sm overflow-hidden relative">
+        {/* Subtle decorative background */}
+        <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -z-10 pointer-events-none translate-x-1/2 -translate-y-1/2" />
+        
+        <CardHeader className="pb-4 pt-6 border-b border-border/40 bg-muted/10">
+          <CardTitle className="flex items-center justify-between gap-4 flex-wrap relative z-10">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shadow-sm border border-primary/20">
+                <User className="h-6 w-6" />
               </div>
               <div>
-                <p className="text-base font-semibold text-foreground">Employees</p>
-                <p className="text-sm font-normal text-muted-foreground">Professional workforce directory and actions</p>
+                <p className="text-xl font-bold text-foreground">Team Directory</p>
+                <p className="text-sm font-medium text-muted-foreground">Manage your workforce profiles and schedules</p>
               </div>
             </div>
 
             {userProfile?.is_admin && (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
                 {onAddEmployee && (
-                  <Button onClick={onAddEmployee} className="rounded-xl h-10 px-4">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Employee
+                  <Button onClick={onAddEmployee} className="rounded-xl h-11 px-5 shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 transition-all font-semibold">
+                    <Plus className="h-5 w-5 mr-2" />
+                    Onboard Employee
                   </Button>
                 )}
               </div>
             )}
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-5">
-            <div className="rounded-2xl border border-border bg-background p-4">
-              <p className="text-xs uppercase tracking-wide text-muted-foreground">Showing</p>
-              <p className="text-2xl font-semibold text-foreground mt-1">{employees.length}</p>
-              <p className="text-xs text-muted-foreground mt-1">of {totalCount} employees</p>
+        <CardContent className="pt-6 relative z-10">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+            <div className="rounded-2xl border border-border/50 bg-background/50 p-5 shadow-sm">
+              <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Total Team Size</p>
+              <div className="flex items-end gap-2 mt-2">
+                <p className="text-3xl font-extrabold text-foreground">{totalCount}</p>
+                <p className="text-sm text-muted-foreground mb-1 font-medium">members</p>
+              </div>
             </div>
-            <div className="rounded-2xl border border-border bg-background p-4">
-              <p className="text-xs uppercase tracking-wide text-muted-foreground">Status split</p>
-              <p className="text-sm text-foreground mt-1">
-                <span className="font-semibold">{summary.active}</span> active · <span className="font-semibold">{summary.inactive}</span> inactive
-              </p>
+            <div className="rounded-2xl border border-border/50 bg-background/50 p-5 shadow-sm">
+              <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Status Split</p>
+              <div className="flex items-center gap-4 mt-3">
+                <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-green-500" /><span className="text-sm font-bold">{summary.active} Active</span></div>
+                <div className="flex items-center gap-1.5"><div className="w-2.5 h-2.5 rounded-full bg-muted-foreground/50" /><span className="text-sm font-bold text-muted-foreground">{summary.inactive} Inactive</span></div>
+              </div>
             </div>
-            <div className="rounded-2xl border border-border bg-background p-4">
-              <p className="text-xs uppercase tracking-wide text-muted-foreground">Visible payroll</p>
-              <p className="text-sm font-semibold text-foreground mt-1">{formatCurrency(summary.payroll)}</p>
+            <div className="rounded-2xl border border-border/50 bg-background/50 p-5 shadow-sm">
+              <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Visible Payroll</p>
+              <p className="text-3xl font-extrabold text-primary mt-2 tracking-tight">{formatCurrency(summary.payroll)}</p>
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="search">Search employees</Label>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
+          <div className="space-y-3">
+            <Label htmlFor="search" className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">Search Directory</Label>
+            <div className="relative group">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground h-5 w-5 group-focus-within:text-primary transition-colors" />
               <Input
                 id="search"
-                placeholder="Search by employee name"
+                placeholder="Find someone by name..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-10 rounded-xl"
+                className="pl-12 pr-12 rounded-2xl h-12 bg-muted/10 border-border/50 focus:bg-background focus:ring-primary/20 shadow-sm"
               />
               {searchTerm && (
                 <button
                   type="button"
-                  className="absolute right-2 top-1/2 -translate-y-1/2 h-7 w-7 inline-flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 h-8 w-8 inline-flex items-center justify-center rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
                   onClick={() => setSearchTerm("")}
                   aria-label="Clear search"
                 >
@@ -172,58 +172,108 @@ export default function EmployeeList({ onAddEmployee, onEditEmployee }: Employee
         <EmployeeImportExport onImportComplete={() => refetch()} employees={employees} />
       )}
 
-      <Card className="border border-border bg-card shadow-sm">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2.5">
-            <User className="h-5 w-5 text-primary" />
-            Team Directory
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+      <Card className="rounded-3xl border border-border bg-card shadow-sm overflow-hidden">
+        <CardContent className="p-0">
           {employees.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-border p-10 text-center bg-muted/20">
-              <p className="text-base font-medium text-foreground">No employees found</p>
-              <p className="text-sm text-muted-foreground mt-1">
-                {searchTerm ? "Try another search term or clear the filter." : "Add your first employee to start building your team."}
+            <div className="p-12 text-center bg-muted/5 flex flex-col items-center justify-center">
+              <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                <Search className="h-8 w-8 text-primary/60" />
+              </div>
+              <p className="text-xl font-bold text-foreground">No matching employees</p>
+              <p className="text-sm text-muted-foreground mt-2 max-w-sm mx-auto">
+                {searchTerm ? "We couldn't find anyone matching that name. Try adjusting your search." : "Your directory is empty. Onboard your first team member to get started."}
               </p>
               {userProfile?.is_admin && onAddEmployee && !searchTerm && (
-                <Button onClick={onAddEmployee} className="mt-4 rounded-xl">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add First Employee
+                <Button onClick={onAddEmployee} className="mt-6 rounded-xl h-11 px-6 shadow-sm">
+                  <Plus className="h-5 w-5 mr-2" />
+                  Onboard First Employee
                 </Button>
               )}
             </div>
           ) : (
-          <div className="overflow-x-auto rounded-2xl border border-border bg-background">
+          <div className="overflow-x-auto w-full">
             <Table>
-              <TableHeader className="bg-muted/30">
-                <TableRow>
-                  <TableHead className="w-[50px]">Avatar</TableHead><TableHead>Name</TableHead><TableHead>Role</TableHead>
-                  {userProfile?.is_admin && <TableHead>Wage Rate</TableHead>}
-                  <TableHead>Status</TableHead><TableHead className="text-right">Actions</TableHead>
+              <TableHeader className="bg-muted/30 border-b border-border/50">
+                <TableRow className="hover:bg-transparent">
+                  <TableHead className="w-[60px] pl-6 py-4 font-semibold">Avatar</TableHead>
+                  <TableHead className="font-semibold py-4">Employee Details</TableHead>
+                  <TableHead className="font-semibold py-4">Role</TableHead>
+                  <TableHead className="font-semibold py-4">Schedule</TableHead>
+                  {userProfile?.is_admin && <TableHead className="font-semibold py-4">Wage Rate</TableHead>}
+                  <TableHead className="font-semibold py-4">Status</TableHead>
+                  <TableHead className="text-right pr-6 py-4 font-semibold">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {employees.map((employee) => (
-                  <TableRow key={employee.id} className="hover:bg-muted/20 transition-colors">
-                    <TableCell><Avatar><AvatarFallback>{employee.name.charAt(0).toUpperCase()}</AvatarFallback></Avatar></TableCell>
-                    <TableCell className="font-medium text-primary hover:underline cursor-pointer" onClick={() => navigate(`/employees/${employee.id}`)}>{employee.name}</TableCell>
-                    <TableCell><Badge variant="secondary">{employee.rank}</Badge></TableCell>
-                    {userProfile?.is_admin && <TableCell>{formatCurrency(employee.wage_rate)}</TableCell>}
-                    <TableCell>
-                      <Badge variant={employee.status === 'active' ? 'default' : 'secondary'} className="capitalize">
+                  <TableRow key={employee.id} className="hover:bg-muted/10 transition-colors border-b border-border/30 group">
+                    <TableCell className="pl-6 py-4">
+                      <Avatar className="h-10 w-10 border-2 border-background shadow-sm group-hover:border-primary/20 transition-colors">
+                        <AvatarFallback className="font-bold bg-primary/10 text-primary">
+                          {employee.name.charAt(0).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                    </TableCell>
+                    <TableCell className="py-4">
+                      <div className="flex flex-col">
+                        <span className="font-bold text-foreground cursor-pointer hover:text-primary transition-colors" onClick={() => navigate(`/employees/${employee.id}`)}>
+                          {employee.name}
+                        </span>
+                        {employee.email && <span className="text-xs text-muted-foreground">{employee.email}</span>}
+                      </div>
+                    </TableCell>
+                    <TableCell className="py-4">
+                      <Badge variant="outline" className="font-medium bg-background shadow-sm">{employee.rank}</Badge>
+                    </TableCell>
+                    <TableCell className="py-4">
+                      <div className="flex flex-col gap-1 items-start">
+                        {employee.salary_divisor === 26 ? (
+                          <Badge variant="secondary" className="text-[10px] bg-blue-500/10 text-blue-600 hover:bg-blue-500/20"><Calendar className="h-3 w-3 mr-1"/> 6 Days / Week</Badge>
+                        ) : employee.salary_divisor === 22 ? (
+                          <Badge variant="secondary" className="text-[10px] bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20"><Calendar className="h-3 w-3 mr-1"/> 5 Days / Week</Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-[10px] text-muted-foreground"><Calendar className="h-3 w-3 mr-1"/> Default</Badge>
+                        )}
+                        {employee.weekend_saturday !== null && (
+                          <span className="text-[10px] text-muted-foreground italic flex items-center">
+                            {employee.weekend_saturday ? "Saturday OFF" : "Saturday ON"}
+                          </span>
+                        )}
+                      </div>
+                    </TableCell>
+                    {userProfile?.is_admin && (
+                      <TableCell className="py-4 font-bold text-foreground">
+                        {formatCurrency(employee.wage_rate)}
+                      </TableCell>
+                    )}
+                    <TableCell className="py-4">
+                      <Badge variant={employee.status === 'active' ? 'default' : 'secondary'} className="capitalize shadow-sm font-semibold">
                         {employee.status}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-right pr-6 py-4">
                       <DropdownMenu>
-                        <DropdownMenuTrigger asChild><Button variant="ghost" className="h-8 w-8 p-0"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuItem onClick={() => navigate(`/employees/${employee.id}`)}><Eye className="mr-2 h-4 w-4" /><span>View Profile</span></DropdownMenuItem>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" className="h-8 w-8 p-0 rounded-lg hover:bg-primary/10 hover:text-primary transition-colors">
+                            <MoreHorizontal className="h-5 w-5" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-48 rounded-xl shadow-xl">
+                          <DropdownMenuLabel className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Employee Actions</DropdownMenuLabel>
+                          <DropdownMenuItem className="cursor-pointer font-medium py-2 rounded-lg my-1" onClick={() => navigate(`/employees/${employee.id}`)}>
+                            <Eye className="mr-2 h-4 w-4" /> View Full Profile
+                          </DropdownMenuItem>
                           <DropdownMenuSeparator />
-                          {userProfile?.is_admin && <DropdownMenuItem onClick={() => onEditEmployee?.(employee.id)}><Edit className="mr-2 h-4 w-4" /><span>Edit</span></DropdownMenuItem>}
-                          {userProfile?.is_admin && <DropdownMenuItem onClick={() => handleDeleteEmployee(employee)}><Trash2 className="mr-2 h-4 w-4" /><span>Delete</span></DropdownMenuItem>}
+                          {userProfile?.is_admin && (
+                            <DropdownMenuItem className="cursor-pointer font-medium py-2 rounded-lg my-1" onClick={() => onEditEmployee?.(employee.id)}>
+                              <Edit className="mr-2 h-4 w-4" /> Edit Details
+                            </DropdownMenuItem>
+                          )}
+                          {userProfile?.is_admin && (
+                            <DropdownMenuItem className="cursor-pointer font-medium py-2 rounded-lg my-1 text-destructive hover:text-destructive hover:bg-destructive/10 focus:text-destructive focus:bg-destructive/10" onClick={() => handleDeleteEmployee(employee)}>
+                              <Trash2 className="mr-2 h-4 w-4" /> Remove Employee
+                            </DropdownMenuItem>
+                          )}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
@@ -237,15 +287,15 @@ export default function EmployeeList({ onAddEmployee, onEditEmployee }: Employee
       </Card>
 
       {totalCount > ITEMS_PER_PAGE && (
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-card px-4 py-3">
-          <p className="text-sm text-muted-foreground">
-            Page <span className="font-medium text-foreground">{page}</span> of <span className="font-medium text-foreground">{totalPages}</span>
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border/50 bg-background px-5 py-3 shadow-sm">
+          <p className="text-sm font-medium text-muted-foreground">
+            Page <span className="font-bold text-foreground mx-0.5">{page}</span> of <span className="font-bold text-foreground mx-0.5">{totalPages}</span>
           </p>
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
               size="sm"
-              className="rounded-xl"
+              className="rounded-xl h-9 hover:bg-primary/5 hover:text-primary transition-colors font-semibold"
               disabled={page === 1}
               onClick={() => setPage((prev) => Math.max(1, prev - 1))}
             >
@@ -255,7 +305,7 @@ export default function EmployeeList({ onAddEmployee, onEditEmployee }: Employee
             <Button
               variant="outline"
               size="sm"
-              className="rounded-xl"
+              className="rounded-xl h-9 hover:bg-primary/5 hover:text-primary transition-colors font-semibold"
               disabled={page >= totalPages}
               onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
             >

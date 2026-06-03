@@ -3,25 +3,22 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import Dashboard from "@/components/layout/Dashboard";
 import { useAuth } from "@/context/AuthContext";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { 
-  ArrowLeft, Edit, Mail, Phone, Calendar, DollarSign, TrendingUp,
-  Clock, Award, Activity, FileText
+  ArrowLeft, Edit, Mail, Phone, Calendar, TrendingUp,
+  Clock, Award, Activity, CheckCircle2, XCircle, CreditCard, Building
 } from "lucide-react";
 import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { toast } from "sonner";
 import { useCurrency } from "@/hooks/useCurrency";
 import DocumentManager from "@/components/employees/DocumentManager";
+import EmployeeForm from "@/components/employees/EmployeeForm";
 
 export default function EmployeeProfile() {
   const { id } = useParams();
@@ -29,7 +26,6 @@ export default function EmployeeProfile() {
   const { userProfile } = useAuth();
   const { currency } = useCurrency();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [editForm, setEditForm] = useState({ name: "", rank: "", wage_rate: 0, status: "active" });
 
   const isAdmin = userProfile?.is_admin;
 
@@ -70,22 +66,7 @@ export default function EmployeeProfile() {
   });
 
   const handleEdit = () => {
-    if (employee) {
-      setEditForm({ name: employee.name, rank: employee.rank, wage_rate: Number(employee.wage_rate), status: employee.status });
-      setIsEditModalOpen(true);
-    }
-  };
-
-  const handleSaveEdit = async () => {
-    try {
-      const { error } = await supabase.from('employees').update(editForm).eq('id', id);
-      if (error) throw error;
-      toast.success("Employee updated successfully");
-      setIsEditModalOpen(false);
-      refetch();
-    } catch (error: any) {
-      toast.error(error.message || "Failed to update employee");
-    }
+    setIsEditModalOpen(true);
   };
 
   const formatCurrency = (amount: number) => {
@@ -95,14 +76,14 @@ export default function EmployeeProfile() {
   };
 
   if (isLoading) {
-    return <Dashboard title="Employee Profile"><div className="space-y-6"><Skeleton className="h-48 w-full" /><Skeleton className="h-96 w-full" /></div></Dashboard>;
+    return <Dashboard title="Employee Profile"><div className="space-y-6"><Skeleton className="h-48 w-full rounded-3xl" /><Skeleton className="h-96 w-full rounded-3xl" /></div></Dashboard>;
   }
 
   if (!employee) {
     return <Dashboard title="Employee Profile"><div className="text-center py-12"><p className="text-muted-foreground">Employee not found</p><Button onClick={() => navigate('/employees')} className="mt-4">Back to Employees</Button></div></Dashboard>;
   }
 
-  const attendanceStats = attendanceHistory ? {
+  const attendanceStats = attendanceHistory && attendanceHistory.length > 0 ? {
     present: attendanceHistory.filter(a => a.status === 'present').length,
     absent: attendanceHistory.filter(a => a.status === 'absent').length,
     leave: attendanceHistory.filter(a => a.status === 'leave').length,
@@ -111,128 +92,215 @@ export default function EmployeeProfile() {
 
   return (
     <Dashboard title="Employee Profile">
-      <div className="space-y-6 animate-fade-in">
+      <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
         <div className="flex items-center justify-between">
-          <Button variant="ghost" onClick={() => navigate('/employees')} className="gap-2"><ArrowLeft className="h-4 w-4" />Back to Employees</Button>
-          {isAdmin && <Button onClick={handleEdit} className="gap-2"><Edit className="h-4 w-4" />Edit Employee</Button>}
+          <Button variant="ghost" onClick={() => navigate('/employees')} className="gap-2 rounded-xl">
+            <ArrowLeft className="h-4 w-4" />Back to Directory
+          </Button>
+          {isAdmin && (
+            <Button onClick={handleEdit} className="gap-2 rounded-xl shadow-sm">
+              <Edit className="h-4 w-4" />Edit Profile
+            </Button>
+          )}
         </div>
 
-        {/* Profile Card */}
-        <Card className="border border-border bg-gradient-to-br from-card to-card/50 shadow-xl">
-          <CardContent className="p-8">
-            <div className="flex items-start gap-8">
-              <Avatar className="h-24 w-24 border-4 border-primary/20">
-                <AvatarFallback className="text-3xl font-bold bg-gradient-to-br from-primary to-primary/60 text-primary-foreground">
-                  {employee.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+        {/* Hero Banner Card */}
+        <div className="relative rounded-3xl border border-border bg-card shadow-xl overflow-hidden">
+          {/* Decorative background */}
+          <div className="h-32 bg-gradient-to-r from-primary/20 via-primary/10 to-background"></div>
+          
+          <div className="px-6 sm:px-10 pb-8 -mt-12">
+            <div className="flex flex-col sm:flex-row items-start sm:items-end gap-6 mb-6">
+              <Avatar className="h-28 w-28 border-4 border-card shadow-lg bg-card">
+                <AvatarFallback className="text-4xl font-bold bg-gradient-to-br from-primary to-primary/60 text-primary-foreground">
+                  {employee.name.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
-              <div className="flex-1 space-y-4">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h1 className="text-3xl font-bold text-foreground mb-2">{employee.name}</h1>
-                    <div className="flex items-center gap-3 flex-wrap">
-                      <Badge variant={employee.status === 'active' ? 'default' : 'secondary'} className="capitalize">{employee.status}</Badge>
-                      <Badge variant="outline" className="gap-1"><Award className="h-3 w-3" />{employee.rank}</Badge>
-                    </div>
-                  </div>
-                  {isAdmin && (
-                    <div className="text-right">
-                      <p className="text-sm text-muted-foreground font-medium">Wage Rate</p>
-                      <p className="text-2xl font-bold text-primary">{formatCurrency(Number(employee.wage_rate))}</p>
-                    </div>
-                  )}
+              <div className="flex-1 space-y-1.5 pb-2">
+                <div className="flex flex-wrap items-center gap-3">
+                  <h1 className="text-3xl font-extrabold text-foreground">{employee.name}</h1>
+                  <Badge variant={employee.status === 'active' ? 'default' : 'secondary'} className="capitalize shadow-sm">
+                    {employee.status}
+                  </Badge>
                 </div>
-                <Separator />
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <div><p className="text-xs text-muted-foreground">Joined</p><p className="text-sm font-semibold text-foreground">{format(new Date(employee.created_at), 'MMM dd, yyyy')}</p></div>
-                  </div>
-                  {attendanceStats && (
-                    <div className="flex items-center gap-2">
-                      <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                      <div><p className="text-xs text-muted-foreground">Attendance Rate</p><p className="text-sm font-semibold text-foreground">{attendanceStats.rate}%</p></div>
-                    </div>
+                <div className="flex flex-wrap items-center gap-4 text-muted-foreground text-sm font-medium">
+                  <span className="flex items-center gap-1.5 text-primary">
+                    <Award className="h-4 w-4" /> {employee.rank}
+                  </span>
+                  {employee.email && (
+                    <span className="flex items-center gap-1.5">
+                      <Mail className="h-4 w-4" /> {employee.email}
+                    </span>
+                  )}
+                  {employee.phone && (
+                    <span className="flex items-center gap-1.5">
+                      <Phone className="h-4 w-4" /> {employee.phone}
+                    </span>
                   )}
                 </div>
               </div>
             </div>
-          </CardContent>
-        </Card>
+
+            <Separator className="mb-6 opacity-50" />
+
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+              <div className="space-y-1">
+                <p className="text-xs text-muted-foreground flex items-center gap-1.5"><Calendar className="h-3.5 w-3.5" /> Joined Date</p>
+                <p className="text-sm font-semibold">{format(new Date(employee.created_at), 'MMM dd, yyyy')}</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs text-muted-foreground flex items-center gap-1.5"><Clock className="h-3.5 w-3.5" /> Working Days</p>
+                <div className="flex items-center gap-1.5">
+                  <p className="text-sm font-semibold">{employee.salary_divisor ? employee.salary_divisor === 26 ? '6 Days / Week' : employee.salary_divisor === 22 ? '5 Days / Week' : 'Custom' : 'Company Default'}</p>
+                  {employee.weekend_saturday === false && <Badge variant="outline" className="text-[10px] h-5 px-1 bg-amber-500/10 text-amber-600 border-amber-500/20">Saturday ON</Badge>}
+                  {employee.weekend_saturday === true && <Badge variant="outline" className="text-[10px] h-5 px-1 bg-green-500/10 text-green-600 border-green-500/20">Saturday OFF</Badge>}
+                </div>
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs text-muted-foreground flex items-center gap-1.5"><CreditCard className="h-3.5 w-3.5" /> Monthly Wage</p>
+                <p className="text-sm font-semibold text-primary">{formatCurrency(Number(employee.wage_rate))}</p>
+              </div>
+              {employee.cnic && (
+                <div className="space-y-1">
+                  <p className="text-xs text-muted-foreground flex items-center gap-1.5"><User className="h-3.5 w-3.5" /> National ID</p>
+                  <p className="text-sm font-semibold">{employee.cnic}</p>
+                </div>
+              )}
+              {attendanceStats && (
+                <div className="space-y-1">
+                  <p className="text-xs text-muted-foreground flex items-center gap-1.5"><TrendingUp className="h-3.5 w-3.5" /> Attendance</p>
+                  <p className="text-sm font-semibold text-green-600">{attendanceStats.rate}% Rate</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
 
         {/* Tabs */}
-        <Tabs defaultValue="attendance" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="attendance">Attendance</TabsTrigger>
-            <TabsTrigger value="performance">Performance</TabsTrigger>
-            <TabsTrigger value="documents">Documents</TabsTrigger>
-            <TabsTrigger value="activity">Activity</TabsTrigger>
+        <Tabs defaultValue="overview" className="w-full">
+          <TabsList className="grid w-full grid-cols-4 bg-muted/50 p-1 rounded-xl">
+            <TabsTrigger value="overview" className="rounded-lg">Overview</TabsTrigger>
+            <TabsTrigger value="attendance" className="rounded-lg">Attendance Log</TabsTrigger>
+            <TabsTrigger value="documents" className="rounded-lg">Documents</TabsTrigger>
+            <TabsTrigger value="activity" className="rounded-lg">Activity</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="attendance" className="space-y-4 mt-6">
-            <Card>
-              <CardHeader><CardTitle className="flex items-center gap-2"><Clock className="h-5 w-5" />Last 30 Days Attendance</CardTitle></CardHeader>
-              <CardContent>
-                {attendanceStats && (
-                  <div className="grid grid-cols-3 gap-4 mb-6">
-                    <div className="bg-green-500/10 p-4 rounded-xl border border-green-500/20"><p className="text-sm text-muted-foreground">Present</p><p className="text-2xl font-bold text-green-600">{attendanceStats.present}</p></div>
-                    <div className="bg-red-500/10 p-4 rounded-xl border border-red-500/20"><p className="text-sm text-muted-foreground">Absent</p><p className="text-2xl font-bold text-red-600">{attendanceStats.absent}</p></div>
-                    <div className="bg-blue-500/10 p-4 rounded-xl border border-blue-500/20"><p className="text-sm text-muted-foreground">Leave</p><p className="text-2xl font-bold text-blue-600">{attendanceStats.leave}</p></div>
+          <TabsContent value="overview" className="space-y-6 mt-6 animate-in fade-in duration-300">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              
+              {/* Financial & Bank Details */}
+              <Card className="col-span-1 md:col-span-2 rounded-3xl border border-border/50 shadow-sm">
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2"><Building className="h-5 w-5 text-primary" /> Bank & Details</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 gap-y-6 gap-x-4">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Bank Name</p>
+                      <p className="font-medium mt-1">{employee.bank_name || <span className="text-muted-foreground italic">Not provided</span>}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Account Number</p>
+                      <p className="font-medium mt-1">{employee.bank_account_number || <span className="text-muted-foreground italic">Not provided</span>}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Shift Type</p>
+                      <p className="font-medium mt-1 capitalize">{employee.shift_type || <span className="text-muted-foreground italic">Default</span>}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Emergency Contact</p>
+                      <p className="font-medium mt-1">{employee.emergency_contact || <span className="text-muted-foreground italic">Not provided</span>}</p>
+                    </div>
                   </div>
-                )}
-                <div className="space-y-2 max-h-96 overflow-y-auto">
+                </CardContent>
+              </Card>
+
+              {/* Quick Attendance Summary */}
+              <Card className="rounded-3xl border border-border/50 shadow-sm">
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2"><Clock className="h-5 w-5 text-primary" /> 30-Day Summary</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {attendanceStats ? (
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center p-3 rounded-xl bg-green-500/10 border border-green-500/20">
+                        <span className="text-sm font-medium text-green-700 flex items-center gap-2"><CheckCircle2 className="h-4 w-4" /> Present</span>
+                        <span className="font-bold text-green-700">{attendanceStats.present} days</span>
+                      </div>
+                      <div className="flex justify-between items-center p-3 rounded-xl bg-red-500/10 border border-red-500/20">
+                        <span className="text-sm font-medium text-red-700 flex items-center gap-2"><XCircle className="h-4 w-4" /> Absent</span>
+                        <span className="font-bold text-red-700">{attendanceStats.absent} days</span>
+                      </div>
+                      <div className="flex justify-between items-center p-3 rounded-xl bg-blue-500/10 border border-blue-500/20">
+                        <span className="text-sm font-medium text-blue-700 flex items-center gap-2"><Calendar className="h-4 w-4" /> Leave</span>
+                        <span className="font-bold text-blue-700">{attendanceStats.leave} days</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center py-6">
+                      <p className="text-muted-foreground text-sm">No attendance records found.</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="attendance" className="mt-6 animate-in fade-in duration-300">
+            <Card className="rounded-3xl border border-border/50 shadow-sm">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-lg"><Clock className="h-5 w-5" /> Attendance History</CardTitle>
+                <CardDescription>Chronological list of the last 30 days of attendance</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3 max-h-[500px] overflow-y-auto pr-2">
                   {attendanceHistory?.map((record) => (
-                    <div key={record.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
-                      <div className="flex items-center gap-3">
-                        <div className={`w-2 h-2 rounded-full ${record.status === 'present' ? 'bg-green-500' : record.status === 'absent' ? 'bg-red-500' : 'bg-blue-500'}`} />
+                    <div key={record.id} className="flex items-center justify-between p-4 rounded-2xl bg-muted/30 border border-border/40 hover:border-primary/20 hover:bg-muted/50 transition-all">
+                      <div className="flex items-center gap-4">
+                        <div className={`w-3 h-3 rounded-full shadow-sm ${record.status === 'present' ? 'bg-green-500' : record.status === 'absent' ? 'bg-red-500' : 'bg-blue-500'}`} />
                         <span className="font-medium text-foreground">{format(new Date(record.date), 'EEEE, MMMM dd, yyyy')}</span>
                       </div>
-                      <Badge variant={record.status === 'present' ? 'default' : record.status === 'absent' ? 'destructive' : 'secondary'} className="capitalize">{record.status}</Badge>
+                      <Badge variant={record.status === 'present' ? 'default' : record.status === 'absent' ? 'destructive' : 'secondary'} className="capitalize shadow-sm">
+                        {record.status}
+                      </Badge>
                     </div>
                   ))}
+                  {(!attendanceHistory || attendanceHistory.length === 0) && (
+                    <div className="text-center py-10 border border-dashed rounded-2xl border-border">
+                      <p className="text-muted-foreground">No attendance records yet.</p>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
           </TabsContent>
 
-          <TabsContent value="performance" className="space-y-4 mt-6">
-            <Card>
-              <CardHeader><CardTitle className="flex items-center gap-2"><TrendingUp className="h-5 w-5" />Performance Metrics</CardTitle></CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-4">
-                    <div className="bg-muted/30 p-4 rounded-xl"><h3 className="text-sm font-semibold text-muted-foreground mb-2">Overall Attendance</h3><div className="flex items-baseline gap-2"><span className="text-3xl font-bold text-foreground">{attendanceStats?.rate}%</span><span className="text-sm text-muted-foreground">attendance rate</span></div></div>
-                    <div className="bg-muted/30 p-4 rounded-xl"><h3 className="text-sm font-semibold text-muted-foreground mb-2">Status</h3><Badge variant={employee.status === 'active' ? 'default' : 'secondary'} className="text-lg py-1 px-3">{employee.status}</Badge></div>
-                  </div>
-                  <div className="space-y-4">
-                    <div className="bg-muted/30 p-4 rounded-xl"><h3 className="text-sm font-semibold text-muted-foreground mb-2">Position</h3><p className="text-xl font-bold text-foreground">{employee.rank}</p></div>
-                    {isAdmin && <div className="bg-primary/10 p-4 rounded-xl border border-primary/20"><h3 className="text-sm font-semibold text-muted-foreground mb-2">Monthly Wage</h3><p className="text-2xl font-bold text-primary">{formatCurrency(Number(employee.wage_rate))}</p></div>}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="documents" className="space-y-4 mt-6">
+          <TabsContent value="documents" className="mt-6 animate-in fade-in duration-300">
             {userProfile?.company_id && <DocumentManager employeeId={employee.id} companyId={userProfile.company_id} />}
           </TabsContent>
 
-          <TabsContent value="activity" className="space-y-4 mt-6">
-            <Card>
-              <CardHeader><CardTitle className="flex items-center gap-2"><Activity className="h-5 w-5" />Activity Timeline</CardTitle></CardHeader>
+          <TabsContent value="activity" className="mt-6 animate-in fade-in duration-300">
+            <Card className="rounded-3xl border border-border/50 shadow-sm">
+              <CardHeader><CardTitle className="flex items-center gap-2 text-lg"><Activity className="h-5 w-5" />Activity Timeline</CardTitle></CardHeader>
               <CardContent>
-                <div className="space-y-4 max-h-96 overflow-y-auto">
+                <div className="space-y-4 max-h-[500px] overflow-y-auto">
                   {activityLogs?.map((log) => (
-                    <div key={log.id} className="flex gap-4 p-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
+                    <div key={log.id} className="flex gap-4 p-5 rounded-2xl bg-muted/20 border border-border/40">
                       <div className="flex-shrink-0"><div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center"><Activity className="h-5 w-5 text-primary" /></div></div>
                       <div className="flex-1">
-                        <p className="text-sm font-medium text-foreground">{log.description}</p>
-                        <p className="text-xs text-muted-foreground mt-1">{format(new Date(log.created_at), 'MMM dd, yyyy HH:mm')}</p>
-                        {log.action_type && <Badge variant="outline" className="mt-2 text-xs">{log.action_type}</Badge>}
+                        <p className="text-sm font-medium text-foreground leading-relaxed">{log.description}</p>
+                        <div className="flex items-center gap-3 mt-2">
+                          <p className="text-xs text-muted-foreground">{format(new Date(log.created_at), 'MMM dd, yyyy HH:mm')}</p>
+                          {log.action_type && <Badge variant="outline" className="text-[10px] h-5 px-1.5">{log.action_type}</Badge>}
+                        </div>
                       </div>
                     </div>
                   ))}
-                  {(!activityLogs || activityLogs.length === 0) && <p className="text-center text-muted-foreground py-8">No activity logs found</p>}
+                  {(!activityLogs || activityLogs.length === 0) && (
+                    <div className="text-center py-10 border border-dashed rounded-2xl border-border">
+                      <p className="text-muted-foreground">No activity logs found</p>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -240,21 +308,13 @@ export default function EmployeeProfile() {
         </Tabs>
       </div>
 
-      <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-        <DialogContent>
-          <DialogHeader><DialogTitle>Edit Employee</DialogTitle></DialogHeader>
-          <div className="space-y-4 py-4">
-            <div><Label htmlFor="name">Name</Label><Input id="name" value={editForm.name} onChange={(e) => setEditForm({...editForm, name: e.target.value})} /></div>
-            <div><Label htmlFor="rank">Rank</Label><Input id="rank" value={editForm.rank} onChange={(e) => setEditForm({...editForm, rank: e.target.value})} /></div>
-            <div><Label htmlFor="wage_rate">Wage Rate</Label><Input id="wage_rate" type="number" value={editForm.wage_rate} onChange={(e) => setEditForm({...editForm, wage_rate: Number(e.target.value)})} /></div>
-            <div><Label htmlFor="status">Status</Label><select id="status" value={editForm.status} onChange={(e) => setEditForm({...editForm, status: e.target.value})} className="w-full px-3 py-2 bg-background border border-input rounded-md"><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
-          </div>
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setIsEditModalOpen(false)}>Cancel</Button>
-            <Button onClick={handleSaveEdit}>Save Changes</Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      {/* Modern Unified Form Modal instead of old barebones dialog */}
+      <EmployeeForm 
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        onSuccess={() => refetch()}
+        employeeId={employee.id}
+      />
     </Dashboard>
   );
 }

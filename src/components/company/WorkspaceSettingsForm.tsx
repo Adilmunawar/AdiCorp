@@ -11,13 +11,11 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 const formSchema = z.object({
   currency: z.string().min(1, { message: "Base currency is required" }),
-  default_working_days_per_week: z.string(),
-  weekend_saturday: z.boolean(),
-  weekend_sunday: z.boolean(),
+  weekend_policy: z.enum(["off_for_all", "mixed"]),
 });
 type FormValues = z.infer<typeof formSchema>;
 
@@ -35,9 +33,7 @@ export default function WorkspaceSettingsForm({ onComplete, isEmbedded = false }
     resolver: zodResolver(formSchema), 
     defaultValues: { 
       currency: "PKR", 
-      default_working_days_per_week: "5", 
-      weekend_saturday: true, 
-      weekend_sunday: true 
+      weekend_policy: "off_for_all", 
     } 
   });
 
@@ -59,15 +55,18 @@ export default function WorkspaceSettingsForm({ onComplete, isEmbedded = false }
       if (companyError) throw companyError;
 
       // Insert or update company_working_settings
+      const isSaturdayOff = values.weekend_policy === "off_for_all";
+      const workingDays = isSaturdayOff ? 5 : 6; // Sunday is always off
+      
       const { error: settingsError } = await supabase
         .from('company_working_settings')
         .upsert({ 
           company_id: userProfile.company_id,
-          default_working_days_per_week: parseInt(values.default_working_days_per_week),
-          default_working_days_per_month: parseInt(values.default_working_days_per_week) * 4.33, // approximation
-          salary_divisor: parseInt(values.default_working_days_per_week) === 5 ? 22 : 26,
-          weekend_saturday: values.weekend_saturday,
-          weekend_sunday: values.weekend_sunday
+          default_working_days_per_week: workingDays,
+          default_working_days_per_month: Math.round(workingDays * 4.33), // approximation rounded to nearest integer
+          salary_divisor: workingDays === 5 ? 22 : 26,
+          weekend_saturday: isSaturdayOff,
+          weekend_sunday: true // Sunday is universally closed
         }, { onConflict: 'company_id' });
         
       if (settingsError) throw settingsError;
@@ -103,7 +102,7 @@ export default function WorkspaceSettingsForm({ onComplete, isEmbedded = false }
         <form onSubmit={form.handleSubmit(handleSubmit)} className="relative z-10 flex flex-col h-full">
           <CardContent className={`space-y-6 flex-1 ${isEmbedded ? 'px-0 pt-2 pb-4' : 'pt-6'}`}>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+            <div className="grid grid-cols-1 gap-4 sm:gap-5">
               <FormField control={form.control} name="currency" render={({ field }) => (
                 <FormItem>
                   <FormLabel className="text-sm font-semibold text-foreground">Base Currency</FormLabel>
@@ -123,26 +122,6 @@ export default function WorkspaceSettingsForm({ onComplete, isEmbedded = false }
                   <FormMessage />
                 </FormItem>
               )} />
-              
-              <FormField control={form.control} name="default_working_days_per_week" render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-sm font-semibold text-foreground">Working Days / Week</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger className="h-10 sm:h-11 bg-background/50 border-border/60 hover:border-border focus:ring-primary/20 rounded-xl shadow-sm">
-                        <SelectValue placeholder="Select working days" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="4">4 Days</SelectItem>
-                      <SelectItem value="5">5 Days</SelectItem>
-                      <SelectItem value="6">6 Days</SelectItem>
-                      <SelectItem value="7">7 Days</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )} />
             </div>
 
             <div className="p-5 rounded-2xl border border-border/50 bg-muted/10 space-y-5">
@@ -152,27 +131,44 @@ export default function WorkspaceSettingsForm({ onComplete, isEmbedded = false }
               </div>
               
               <div className="space-y-4 pt-1">
-                <FormField control={form.control} name="weekend_saturday" render={({ field }) => (
-                  <FormItem className="flex flex-row items-center justify-between rounded-xl border border-border/40 p-4 bg-background/50 shadow-sm hover:border-primary/20 transition-colors">
-                    <div className="space-y-0.5">
-                      <FormLabel className="text-sm font-medium text-foreground">Saturday</FormLabel>
-                      <p className="text-xs text-muted-foreground">Mark Saturday as an official off-day.</p>
-                    </div>
+                <FormField control={form.control} name="weekend_policy" render={({ field }) => (
+                  <FormItem className="space-y-3">
                     <FormControl>
-                      <Switch checked={field.value} onCheckedChange={field.onChange} />
+                      <RadioGroup
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                        className="flex flex-col space-y-3"
+                      >
+                        <FormItem className="flex items-center space-x-3 space-y-0 rounded-xl border border-border/40 p-4 bg-background/50 shadow-sm hover:border-primary/20 transition-colors cursor-pointer">
+                          <FormControl>
+                            <RadioGroupItem value="off_for_all" />
+                          </FormControl>
+                          <div className="space-y-0.5 leading-none w-full">
+                            <FormLabel className="text-sm font-semibold text-foreground cursor-pointer block">
+                              Saturday is OFF for all (5-Day Week)
+                            </FormLabel>
+                            <p className="text-xs text-muted-foreground mt-1.5">
+                              Standard Saturday and Sunday weekends. Perfect for traditional schedules.
+                            </p>
+                          </div>
+                        </FormItem>
+                        
+                        <FormItem className="flex items-center space-x-3 space-y-0 rounded-xl border border-border/40 p-4 bg-background/50 shadow-sm hover:border-primary/20 transition-colors cursor-pointer">
+                          <FormControl>
+                            <RadioGroupItem value="mixed" />
+                          </FormControl>
+                          <div className="space-y-0.5 leading-none w-full">
+                            <FormLabel className="text-sm font-semibold text-foreground cursor-pointer block">
+                              Mixed Configuration (6-Day Default)
+                            </FormLabel>
+                            <p className="text-xs text-muted-foreground mt-1.5">
+                              Sunday is OFF. You can customize Saturday availability on a per-employee basis later.
+                            </p>
+                          </div>
+                        </FormItem>
+                      </RadioGroup>
                     </FormControl>
-                  </FormItem>
-                )} />
-
-                <FormField control={form.control} name="weekend_sunday" render={({ field }) => (
-                  <FormItem className="flex flex-row items-center justify-between rounded-xl border border-border/40 p-4 bg-background/50 shadow-sm hover:border-primary/20 transition-colors">
-                    <div className="space-y-0.5">
-                      <FormLabel className="text-sm font-medium text-foreground">Sunday</FormLabel>
-                      <p className="text-xs text-muted-foreground">Mark Sunday as an official off-day.</p>
-                    </div>
-                    <FormControl>
-                      <Switch checked={field.value} onCheckedChange={field.onChange} />
-                    </FormControl>
+                    <FormMessage />
                   </FormItem>
                 )} />
               </div>

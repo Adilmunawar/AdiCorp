@@ -260,6 +260,8 @@ export type Database = {
           wage_rate: number
           working_days_per_week: number | null
           working_hours_per_day: number | null
+          weekend_saturday: boolean | null
+          weekend_sunday: boolean | null
         }
         Insert: {
           bank_account_number?: string | null
@@ -282,6 +284,8 @@ export type Database = {
           wage_rate: number
           working_days_per_week?: number | null
           working_hours_per_day?: number | null
+          weekend_saturday?: boolean | null
+          weekend_sunday?: boolean | null
         }
         Update: {
           bank_account_number?: string | null
@@ -304,6 +308,8 @@ export type Database = {
           wage_rate?: number
           working_days_per_week?: number | null
           working_hours_per_day?: number | null
+          weekend_saturday?: boolean | null
+          weekend_sunday?: boolean | null
         }
         Relationships: [
           {

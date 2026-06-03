@@ -8,6 +8,7 @@ interface RawReportData {
     name: string;
     rank: string;
     wage_rate: number;
+    salary_divisor?: number | null;
   }>;
   attendance: Array<{
     employee_id: string;
@@ -75,7 +76,7 @@ export class ReportDataService {
   private static calculateEmployeeData(
     employee: any,
     attendance: any[],
-    dailyRateDivisor: number
+    globalDailyRateDivisor: number
   ): ProcessedEmployeeData {
     const employeeAttendance = attendance.filter(att => att.employee_id === employee.id);
     
@@ -98,8 +99,9 @@ export class ReportDataService {
     });
     
     const monthlySalary = Number(employee.wage_rate) || 0;
-    // Always use the configured divisor (typically 26) for daily rate calculation
-    const dailyRate = monthlySalary / dailyRateDivisor;
+    // Use employee's specific divisor if available, otherwise fallback to global
+    const effectiveDivisor = employee.salary_divisor || globalDailyRateDivisor;
+    const dailyRate = monthlySalary / effectiveDivisor;
     const actualWorkingDays = presentDays + (shortLeaveDays * 0.5);
     const calculatedSalary = dailyRate * actualWorkingDays;
     
@@ -164,7 +166,7 @@ export class ReportDataService {
       // Single optimized query for employees
       const { data: employees, error: employeesError } = await supabase
         .from("employees")
-        .select("id, name, rank, wage_rate")
+        .select("id, name, rank, wage_rate, salary_divisor")
         .eq("company_id", companyId)
         .eq("status", "active");
 
