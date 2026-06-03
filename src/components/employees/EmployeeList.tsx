@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -55,6 +55,7 @@ export default function EmployeeList({ onAddEmployee, onEditEmployee }: Employee
       return { rows: data || [], count: count || 0 };
     },
     enabled: !!userProfile?.company_id,
+    placeholderData: keepPreviousData,
   });
 
   const employees = employeeData?.rows || [];
@@ -300,6 +301,7 @@ export default function EmployeeList({ onAddEmployee, onEditEmployee }: Employee
           </p>
           <div className="flex items-center gap-2">
             <Button
+              type="button"
               variant="outline"
               size="sm"
               className="rounded-xl h-9 hover:bg-primary/5 hover:text-primary transition-colors font-semibold"
@@ -310,6 +312,7 @@ export default function EmployeeList({ onAddEmployee, onEditEmployee }: Employee
               Previous
             </Button>
             <Button
+              type="button"
               variant="outline"
               size="sm"
               className="rounded-xl h-9 hover:bg-primary/5 hover:text-primary transition-colors font-semibold"

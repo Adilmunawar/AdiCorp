@@ -217,10 +217,10 @@ export default function EmployeeForm({ employee, onSuccess, onCancel, isOpen, on
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
               <FormField control={form.control} name="name" render={({ field }) => (
-                <FormItem className="space-y-1"><FormLabel className="text-[10px]">Full Name *</FormLabel><FormControl><Input placeholder="John Doe" {...field} className="rounded-lg bg-muted/20 h-8 text-[11px]" /></FormControl><FormMessage /></FormItem>
+                <FormItem className="space-y-1"><FormLabel className="text-[10px]">Full Name *</FormLabel><FormControl><Input placeholder="Adil Hussain" {...field} className="rounded-lg bg-muted/20 h-8 text-[11px]" /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="father_name" render={({ field }) => (
-                <FormItem className="space-y-1"><FormLabel className="text-[10px]">Father's Name</FormLabel><FormControl><Input placeholder="Father's Name" {...field} className="rounded-lg bg-muted/20 h-8 text-[11px]" /></FormControl><FormMessage /></FormItem>
+                <FormItem className="space-y-1"><FormLabel className="text-[10px]">Father's Name</FormLabel><FormControl><Input placeholder="Munawar Ali" {...field} className="rounded-lg bg-muted/20 h-8 text-[11px]" /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="date_of_birth" render={({ field }) => (
                 <FormItem className="space-y-1"><FormLabel className="text-[10px]">Date of Birth</FormLabel><FormControl><Input type="date" {...field} className="rounded-lg bg-muted/20 h-8 text-[11px]" /></FormControl><FormMessage /></FormItem>
@@ -232,7 +232,7 @@ export default function EmployeeForm({ employee, onSuccess, onCancel, isOpen, on
                 <FormItem className="space-y-1"><FormLabel className="text-[10px]">Education</FormLabel><FormControl><Input placeholder="BS Computer Science" {...field} className="rounded-lg bg-muted/20 h-8 text-[11px]" /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="email" render={({ field }) => (
-                <FormItem className="space-y-1"><FormLabel className="text-[10px]">Email Address</FormLabel><FormControl><Input placeholder="john@example.com" type="email" {...field} className="rounded-lg bg-muted/20 h-8 text-[11px]" /></FormControl><FormMessage /></FormItem>
+                <FormItem className="space-y-1"><FormLabel className="text-[10px]">Email Address</FormLabel><FormControl><Input placeholder="adil@example.com" type="email" {...field} className="rounded-lg bg-muted/20 h-8 text-[11px]" /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="phone" render={({ field }) => (
                 <FormItem className="space-y-1"><FormLabel className="text-[10px]">Phone Number</FormLabel><FormControl><Input placeholder="+1234567890" {...field} className="rounded-lg bg-muted/20 h-8 text-[11px]" /></FormControl><FormMessage /></FormItem>
@@ -314,7 +314,7 @@ export default function EmployeeForm({ employee, onSuccess, onCancel, isOpen, on
                 <FormItem className="space-y-1"><FormLabel className="text-[10px]">Monthly Salary *</FormLabel><FormControl><Input type="number" step="0.01" placeholder="Enter salary" {...field} className="rounded-lg bg-muted/20 h-8 text-[11px]" onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)} /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="bank_name" render={({ field }) => (
-                <FormItem className="space-y-1"><FormLabel className="text-[10px]">Bank Name</FormLabel><FormControl><Input placeholder="e.g. Chase Bank" {...field} className="rounded-lg bg-muted/20 h-8 text-[11px]" /></FormControl><FormMessage /></FormItem>
+                <FormItem className="space-y-1"><FormLabel className="text-[10px]">Bank Name</FormLabel><FormControl><Input placeholder="e.g. Meezan Bank" {...field} className="rounded-lg bg-muted/20 h-8 text-[11px]" /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="bank_account_number" render={({ field }) => (
                 <FormItem className="space-y-1"><FormLabel className="text-[10px]">Account Number (IBAN)</FormLabel><FormControl><Input placeholder="XXXX-XXXX-XXXX" {...field} className="rounded-lg bg-muted/20 h-8 text-[11px]" /></FormControl><FormMessage /></FormItem>
