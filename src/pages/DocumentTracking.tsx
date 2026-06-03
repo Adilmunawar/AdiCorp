@@ -88,21 +88,25 @@ export default function DocumentTracking() {
 
       if (uploadError) throw uploadError;
 
-      const { error: dbError } = await supabase
+      const { error: dbError, data: dbData } = await supabase
         .from('employee_documents')
         .insert({
           employee_id: uploadTarget.employeeId,
           company_id: userProfile.company_id,
-          document_type: uploadTarget.type,
+          document_type: uploadTarget.type as any,
           document_name: file.name,
           file_name: file.name,
           file_path: filePath,
           mime_type: file.type || 'application/octet-stream',
           file_size: file.size,
-          uploaded_by: userProfile?.id
-        });
+          uploaded_by: userProfile?.id || null
+        })
+        .select();
 
-      if (dbError) throw dbError;
+      if (dbError) {
+        console.error("DB INSERT ERROR:", dbError);
+        throw dbError;
+      }
 
       toast.success("Document uploaded successfully");
       queryClient.invalidateQueries({ queryKey: ['doc-tracking-documents'] });
