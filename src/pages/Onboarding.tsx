@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Building2, ShieldCheck, Sparkles } from "lucide-react";
+import { Building2, ShieldCheck, LayoutDashboard } from "lucide-react";
 import CompanySetupForm from "@/components/company/CompanySetupForm";
 import { useAuth } from "@/context/AuthContext";
 
@@ -18,7 +18,7 @@ const STEPS = [
   {
     title: "Launch Dashboard",
     description: "Access your centralized control panel.",
-    icon: Sparkles,
+    icon: LayoutDashboard,
   },
 ];
 
@@ -77,11 +77,10 @@ export default function OnboardingPage() {
           </div>
 
           {/* Progress Tracker */}
-          <div className="relative z-10 mb-10">
-            <ol className="space-y-7 relative before:absolute before:inset-y-4 before:left-[1.35rem] before:w-[2px] before:bg-border/80">
+          <div className="relative z-10 mb-6">
+            <ol className="relative">
               {STEPS.map((step, index) => {
                 const Icon = step.icon;
-                // Make the first step active, others pending
                 const state = index === 0 ? "active" : "pending";
 
                 return (
@@ -91,16 +90,21 @@ export default function OnboardingPage() {
                       state === "active" ? "scale-105 transform origin-left" : "opacity-60"
                     }`}
                   >
-                    <div
-                      className={`relative z-10 flex shrink-0 items-center justify-center w-11 h-11 rounded-full border-4 border-background/50 backdrop-blur-sm shadow-sm transition-colors duration-500 ${
-                        state === "active"
-                          ? "bg-background border-primary text-primary shadow-[0_0_20px_rgba(var(--primary),0.4)]"
-                          : "bg-muted/80 border-muted text-muted-foreground"
-                      }`}
-                    >
-                      <Icon className={`h-5 w-5 ${state === "active" ? "animate-pulse" : ""}`} />
+                    <div className="flex flex-col items-center">
+                      <div
+                        className={`relative z-10 flex shrink-0 items-center justify-center w-11 h-11 rounded-full border-4 border-background/50 backdrop-blur-sm shadow-sm transition-colors duration-500 ${
+                          state === "active"
+                            ? "bg-background border-primary text-primary shadow-[0_0_20px_rgba(var(--primary),0.4)]"
+                            : "bg-muted/80 border-muted text-muted-foreground"
+                        }`}
+                      >
+                        <Icon className={`h-5 w-5 ${state === "active" ? "animate-pulse" : ""}`} />
+                      </div>
+                      {index < STEPS.length - 1 && (
+                        <div className="w-[2px] h-full bg-border/80 rounded-full my-2" />
+                      )}
                     </div>
-                    <div className="flex flex-col pt-1">
+                    <div className={`flex flex-col pt-1 ${index < STEPS.length - 1 ? 'pb-8' : 'pb-0'}`}>
                       <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/80 mb-1">
                         Step {index + 1}
                       </p>
@@ -115,13 +119,13 @@ export default function OnboardingPage() {
             </ol>
           </div>
 
-          <div className="mt-auto relative z-10">
-            <div className="p-4 rounded-2xl bg-background/50 backdrop-blur-sm border border-border/50 flex items-start gap-3 shadow-sm">
-              <div className="mt-0.5 rounded-full p-1.5 bg-green-500/20 text-green-600 dark:text-green-400 shrink-0">
-                <ShieldCheck className="w-4 h-4" />
+          <div className="mt-auto relative z-10 pt-4">
+            <div className="p-4 rounded-2xl bg-background/50 backdrop-blur-sm border border-border/50 flex items-center gap-3.5 shadow-sm">
+              <div className="rounded-full p-2.5 bg-green-500/20 text-green-600 dark:text-green-400 shrink-0">
+                <ShieldCheck className="w-6 h-6" />
               </div>
               <div className="flex flex-col">
-                <strong className="text-foreground text-sm font-semibold mb-0.5">Enterprise Grade Security</strong>
+                <strong className="text-foreground text-[15px] font-semibold mb-0.5">Enterprise Grade Security</strong>
                 <span className="text-xs text-muted-foreground leading-relaxed">
                   Your organization's data is encrypted at rest and in transit.
                 </span>

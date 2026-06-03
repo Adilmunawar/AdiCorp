@@ -93,7 +93,7 @@ export default function CompanySetupForm({ onComplete, isEmbedded = false }: Com
                   Company Name <span className="text-primary">*</span>
                 </FormLabel>
                 <FormControl>
-                  <Input {...field} placeholder="e.g. Acme Corporation" className="h-10 sm:h-11 bg-background/50 border-border/60 hover:border-border focus:border-primary focus:ring-primary/20 transition-all rounded-xl shadow-sm text-base" />
+                  <Input {...field} placeholder="e.g. Nexus Orbits Pakistan" className="h-10 sm:h-11 bg-background/50 border-border/60 hover:border-border focus:border-primary focus:ring-primary/20 transition-all rounded-xl shadow-sm text-base" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -104,7 +104,7 @@ export default function CompanySetupForm({ onComplete, isEmbedded = false }: Com
                 <FormItem>
                   <FormLabel className="text-sm font-semibold text-foreground">Phone Number</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder="e.g. +1 (555) 123-4567" className="h-10 sm:h-11 bg-background/50 border-border/60 hover:border-border focus:border-primary focus:ring-primary/20 transition-all rounded-xl shadow-sm" />
+                    <Input {...field} placeholder="e.g. +923244965220" className="h-10 sm:h-11 bg-background/50 border-border/60 hover:border-border focus:border-primary focus:ring-primary/20 transition-all rounded-xl shadow-sm" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -113,7 +113,7 @@ export default function CompanySetupForm({ onComplete, isEmbedded = false }: Com
                 <FormItem>
                   <FormLabel className="text-sm font-semibold text-foreground">Website</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder="e.g. https://example.com" className="h-10 sm:h-11 bg-background/50 border-border/60 hover:border-border focus:border-primary focus:ring-primary/20 transition-all rounded-xl shadow-sm" />
+                    <Input {...field} placeholder="e.g. NexusOrbits.pk" className="h-10 sm:h-11 bg-background/50 border-border/60 hover:border-border focus:border-primary focus:ring-primary/20 transition-all rounded-xl shadow-sm" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -124,7 +124,7 @@ export default function CompanySetupForm({ onComplete, isEmbedded = false }: Com
               <FormItem>
                 <FormLabel className="text-sm font-semibold text-foreground">Office Address</FormLabel>
                 <FormControl>
-                  <Input {...field} placeholder="e.g. 123 Innovation Drive" className="h-10 sm:h-11 bg-background/50 border-border/60 hover:border-border focus:border-primary focus:ring-primary/20 transition-all rounded-xl shadow-sm" />
+                  <Input {...field} placeholder="e.g. 227/A Circular road Lahore" className="h-10 sm:h-11 bg-background/50 border-border/60 hover:border-border focus:border-primary focus:ring-primary/20 transition-all rounded-xl shadow-sm" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -150,6 +150,7 @@ export default function CompanySetupForm({ onComplete, isEmbedded = false }: Com
                     <Upload className="mr-2 h-4 w-4" />
                     Upload Image
                   </label>
+                  <input id="logo-upload" type="file" accept="image/*" onChange={handleLogoChange} className="hidden" />
                   <p className="text-[11px] text-muted-foreground mt-1.5">
                     Recommended: PNG, JPG, or SVG. Max 2MB.
                   </p>
@@ -161,7 +162,7 @@ export default function CompanySetupForm({ onComplete, isEmbedded = false }: Com
           <CardFooter className={`${isEmbedded ? 'px-0 pt-2 pb-0' : 'pt-6 pb-8 px-8 border-t border-border/50 bg-muted/5'}`}>
             <Button 
               type="submit" 
-              disabled={isLoading || !form.formState.isValid} 
+              disabled={isLoading} 
               className="w-full relative overflow-hidden h-14 rounded-xl text-lg font-bold shadow-[0_8px_30px_rgb(var(--primary)_/_0.2)] hover:shadow-[0_8px_30px_rgb(var(--primary)_/_0.3)] transition-all group"
             >
               {isLoading ? (
