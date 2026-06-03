@@ -13,6 +13,7 @@ import { useState, useRef } from "react";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export default function DocumentTracking() {
   const { userProfile } = useAuth();
@@ -20,6 +21,7 @@ export default function DocumentTracking() {
   const [filterStatus, setFilterStatus] = useState("all");
   const [uploading, setUploading] = useState(false);
   const [uploadTarget, setUploadTarget] = useState<{ employeeId: string, type: string } | null>(null);
+  const [viewDocument, setViewDocument] = useState<{ url: string, name: string, type: string } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const queryClient = useQueryClient();
 
@@ -52,16 +54,14 @@ export default function DocumentTracking() {
     enabled: !!userProfile?.company_id,
   });
 
-  const handleDownload = async (filePath: string, fileName: string) => {
+  const handleViewDocument = async (filePath: string, fileName: string, mimeType: string) => {
     try {
       const { data, error } = await supabase.storage.from("employee-documents").download(filePath);
       if (error) throw error;
       const url = URL.createObjectURL(data);
-      const a = document.createElement("a");
-      a.href = url; a.download = fileName; a.click();
-      URL.revokeObjectURL(url);
+      setViewDocument({ url, name: fileName, type: mimeType });
     } catch (error: any) {
-      toast.error(`Download failed: ${error.message}`);
+      toast.error(`Failed to load document: ${error.message}`);
     }
   };
 
@@ -251,9 +251,9 @@ export default function DocumentTracking() {
                               variant="ghost" 
                               size="sm" 
                               className="h-6 text-[10px] text-primary hover:bg-primary/10 px-2"
-                              onClick={() => handleDownload(doc.file_path, doc.file_name)}
+                              onClick={() => handleViewDocument(doc.file_path, doc.file_name, doc.mime_type || 'application/pdf')}
                             >
-                              <Download className="h-3 w-3 mr-1" /> View
+                              <FileText className="h-3 w-3 mr-1" /> View
                             </Button>
                           </div>
                         );
@@ -319,8 +319,38 @@ export default function DocumentTracking() {
             </div>
           </CardContent>
         </Card>
-
       </div>
+
+      <Dialog 
+        open={!!viewDocument} 
+        onOpenChange={(open) => {
+          if (!open) {
+            if (viewDocument?.url) URL.revokeObjectURL(viewDocument.url);
+            setViewDocument(null);
+          }
+        }}
+      >
+        <DialogContent className="max-w-4xl h-[85vh] flex flex-col overflow-hidden p-0">
+          <DialogHeader className="p-4 border-b border-border/50 shrink-0">
+            <DialogTitle className="text-lg">{viewDocument?.name}</DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 overflow-auto bg-muted/20 relative p-4 flex items-center justify-center">
+            {viewDocument?.type.startsWith('image/') ? (
+              <img 
+                src={viewDocument.url} 
+                alt={viewDocument.name}
+                className="max-w-full max-h-full object-contain rounded-lg shadow-sm"
+              />
+            ) : viewDocument?.url ? (
+              <iframe 
+                src={viewDocument.url} 
+                title={viewDocument.name}
+                className="w-full h-full rounded-lg shadow-sm bg-white"
+              />
+            ) : null}
+          </div>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 }
