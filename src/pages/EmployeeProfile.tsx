@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { 
   ArrowLeft, Edit, Mail, Phone, Calendar, TrendingUp,
-  Clock, Award, Activity, CheckCircle2, XCircle, CreditCard, Building
+  Clock, Award, Activity, CheckCircle2, XCircle, CreditCard, Building, User
 } from "lucide-react";
 import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -104,85 +104,80 @@ export default function EmployeeProfile() {
           )}
         </div>
 
-        {/* Hero Banner Card */}
-        <div className="relative rounded-3xl border border-border bg-card shadow-xl overflow-hidden">
-          {/* Decorative background */}
-          <div className="h-32 bg-gradient-to-r from-primary/20 via-primary/10 to-background"></div>
-          
-          <div className="px-6 sm:px-10 pb-8 -mt-12">
-            <div className="flex flex-col sm:flex-row items-start sm:items-end gap-6 mb-6">
-              <Avatar className="h-28 w-28 border-4 border-card shadow-lg bg-card">
-                <AvatarFallback className="text-4xl font-bold bg-gradient-to-br from-primary to-primary/60 text-primary-foreground">
-                  {employee.name.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1 space-y-1.5 pb-2">
-                <div className="flex flex-wrap items-center gap-3">
-                  <h1 className="text-3xl font-extrabold text-foreground">{employee.name}</h1>
-                  <Badge variant={employee.status === 'active' ? 'default' : 'secondary'} className="capitalize shadow-sm">
-                    {employee.status}
-                  </Badge>
-                </div>
-                <div className="flex flex-wrap items-center gap-4 text-muted-foreground text-sm font-medium">
-                  <span className="flex items-center gap-1.5 text-primary">
-                    <Award className="h-4 w-4" /> {employee.rank}
+        {/* Compact Header Card */}
+        <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden p-5 sm:p-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 mb-5">
+            <Avatar className="h-20 w-20 border-2 border-primary/10 shadow-sm bg-card">
+              <AvatarFallback className="text-2xl font-bold bg-primary/10 text-primary">
+                {employee.name.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1 space-y-1">
+              <div className="flex flex-wrap items-center gap-3">
+                <h1 className="text-xl sm:text-2xl font-bold text-foreground">{employee.name}</h1>
+                <Badge variant={employee.status === 'active' ? 'default' : 'secondary'} className="capitalize shadow-sm px-2 py-0">
+                  {employee.status}
+                </Badge>
+              </div>
+              <div className="flex flex-wrap items-center gap-3 text-muted-foreground text-xs sm:text-sm font-medium">
+                <span className="flex items-center gap-1 text-primary">
+                  <Award className="h-3.5 w-3.5" /> {employee.rank}
+                </span>
+                {employee.email && (
+                  <span className="flex items-center gap-1">
+                    <Mail className="h-3.5 w-3.5" /> {employee.email}
                   </span>
-                  {employee.email && (
-                    <span className="flex items-center gap-1.5">
-                      <Mail className="h-4 w-4" /> {employee.email}
-                    </span>
-                  )}
-                  {employee.phone && (
-                    <span className="flex items-center gap-1.5">
-                      <Phone className="h-4 w-4" /> {employee.phone}
-                    </span>
-                  )}
-                </div>
+                )}
+                {employee.phone && (
+                  <span className="flex items-center gap-1">
+                    <Phone className="h-3.5 w-3.5" /> {employee.phone}
+                  </span>
+                )}
               </div>
             </div>
+          </div>
 
-            <Separator className="mb-6 opacity-50" />
+          <Separator className="mb-5 opacity-50" />
 
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-              <div className="space-y-1">
-                <p className="text-xs text-muted-foreground flex items-center gap-1.5"><Calendar className="h-3.5 w-3.5" /> Joined Date</p>
-                <p className="text-sm font-semibold">{format(new Date(employee.created_at), 'MMM dd, yyyy')}</p>
-              </div>
-              <div className="space-y-1">
-                <p className="text-xs text-muted-foreground flex items-center gap-1.5"><Clock className="h-3.5 w-3.5" /> Working Days</p>
-                <div className="flex items-center gap-1.5">
-                  <p className="text-sm font-semibold">{employee.salary_divisor ? employee.salary_divisor === 26 ? '6 Days / Week' : employee.salary_divisor === 22 ? '5 Days / Week' : 'Custom' : 'Company Default'}</p>
-                  {employee.weekend_saturday === false && <Badge variant="outline" className="text-[10px] h-5 px-1 bg-amber-500/10 text-amber-600 border-amber-500/20">Saturday ON</Badge>}
-                  {employee.weekend_saturday === true && <Badge variant="outline" className="text-[10px] h-5 px-1 bg-green-500/10 text-green-600 border-green-500/20">Saturday OFF</Badge>}
-                </div>
-              </div>
-              <div className="space-y-1">
-                <p className="text-xs text-muted-foreground flex items-center gap-1.5"><CreditCard className="h-3.5 w-3.5" /> Monthly Wage</p>
-                <p className="text-sm font-semibold text-primary">{formatCurrency(Number(employee.wage_rate))}</p>
-              </div>
-              {employee.cnic && (
-                <div className="space-y-1">
-                  <p className="text-xs text-muted-foreground flex items-center gap-1.5"><User className="h-3.5 w-3.5" /> National ID</p>
-                  <p className="text-sm font-semibold">{employee.cnic}</p>
-                </div>
-              )}
-              {attendanceStats && (
-                <div className="space-y-1">
-                  <p className="text-xs text-muted-foreground flex items-center gap-1.5"><TrendingUp className="h-3.5 w-3.5" /> Attendance</p>
-                  <p className="text-sm font-semibold text-green-600">{attendanceStats.rate}% Rate</p>
-                </div>
-              )}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+            <div className="space-y-1">
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground flex items-center gap-1"><Calendar className="h-3 w-3" /> Joined</p>
+              <p className="text-xs sm:text-sm font-semibold">{format(new Date(employee.created_at), 'MMM dd, yyyy')}</p>
             </div>
+            <div className="space-y-1">
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground flex items-center gap-1"><Clock className="h-3 w-3" /> Schedule</p>
+              <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-1.5">
+                <p className="text-xs sm:text-sm font-semibold">{employee.salary_divisor ? employee.salary_divisor === 26 ? '6 Days / Week' : employee.salary_divisor === 22 ? '5 Days / Week' : 'Custom' : 'Company Default'}</p>
+                {employee.weekend_saturday === false && <Badge variant="outline" className="text-[9px] h-4 px-1 py-0 bg-amber-500/10 text-amber-600 border-amber-500/20">Sat ON</Badge>}
+                {employee.weekend_saturday === true && <Badge variant="outline" className="text-[9px] h-4 px-1 py-0 bg-green-500/10 text-green-600 border-green-500/20">Sat OFF</Badge>}
+              </div>
+            </div>
+            <div className="space-y-1">
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground flex items-center gap-1"><CreditCard className="h-3 w-3" /> Wage</p>
+              <p className="text-xs sm:text-sm font-semibold text-primary">{formatCurrency(Number(employee.wage_rate))}</p>
+            </div>
+            {employee.cnic && (
+              <div className="space-y-1">
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground flex items-center gap-1"><User className="h-3 w-3" /> ID</p>
+                <p className="text-xs sm:text-sm font-semibold">{employee.cnic}</p>
+              </div>
+            )}
+            {attendanceStats && (
+              <div className="space-y-1">
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground flex items-center gap-1"><TrendingUp className="h-3 w-3" /> Attendance</p>
+                <p className="text-xs sm:text-sm font-semibold text-green-600">{attendanceStats.rate}% Rate</p>
+              </div>
+            )}
           </div>
         </div>
 
         {/* Tabs */}
         <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 bg-muted/50 p-1 rounded-xl">
-            <TabsTrigger value="overview" className="rounded-lg">Overview</TabsTrigger>
-            <TabsTrigger value="attendance" className="rounded-lg">Attendance Log</TabsTrigger>
-            <TabsTrigger value="documents" className="rounded-lg">Documents</TabsTrigger>
-            <TabsTrigger value="activity" className="rounded-lg">Activity</TabsTrigger>
+          <TabsList className="flex flex-wrap w-full h-auto bg-muted/50 p-1 rounded-xl">
+            <TabsTrigger value="overview" className="flex-1 rounded-lg text-xs py-1.5">Overview</TabsTrigger>
+            <TabsTrigger value="attendance" className="flex-1 rounded-lg text-xs py-1.5">Attendance</TabsTrigger>
+            <TabsTrigger value="documents" className="flex-1 rounded-lg text-xs py-1.5">Documents</TabsTrigger>
+            <TabsTrigger value="activity" className="flex-1 rounded-lg text-xs py-1.5">Activity</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6 mt-6 animate-in fade-in duration-300">

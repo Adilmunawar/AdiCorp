@@ -102,16 +102,6 @@ export default function EmployeeImportExport({ onImportComplete, employees }: Em
           </div>
         </div>
 
-        <div className="bg-muted/40 rounded-2xl p-4 border border-border">
-          <h4 className="font-semibold text-sm mb-2">Import Instructions:</h4>
-          <ul className="text-sm text-muted-foreground space-y-1">
-            <li>• Download the template first to see the required format</li>
-            <li>• Required columns: name, rank, wage_rate</li>
-            <li>• Optional column: status (active/inactive, defaults to active)</li>
-            <li>• Wage rate must be a valid number</li>
-            <li>• Supported formats: .xlsx, .xls, .csv</li>
-          </ul>
-        </div>
       </CardContent>
     </Card>
   );

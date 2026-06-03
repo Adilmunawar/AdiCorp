@@ -245,8 +245,11 @@ export type Database = {
           cnic: string | null
           company_id: string
           created_at: string
+          date_of_birth: string | null
+          education: string | null
           email: string | null
           emergency_contact: string | null
+          father_name: string | null
           id: string
           joining_date: string | null
           name: string
@@ -269,8 +272,11 @@ export type Database = {
           cnic?: string | null
           company_id: string
           created_at?: string
+          date_of_birth?: string | null
+          education?: string | null
           email?: string | null
           emergency_contact?: string | null
+          father_name?: string | null
           id?: string
           joining_date?: string | null
           name: string
@@ -293,8 +299,11 @@ export type Database = {
           cnic?: string | null
           company_id?: string
           created_at?: string
+          date_of_birth?: string | null
+          education?: string | null
           email?: string | null
           emergency_contact?: string | null
+          father_name?: string | null
           id?: string
           joining_date?: string | null
           name?: string

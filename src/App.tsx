@@ -26,6 +26,7 @@ const TimelineLogsPage = lazy(() => import("./pages/TimelineLogs"));
 const LeaveManagement = lazy(() => import("./pages/LeaveManagement"));
 const OvertimePage = lazy(() => import("./pages/Overtime"));
 const OnboardingPage = lazy(() => import("./pages/Onboarding"));
+const DocumentTracking = lazy(() => import("./pages/DocumentTracking"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
@@ -60,6 +61,7 @@ function AnimatedRoutes() {
             <Route path="/timeline-logs" element={<PrivateRoute><TimelineLogsPage /></PrivateRoute>} />
             <Route path="/leave-management" element={<PrivateRoute><LeaveManagement /></PrivateRoute>} />
             <Route path="/overtime" element={<PrivateRoute><OvertimePage /></PrivateRoute>} />
+            <Route path="/document-tracking" element={<PrivateRoute><DocumentTracking /></PrivateRoute>} />
             <Route path="/onboarding" element={<PrivateRoute><OnboardingPage /></PrivateRoute>} />
             <Route path="/404" element={<NotFound />} />
             <Route path="*" element={<Navigate to="/404" replace />} />

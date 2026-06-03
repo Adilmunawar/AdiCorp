@@ -17,6 +17,7 @@ const navItems = [
   { name: "Employees", icon: Users, path: "/employees", group: "main" },
   { name: "Attendance", icon: Clock, path: "/attendance", group: "main" },
   { name: "Leave Management", icon: CalendarDays, path: "/leave-management", group: "hr" },
+  { name: "Documents", icon: FileText, path: "/document-tracking", group: "hr" },
   { name: "Salary", icon: BarChart, path: "/salary", group: "finance" },
   { name: "Overtime", icon: Timer, path: "/overtime", group: "finance" },
   { name: "Reports", icon: ChartPie, path: "/reports", group: "finance" },
