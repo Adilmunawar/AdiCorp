@@ -12,7 +12,22 @@ import * as XLSX from 'xlsx';
 import { EmployeeRow } from "@/types/supabase";
 
 interface EmployeeImportExportProps { onImportComplete: () => void; employees: EmployeeRow[]; }
-interface ImportEmployee { name: string; rank: string; wage_rate: number; status?: string; }
+interface ImportEmployee { 
+  name: string; 
+  rank?: string; 
+  wage_rate?: number; 
+  status?: string;
+  email?: string;
+  phone?: string;
+  cnic?: string;
+  date_of_birth?: string;
+  father_name?: string;
+  education?: string;
+  shift_type?: string;
+  bank_name?: string;
+  bank_account_number?: string;
+  emergency_contact?: string;
+}
 
 export default function EmployeeImportExport({ onImportComplete, employees }: EmployeeImportExportProps) {
   const [importing, setImporting] = useState(false);
@@ -22,9 +37,29 @@ export default function EmployeeImportExport({ onImportComplete, employees }: Em
   const { logActivity } = useActivityLogger();
 
   const downloadTemplate = () => {
-    const templateData = [{ name: "John Doe", rank: "Manager", wage_rate: 50000, status: "active" }, { name: "Jane Smith", rank: "Developer", wage_rate: 45000, status: "active" }];
+    const templateData = [{ 
+      name: "John Doe", 
+      rank: "Manager", 
+      wage_rate: 50000, 
+      status: "active",
+      email: "john@example.com",
+      phone: "03001234567",
+      cnic: "35501-0600360-9",
+      date_of_birth: "1990-01-01",
+      father_name: "Richard Doe",
+      education: "Bachelors",
+      shift_type: "Morning",
+      bank_name: "Chase",
+      bank_account_number: "PK12345678",
+      emergency_contact: "03009876543"
+    }];
     const wb = XLSX.utils.book_new(); const ws = XLSX.utils.json_to_sheet(templateData);
-    ws['!cols'] = [{ width: 20 }, { width: 15 }, { width: 15 }, { width: 10 }];
+    // Auto-fit columns roughly
+    ws['!cols'] = [
+      { width: 20 }, { width: 15 }, { width: 15 }, { width: 10 }, { width: 25 },
+      { width: 15 }, { width: 20 }, { width: 15 }, { width: 20 }, { width: 15 },
+      { width: 15 }, { width: 20 }, { width: 25 }, { width: 20 }
+    ];
     XLSX.utils.book_append_sheet(wb, ws, "Employee Template"); XLSX.writeFile(wb, "employee_import_template.xlsx");
     toast.success("Template downloaded", { description: "Use this template to import your employees" });
   };
@@ -38,12 +73,32 @@ export default function EmployeeImportExport({ onImportComplete, employees }: Em
       const worksheet = workbook.Sheets[workbook.SheetNames[0]];
       const jsonData = XLSX.utils.sheet_to_json(worksheet) as ImportEmployee[];
       if (!jsonData.length) throw new Error("No data found");
-      const requiredFields = ['name', 'rank', 'wage_rate'];
+      
+      const requiredFields = ['name'];
       const missingFields = requiredFields.filter(field => !jsonData.every(row => row[field as keyof ImportEmployee] !== undefined));
-      if (missingFields.length > 0) throw new Error(`Missing required fields: ${missingFields.join(', ')}`);
-      const employeesToInsert = jsonData.map(emp => ({ name: emp.name.toString().trim(), rank: emp.rank.toString().trim(), wage_rate: parseFloat(emp.wage_rate.toString()), status: emp.status ? emp.status.toString().toLowerCase() : 'active', company_id: userProfile.company_id }));
+      if (missingFields.length > 0) throw new Error(`Missing strictly required fields: ${missingFields.join(', ')}`);
+      
+      const employeesToInsert = jsonData.map(emp => ({ 
+        company_id: userProfile.company_id,
+        name: emp.name?.toString().trim() || "Unknown", 
+        rank: emp.rank?.toString().trim() || "Employee", 
+        wage_rate: emp.wage_rate ? parseFloat(emp.wage_rate.toString()) : 0, 
+        status: emp.status ? emp.status.toString().toLowerCase() : 'active',
+        email: emp.email?.toString().trim() || null,
+        phone: emp.phone?.toString().trim() || null,
+        cnic: emp.cnic?.toString().trim() || null,
+        date_of_birth: emp.date_of_birth?.toString().trim() || null,
+        father_name: emp.father_name?.toString().trim() || null,
+        education: emp.education?.toString().trim() || null,
+        shift_type: emp.shift_type?.toString().trim() || null,
+        bank_name: emp.bank_name?.toString().trim() || null,
+        bank_account_number: emp.bank_account_number?.toString().trim() || null,
+        emergency_contact: emp.emergency_contact?.toString().trim() || null
+      }));
+      
       const invalidWages = employeesToInsert.filter(emp => isNaN(emp.wage_rate));
       if (invalidWages.length > 0) throw new Error("Some wage rates are not valid numbers");
+      
       const { data: insertedData, error } = await supabase.from('employees').insert(employeesToInsert).select();
       if (error) throw error;
       await logActivity({ actionType: 'employee_import', description: `Imported ${insertedData?.length || 0} employees from Excel file`, details: { file_name: file.name, employees_count: insertedData?.length || 0 }, priority: 'medium' });

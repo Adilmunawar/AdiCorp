@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Edit, Trash2, User, Search, MoreHorizontal, Eye, Plus, ChevronLeft, ChevronRight, X, Calendar } from "lucide-react";
+import { Edit, Trash2, User, Search, MoreHorizontal, Eye, Plus, ChevronLeft, ChevronRight, X, Calendar, AlertTriangle, CheckCircle2, DollarSign } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
@@ -216,10 +216,17 @@ export default function EmployeeList({ onAddEmployee, onEditEmployee }: Employee
                     </TableCell>
                     <TableCell className="py-1">
                       <div className="flex flex-col">
-                        <span className="font-semibold text-foreground cursor-pointer text-xs hover:text-primary transition-colors leading-tight" onClick={() => navigate(`/employees/${employee.id}`)}>
-                          {employee.name}
-                        </span>
-                        {employee.email && <span className="text-[9px] text-muted-foreground leading-tight">{employee.email}</span>}
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-semibold text-foreground cursor-pointer text-xs hover:text-primary transition-colors leading-tight truncate max-w-[120px] sm:max-w-[150px]" onClick={() => navigate(`/employees/${employee.id}`)}>
+                            {employee.name}
+                          </span>
+                          {(!employee.wage_rate || !employee.cnic || !employee.phone || employee.rank === "Employee") && (
+                            <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/20 text-[8px] px-1 py-0 h-4 flex items-center gap-0.5">
+                              <AlertTriangle className="h-2 w-2" /> Incomplete
+                            </Badge>
+                          )}
+                        </div>
+                        {employee.email && <span className="text-[9px] text-muted-foreground leading-tight mt-0.5 truncate max-w-[150px]">{employee.email}</span>}
                       </div>
                     </TableCell>
                     <TableCell className="py-1">

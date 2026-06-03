@@ -185,12 +185,30 @@ export default function EmployeeForm({ employee, onSuccess, onCancel, isOpen, on
 
   const handleCancel = () => { form.reset(); setCnicFile(null); setDegreeFile(null); setContractFile(null); onCancel?.(); onClose?.(); };
 
+  const formatCnic = (value: string) => {
+    if (!value) return value;
+    const v = value.replace(/\D/g, ''); // keep only numbers
+    const match = v.match(/^(\d{0,5})(\d{0,7})(\d{0,1})$/);
+    if (!match) {
+      const sliced = v.slice(0, 13);
+      const m = sliced.match(/^(\d{0,5})(\d{0,7})(\d{0,1})$/);
+      if (!m) return v;
+      return !m[2] ? m[1] : `${m[1]}-${m[2]}` + (m[3] ? `-${m[3]}` : '');
+    }
+    return !match[2] ? match[1] : `${match[1]}-${match[2]}` + (match[3] ? `-${match[3]}` : '');
+  };
+
+  const formatNumberOnly = (value: string) => {
+    if (!value) return value;
+    return value.replace(/\D/g, '');
+  };
+
   const formContent = (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
         
         {/* Massive Single Page Grid Container */}
-        <div className="h-[60vh] overflow-y-auto px-4 sm:px-6 pb-6 space-y-6 custom-scrollbar">
+        <div className="h-[75vh] overflow-y-auto px-4 sm:px-6 pb-6 space-y-6 custom-scrollbar">
           
           {/* Section: Personal Info */}
           <div className="space-y-3">
@@ -208,7 +226,7 @@ export default function EmployeeForm({ employee, onSuccess, onCancel, isOpen, on
                 <FormItem className="space-y-1"><FormLabel className="text-[10px]">Date of Birth</FormLabel><FormControl><Input type="date" {...field} className="rounded-lg bg-muted/20 h-8 text-[11px]" /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="cnic" render={({ field }) => (
-                <FormItem className="space-y-1"><FormLabel className="text-[10px]">CNIC / National ID</FormLabel><FormControl><Input placeholder="00000-0000000-0" {...field} className="rounded-lg bg-muted/20 h-8 text-[11px]" /></FormControl><FormMessage /></FormItem>
+                <FormItem className="space-y-1"><FormLabel className="text-[10px]">CNIC / National ID</FormLabel><FormControl><Input placeholder="35501-0600360-9" {...field} onChange={(e) => field.onChange(formatCnic(e.target.value))} className="rounded-lg bg-muted/20 h-8 text-[11px]" /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="education" render={({ field }) => (
                 <FormItem className="space-y-1"><FormLabel className="text-[10px]">Education</FormLabel><FormControl><Input placeholder="BS Computer Science" {...field} className="rounded-lg bg-muted/20 h-8 text-[11px]" /></FormControl><FormMessage /></FormItem>
@@ -220,7 +238,7 @@ export default function EmployeeForm({ employee, onSuccess, onCancel, isOpen, on
                 <FormItem className="space-y-1"><FormLabel className="text-[10px]">Phone Number</FormLabel><FormControl><Input placeholder="+1234567890" {...field} className="rounded-lg bg-muted/20 h-8 text-[11px]" /></FormControl><FormMessage /></FormItem>
               )} />
               <FormField control={form.control} name="emergency_contact" render={({ field }) => (
-                <FormItem className="space-y-1"><FormLabel className="text-[10px]">Emergency Contact</FormLabel><FormControl><Input placeholder="Name & Phone" {...field} className="rounded-lg bg-muted/20 h-8 text-[11px]" /></FormControl><FormMessage /></FormItem>
+                <FormItem className="space-y-1"><FormLabel className="text-[10px]">Emergency Phone Number</FormLabel><FormControl><Input placeholder="03001234567" {...field} onChange={(e) => field.onChange(formatNumberOnly(e.target.value))} className="rounded-lg bg-muted/20 h-8 text-[11px]" /></FormControl><FormMessage /></FormItem>
               )} />
             </div>
           </div>
@@ -347,7 +365,7 @@ export default function EmployeeForm({ employee, onSuccess, onCancel, isOpen, on
   if (isOpen !== undefined) {
     return (
       <Dialog open={isOpen} onOpenChange={(open) => !open && onClose?.()}>
-        <DialogContent className="max-w-3xl rounded-2xl border border-border bg-card shadow-2xl p-0 overflow-hidden gap-0 w-[95vw]">
+        <DialogContent className="max-w-5xl rounded-2xl border border-border bg-card shadow-2xl p-0 overflow-hidden gap-0 w-[95vw]">
           <DialogHeader className="p-4 pb-3 bg-muted/10 border-b border-border/50">
             <DialogTitle className="flex items-center gap-2 text-lg font-bold">
               <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary inline-flex items-center justify-center">
