@@ -16,6 +16,8 @@ import {
   Tooltip,
   ResponsiveContainer,
   Legend,
+  ReferenceArea,
+  Label,
 } from "recharts";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TrendingUp, Users, Calendar, DollarSign, Sparkles } from "lucide-react";
@@ -68,6 +70,14 @@ export default function AnalyticsWidget() {
         .eq('company_id', userProfile.company_id)
         .eq('status', 'active');
 
+      const { data: eventsData } = await supabase
+        .from('events')
+        .select('date, title, type, affects_attendance')
+        .eq('company_id', userProfile.company_id)
+        .eq('affects_attendance', true)
+        .gte('date', last30Days[0])
+        .lte('date', last30Days[last30Days.length - 1]);
+
       const attendanceTrends = last30Days.map(dateStr => {
         const dayAttendance = attendanceData?.filter(a => a.date === dateStr) || [];
         const activeEmployees = employeesData || [];
@@ -89,7 +99,9 @@ export default function AnalyticsWidget() {
           } else {
             // Check if there is an approved leave request for this date
             const isLeaveApproved = leaveRequestsData?.some(l => l.employee_id === emp.id && dateStr >= l.start_date && dateStr <= l.end_date);
-            if (isLeaveApproved) {
+            const isEventHoliday = eventsData?.some(e => e.date === dateStr);
+
+            if (isLeaveApproved || isEventHoliday) {
               leave++;
             } else if (!isSunday) {
               // Only count as absent if it's a working day (not Sunday)
@@ -98,12 +110,15 @@ export default function AnalyticsWidget() {
           }
         });
 
+        const eventForDay = eventsData?.find(e => e.date === dateStr);
+
         return {
           date: format(dateObj, 'MMM dd'),
           present,
           shortLeave,
           leave,
-          absent
+          absent,
+          eventTitle: eventForDay ? eventForDay.title : null
         };
       });
 
@@ -161,6 +176,34 @@ export default function AnalyticsWidget() {
     { value: "salary", label: "Salary", icon: DollarSign },
     { value: "performance", label: "Performance", icon: Users },
   ];
+
+  const trends = analyticsData?.attendanceTrends || [];
+  const eventPeriods: any[] = [];
+  let currentPeriod: any = null;
+  
+  trends.forEach((day: any, i: number) => {
+    if (day.eventTitle) {
+      if (!currentPeriod || currentPeriod.title !== day.eventTitle) {
+        if (currentPeriod) eventPeriods.push(currentPeriod);
+        const startIdx = Math.max(0, i - 1);
+        const endIdx = Math.min(trends.length - 1, i + 1);
+        currentPeriod = { 
+          start: trends[startIdx].date, 
+          end: trends[endIdx].date, 
+          title: day.eventTitle 
+        };
+      } else {
+        const endIdx = Math.min(trends.length - 1, i + 1);
+        currentPeriod.end = trends[endIdx].date;
+      }
+    } else {
+      if (currentPeriod) {
+        eventPeriods.push(currentPeriod);
+        currentPeriod = null;
+      }
+    }
+  });
+  if (currentPeriod) eventPeriods.push(currentPeriod);
 
   return (
     <Card className="border-border/60 bg-card shadow-sm overflow-hidden h-full flex flex-col rounded-xl">
@@ -235,6 +278,17 @@ export default function AnalyticsWidget() {
                 <Area type="monotone" dataKey="shortLeave" stroke="#3b82f6" strokeWidth={3} fillOpacity={1} fill="url(#colorShortLeave)" name="Short Leave" activeDot={{ r: 6, strokeWidth: 0, fill: "#3b82f6" }} />
                 <Area type="monotone" dataKey="leave" stroke="#a855f7" strokeWidth={3} fillOpacity={1} fill="url(#colorPaidLeave)" name="Paid Leave" activeDot={{ r: 6, strokeWidth: 0, fill: "#a855f7" }} />
                 <Area type="monotone" dataKey="absent" stroke="#ef4444" strokeWidth={3} fillOpacity={1} fill="url(#colorAbsent)" name="Absent" activeDot={{ r: 6, strokeWidth: 0, fill: "#ef4444" }} />
+                
+                {eventPeriods.map((period: any, idx: number) => (
+                  <ReferenceArea 
+                    key={`event-${idx}`} 
+                    x1={period.start} 
+                    x2={period.end} 
+                    strokeOpacity={0.3} 
+                    fill="#eab308" 
+                    fillOpacity={0.15}
+                  />
+                ))}
               </AreaChart>
             </ResponsiveContainer>
           </div>

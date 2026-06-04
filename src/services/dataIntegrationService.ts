@@ -151,7 +151,7 @@ class DataIntegrationService {
       const monthStart = format(startOfMonth(month), 'yyyy-MM-dd');
       const monthEnd = format(endOfMonth(month), 'yyyy-MM-dd');
 
-      const [employees, attendance, overtime, leaveRequests] = await Promise.all([
+      const [employees, attendance, overtime, leaveRequests, events] = await Promise.all([
         this.getEmployees(companyId),
         this.getAttendanceForMonth(companyId, month),
         supabase
@@ -169,6 +169,14 @@ class DataIntegrationService {
           .eq("status", "approved")
           .lte("start_date", monthEnd)
           .gte("end_date", monthStart)
+          .then(res => res.data || []),
+        supabase
+          .from("events")
+          .select("date, type, affects_attendance")
+          .eq("company_id", companyId)
+          .eq("affects_attendance", true)
+          .gte("date", monthStart)
+          .lte("date", monthEnd)
           .then(res => res.data || [])
       ]);
 
@@ -199,7 +207,9 @@ class DataIntegrationService {
                  shortLeaveDays++;
              } else {
                  const isLeaveApproved = employeeLeaves.some(l => dateStr >= l.start_date && dateStr <= l.end_date);
-                 if (isLeaveApproved) {
+                 const isEventHoliday = events.some(e => e.date === dateStr);
+                 
+                 if (isLeaveApproved || isEventHoliday) {
                      paidLeaveDays++;
                  } else {
                      absentDays++;

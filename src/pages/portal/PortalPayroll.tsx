@@ -23,6 +23,7 @@ export default function PortalPayroll() {
   const payslips = data?.payslips || [];
   const attendance = data?.attendance || [];
   const leaveRequests = (data as any)?.leave_requests || [];
+  const events = (data as any)?.events || [];
   const profile = data?.profile;
 
   const monthlyPayslips = React.useMemo(() => {
@@ -85,7 +86,9 @@ export default function PortalPayroll() {
              shortLeaveDays++;
          } else {
              const isLeaveApproved = leaveRequests.some((l: any) => dateStr >= l.start_date && dateStr <= l.end_date);
-             if (isLeaveApproved) {
+             const isEventHoliday = events.some((e: any) => e.date === dateStr);
+             
+             if (isLeaveApproved || isEventHoliday) {
                  paidLeaveDays++;
              } else {
                  absentDays++;

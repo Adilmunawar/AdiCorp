@@ -27,6 +27,7 @@ export default function AttendanceTable() {
   const [attendanceData, setAttendanceData] = useState<AttendanceRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [activeEvent, setActiveEvent] = useState<any>(null);
   const { userProfile } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -64,6 +65,18 @@ export default function AttendanceTable() {
         return { id: existingRecord?.id, employeeId: employee.id, employeeName: employee.name, date: dateString, status: normalizedStatus };
       });
       setAttendanceData(data);
+
+      // Check for active events that affect attendance
+      const { data: eventData } = await supabase
+        .from('events')
+        .select('*')
+        .eq('company_id', userProfile.company_id)
+        .eq('date', dateString)
+        .eq('affects_attendance', true)
+        .limit(1);
+      
+      setActiveEvent(eventData && eventData.length > 0 ? eventData[0] : null);
+
     } catch (error) {
       toast({ title: "Error fetching attendance", description: "Please try again.", variant: "destructive" });
     }
@@ -90,6 +103,10 @@ export default function AttendanceTable() {
   };
 
   const saveAttendance = async () => {
+    if (activeEvent) {
+      toast({ title: "Event Locked", description: `Attendance is locked due to: ${activeEvent.title}.`, variant: "destructive" });
+      return;
+    }
     if (date.getDay() === 0) {
       toast({ title: "Off-Day", description: "Attendance cannot be saved on a Sunday.", variant: "destructive" });
       return;
@@ -121,12 +138,13 @@ export default function AttendanceTable() {
 
   const summary = useMemo(() => {
     const isSunday = date.getDay() === 0;
+    const isEvent = !!activeEvent;
     const present = attendanceData.filter((record) => record.status === "present").length;
     const shortLeave = attendanceData.filter((record) => record.status === "short_leave").length;
-    const absent = isSunday ? 0 : attendanceData.filter((record) => record.status === "absent").length;
+    const absent = (isSunday || isEvent) ? 0 : attendanceData.filter((record) => record.status === "absent").length;
 
     return { present, shortLeave, absent };
-  }, [attendanceData, date]);
+  }, [attendanceData, date, activeEvent]);
 
   if (loading) {
     return (<div className="flex justify-center items-center py-8"><div className="flex items-center space-x-2"><Loader2 className="h-8 w-8 animate-spin text-primary" /><span className="text-muted-foreground">Loading employees...</span></div></div>);
@@ -218,7 +236,11 @@ export default function AttendanceTable() {
             <p className="mt-0.5 text-[10px] text-muted-foreground">Use quick actions to mark everyone, then adjust individual records if needed.</p>
           </div>
           
-          {date.getDay() === 0 ? (
+          {activeEvent ? (
+            <div className="bg-primary/10 text-primary border border-primary/20 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5">
+              <CalendarIcon className="w-3.5 h-3.5" /> Event Triggered: {activeEvent.title} - Attendance Locked
+            </div>
+          ) : date.getDay() === 0 ? (
             <div className="bg-amber-500/10 text-amber-600 border border-amber-500/20 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5">
               <CalendarIcon className="w-3.5 h-3.5" /> Sunday is a designated Off-Day. Attendance tracking is disabled.
             </div>
@@ -253,9 +275,11 @@ export default function AttendanceTable() {
                     </TableCell>
                     <TableCell className="py-1">
                       <div className="flex items-center gap-2">
-                        {date.getDay() === 0 ? (
+                        {activeEvent || date.getDay() === 0 ? (
                           <div className="flex items-center gap-0.5 border border-border/60 rounded-lg p-0.5 bg-muted shadow-sm w-fit opacity-50 cursor-not-allowed">
-                            <span className="px-3 py-1 text-[10px] font-bold text-muted-foreground">Disabled (Off-Day)</span>
+                            <span className="px-3 py-1 text-[10px] font-bold text-muted-foreground">
+                              {activeEvent ? "Event Active" : "Disabled (Off-Day)"}
+                            </span>
                           </div>
                         ) : (
                           <div className="flex items-center gap-0.5 border border-border/60 rounded-lg p-0.5 bg-muted/10 shadow-sm w-fit">

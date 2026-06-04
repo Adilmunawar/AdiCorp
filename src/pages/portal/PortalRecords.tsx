@@ -16,6 +16,8 @@ export default function PortalRecords() {
   const { data } = useEmployeePortalData();
   
   const attendance = data?.attendance || [];
+  const events = (data as any)?.events || [];
+  const leaveRequests = (data as any)?.leave_requests || [];
 
   const handlePrevMonth = () => setSelectedMonth(prev => addMonths(prev, -1));
   const handleNextMonth = () => setSelectedMonth(prev => addMonths(prev, 1));
@@ -33,7 +35,12 @@ export default function PortalRecords() {
   const presentCount = currentMonthAttendance.filter((a: any) => a.status === 'present').length;
   const leaveCount = currentMonthAttendance.filter((a: any) => a.status === 'leave').length;
   const shortLeaveCount = currentMonthAttendance.filter((a: any) => a.status === 'short_leave').length;
-  const absentCount = currentMonthAttendance.filter((a: any) => a.status === 'absent').length;
+  // Make sure not to count absent if it falls on an event
+  const absentCount = currentMonthAttendance.filter((a: any) => {
+    if (a.status !== 'absent') return false;
+    const isEvent = events.some((e: any) => isSameDay(parseISO(e.date), parseISO(a.date)));
+    return !isEvent;
+  }).length;
 
   const activityGraphData = useMemo(() => {
     const end = startOfToday();
@@ -42,12 +49,15 @@ export default function PortalRecords() {
 
     return days.map(day => {
       const record = attendance.find((a: any) => isSameDay(parseISO(a.date), day));
+      const isEvent = events.some((e: any) => isSameDay(parseISO(e.date), day));
+      
       return {
         date: day,
-        status: record ? record.status : 'none'
+        status: isEvent ? 'event' : (record ? record.status : 'none'),
+        eventDetails: isEvent ? events.find((e: any) => isSameDay(parseISO(e.date), day)) : null
       };
     });
-  }, [attendance]);
+  }, [attendance, events]);
 
   const getColorClass = (status: string) => {
     switch (status) {
@@ -55,6 +65,7 @@ export default function PortalRecords() {
       case 'absent': return 'bg-red-500 shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)] border border-red-600/20';
       case 'leave': return 'bg-amber-400 shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)] border border-amber-500/20';
       case 'short_leave': return 'bg-orange-500 shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)] border border-orange-600/20';
+      case 'event': return 'bg-yellow-400 shadow-[inset_0_1px_2px_rgba(0,0,0,0.2)] border border-yellow-500/20 animate-pulse';
       default: return 'bg-muted border border-border/30 shadow-inner';
     }
   };
@@ -124,7 +135,11 @@ export default function PortalRecords() {
                     </TooltipTrigger>
                     <TooltipContent className="bg-foreground text-background border-none rounded-xl px-3 py-1.5 font-semibold text-xs shadow-xl">
                       <p>{format(dayData.date, 'MMM d, yyyy')}</p>
-                      <p className="text-[10px] text-muted capitalize opacity-80 mt-0.5">{dayData.status === 'none' ? 'No Record' : dayData.status.replace('_', ' ')}</p>
+                      <p className="text-[10px] text-muted capitalize opacity-80 mt-0.5">
+                        {dayData.status === 'none' ? 'No Record' : 
+                         dayData.status === 'event' && dayData.eventDetails ? `Event: ${(dayData.eventDetails as any).title}` : 
+                         dayData.status.replace('_', ' ')}
+                      </p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
@@ -132,11 +147,12 @@ export default function PortalRecords() {
             </div>
           </div>
           
-          <div className="flex items-center justify-end gap-3 mt-3 pt-3 border-t border-border/40">
+          <div className="flex items-center justify-end gap-3 mt-3 pt-3 border-t border-border/40 flex-wrap">
             <span className="text-[10px] font-bold text-muted-foreground uppercase">Legend</span>
             <div className="flex items-center gap-1.5 text-[10px] font-semibold"><div className="w-2.5 h-2.5 rounded-[2px] bg-emerald-500" /> Present</div>
             <div className="flex items-center gap-1.5 text-[10px] font-semibold"><div className="w-2.5 h-2.5 rounded-[2px] bg-amber-400" /> Leave</div>
             <div className="flex items-center gap-1.5 text-[10px] font-semibold"><div className="w-2.5 h-2.5 rounded-[2px] bg-red-500" /> Absent</div>
+            <div className="flex items-center gap-1.5 text-[10px] font-semibold"><div className="w-2.5 h-2.5 rounded-[2px] bg-yellow-400" /> Event</div>
           </div>
         </CardContent>
       </Card>

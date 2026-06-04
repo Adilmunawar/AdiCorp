@@ -20,6 +20,12 @@ export function useEmployeePortalData() {
       
       const rpcData = rpcResponse.data as any;
 
+      const { data: eventsData } = await supabase
+        .from("events")
+        .select("*")
+        .eq("company_id", rpcData.profile.company_id)
+        .eq("affects_attendance", true);
+
       return {
         profile: rpcData.profile,
         company: rpcData.company,
@@ -27,6 +33,7 @@ export function useEmployeePortalData() {
         payslips: rpcData.payslips,
         documents: rpcData.documents,
         leave_requests: leaveRequestsResponse.data || [],
+        events: eventsData || [],
       };
     },
     enabled: !!employee?.id,
