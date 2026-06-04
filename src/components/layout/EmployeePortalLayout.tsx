@@ -51,15 +51,15 @@ export function EmployeePortalLayout() {
               key={item.path}
               onClick={() => navigate(item.path)}
               className={cn(
-                "flex flex-col items-center justify-center w-16 h-12 rounded-full transition-all duration-300 relative",
-                isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                "flex flex-col items-center justify-center w-20 h-[52px] rounded-full transition-all duration-300 relative z-10",
+                isActive ? "text-primary-foreground font-semibold" : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
               )}
             >
               {isActive && (
-                <span className="absolute inset-0 bg-primary/10 rounded-full scale-110 -z-10 animate-in zoom-in duration-200" />
+                <span className="absolute inset-0 bg-primary rounded-full -z-10 shadow-lg shadow-primary/30 animate-in zoom-in duration-300" />
               )}
-              <Icon className={cn("w-5 h-5 mb-1 transition-transform", isActive && "scale-110")} />
-              <span className="text-[10px] font-medium leading-none">{item.label}</span>
+              <Icon className={cn("w-5 h-5 mb-0.5", isActive ? "stroke-[2.5px]" : "")} />
+              <span className="text-[10px] uppercase tracking-wider">{item.label}</span>
             </button>
           );
         })}

@@ -159,13 +159,13 @@ export default function PortalRecords() {
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-3 h-[52px] bg-card shadow-lg border border-border/40 rounded-2xl p-1.5 mb-6">
-          <TabsTrigger value="attendance" className="rounded-xl text-xs font-bold data-[state=active]:bg-primary/10 data-[state=active]:text-primary transition-all">
+          <TabsTrigger value="attendance" className="rounded-xl text-xs font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all">
             <Clock className="w-4 h-4 mr-1.5" /> Time
           </TabsTrigger>
-          <TabsTrigger value="payroll" className="rounded-xl text-xs font-bold data-[state=active]:bg-primary/10 data-[state=active]:text-primary transition-all">
+          <TabsTrigger value="payroll" className="rounded-xl text-xs font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all">
             <DollarSign className="w-4 h-4 mr-1.5" /> Pay
           </TabsTrigger>
-          <TabsTrigger value="documents" className="rounded-xl text-xs font-bold data-[state=active]:bg-primary/10 data-[state=active]:text-primary transition-all">
+          <TabsTrigger value="documents" className="rounded-xl text-xs font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all">
             <ShieldCheck className="w-4 h-4 mr-1.5" /> Docs
           </TabsTrigger>
         </TabsList>

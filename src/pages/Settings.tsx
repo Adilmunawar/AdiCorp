@@ -12,13 +12,17 @@ import SecuritySettings from "@/components/settings/SecuritySettings";
 export default function SettingsPage() {
   return (
     <Dashboard title="Settings">
-      <div className="max-w-7xl mx-auto space-y-6">
-        <div className="rounded-3xl border border-border bg-card p-5 md:p-6 shadow-sm">
-          <div className="flex flex-col gap-1">
-            <h1 className="text-2xl font-bold text-foreground">System Settings</h1>
-            <p className="text-sm text-muted-foreground">
-              Configure your company settings, preferences, and system parameters
-            </p>
+      <div className="max-w-7xl mx-auto space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="border border-border bg-card shadow-sm rounded-2xl overflow-hidden mb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-4 px-5 bg-muted/5 border-b border-border/50">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
+                  <Settings className="h-5 w-5 text-primary" /> System Settings
+                </h2>
+              </div>
+              <p className="text-[11px] text-muted-foreground mt-1">Configure your company settings, preferences, and system parameters.</p>
+            </div>
           </div>
         </div>
 
@@ -38,7 +42,7 @@ export default function SettingsPage() {
                   <TabsTrigger
                     key={tab.value}
                     value={tab.value}
-                    className="flex flex-col items-center gap-1.5 py-3 px-4 md:px-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-sm text-muted-foreground hover:bg-muted/50 transition-all duration-200 rounded-xl"
+                    className="flex flex-col items-center gap-1.5 py-3 px-4 md:px-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md text-muted-foreground hover:bg-muted/50 data-[state=active]:hover:bg-primary/90 transition-all duration-300 rounded-xl"
                   >
                     <Icon className="h-4 w-4" />
                     <span className="text-[10px] font-bold uppercase tracking-wider">{tab.label}</span>

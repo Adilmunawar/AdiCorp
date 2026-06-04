@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { FileText, Download, Users, Clock, Calendar, TrendingUp, Loader2, ChevronLeft, ChevronRight, RefreshCw } from "lucide-react";
+import { FileText, Download, Users, Clock, Calendar, TrendingUp, Loader2, ChevronLeft, ChevronRight, RefreshCw, BarChart3 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { format, addMonths, subMonths } from "date-fns";
@@ -122,26 +122,31 @@ export default function ReportsPage() {
 
   return (
     <Dashboard title="Reports">
-      <div className="rounded-3xl border border-border bg-card p-5 md:p-6 mb-6 shadow-sm">
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h2 className="text-2xl font-bold text-foreground">Reports Center</h2>
-            <p className="text-sm text-muted-foreground mt-1">Operational salary and attendance insights with downloadable reports.</p>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <Button variant="outline" size="sm" onClick={() => setCurrentMonth(prev => subMonths(prev, 1))}>
-              <ChevronLeft className="h-4 w-4" /> Previous
-            </Button>
-            <div className="text-center min-w-36">
-              <h2 className="text-base font-semibold text-foreground">{format(currentMonth, "MMMM yyyy")}</h2>
+      <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="border border-border bg-card shadow-sm rounded-2xl overflow-hidden mb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-4 px-5 bg-muted/5 border-b border-border/50">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
+                  <BarChart3 className="h-5 w-5 text-primary" /> Reports Center
+                </h2>
+              </div>
+              <p className="text-[11px] text-muted-foreground mt-1">Operational salary and attendance insights with downloadable reports.</p>
             </div>
-            <Button variant="outline" size="sm" onClick={() => setCurrentMonth(prev => addMonths(prev, 1))}>
-              Next <ChevronRight className="h-4 w-4" />
-            </Button>
-            <Button onClick={() => setCurrentMonth(new Date())}>Current Month</Button>
+            <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+              <Button variant="outline" size="sm" onClick={() => setCurrentMonth(prev => subMonths(prev, 1))} className="h-8 text-xs">
+                <ChevronLeft className="h-3.5 w-3.5" /> Prev
+              </Button>
+              <div className="text-center min-w-[120px] bg-background border border-border/50 rounded-md py-1.5 px-3">
+                <h2 className="text-xs font-semibold text-foreground">{format(currentMonth, "MMM yyyy")}</h2>
+              </div>
+              <Button variant="outline" size="sm" onClick={() => setCurrentMonth(prev => addMonths(prev, 1))} className="h-8 text-xs">
+                Next <ChevronRight className="h-3.5 w-3.5" />
+              </Button>
+              <Button size="sm" onClick={() => setCurrentMonth(new Date())} className="h-8 text-xs ml-auto sm:ml-2">Current</Button>
+            </div>
           </div>
         </div>
-      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         {statCards.map((stat) => {
@@ -254,6 +259,7 @@ export default function ReportsPage() {
           </Card>
         </TabsContent>
       </Tabs>
+      </div>
     </Dashboard>
   );
 }

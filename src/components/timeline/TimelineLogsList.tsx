@@ -101,16 +101,22 @@ export default function TimelineLogsList() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-foreground mb-2">System Activity Timeline</h2>
-          <p className="text-muted-foreground">Track all important changes and activities in your system</p>
+    <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="border border-border bg-card shadow-sm rounded-2xl overflow-hidden mb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-4 px-5 bg-muted/5 border-b border-border/50">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
+                <Clock className="h-5 w-5 text-primary" /> System Activity Timeline
+              </h2>
+            </div>
+            <p className="text-[11px] text-muted-foreground mt-1">Track all important changes and activities in your system.</p>
+          </div>
+          <Button onClick={handleRefresh} disabled={isRefreshing} className="h-9 text-xs rounded-lg shadow-sm font-semibold w-full sm:w-auto">
+            <RefreshCw className={`mr-1.5 h-3.5 w-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
+            {isRefreshing ? 'Refreshing...' : 'Refresh'}
+          </Button>
         </div>
-        <Button onClick={handleRefresh} disabled={isRefreshing}>
-          <RefreshCw className={`mr-2 h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-          {isRefreshing ? 'Refreshing...' : 'Refresh'}
-        </Button>
       </div>
 
       <Card className="glass-card">
