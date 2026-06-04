@@ -35,6 +35,7 @@ interface ProcessedEmployeeData {
   expectedWorkingDays: number; // How many days they are expected to work in this month
   dailyRate: number;
   overtimePay: number;
+  overtimeHours: number;
   calculatedSalary: number;
 }
 
@@ -99,6 +100,7 @@ export class ReportDataService {
     
     // Calculate approved overtime
     const overtimePay = employeeOvertime.reduce((sum, rec) => sum + (Number(rec.total_amount) || 0), 0);
+    const overtimeHours = employeeOvertime.reduce((sum, rec) => sum + (Number(rec.hours) || 0), 0);
     
     const calculatedSalary = (dailyRate * actualWorkingDays) + overtimePay;
     
@@ -115,6 +117,7 @@ export class ReportDataService {
       expectedWorkingDays,
       dailyRate,
       overtimePay,
+      overtimeHours,
       calculatedSalary,
     };
   }
@@ -219,7 +222,7 @@ export class ReportDataService {
       // Fetch approved overtime records
       const { data: overtimeData, error: overtimeError } = await supabase
         .from("overtime_records")
-        .select("employee_id, total_amount, status")
+        .select("employee_id, hours, total_amount, status")
         .in("employee_id", employeeIds)
         .eq("status", "approved")
         .gte("date", monthStart)

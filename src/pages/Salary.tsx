@@ -45,6 +45,8 @@ export default function SalaryPage() {
         gross_salary: emp.calculatedSalary,
         net_salary: emp.calculatedSalary,
         total_deductions: 0,
+        overtime_earnings: emp.overtimePay,
+        overtime_hours: emp.overtimeHours,
         generated_by: user?.id,
       }));
 

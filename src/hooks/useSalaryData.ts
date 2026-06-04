@@ -16,6 +16,8 @@ interface EmployeeSalaryData {
   calculatedSalary: number;
   actualWorkingDays: number;
   dailyRate: number;
+  overtimePay: number;
+  overtimeHours: number;
 }
 
 interface SalaryStats {
@@ -68,6 +70,8 @@ export function useSalaryData(selectedMonth?: Date) {
         calculatedSalary: emp.calculatedSalary,
         actualWorkingDays: emp.actualWorkingDays,
         dailyRate: emp.dailyRate,
+        overtimePay: emp.overtimePay,
+        overtimeHours: emp.overtimeHours,
       }));
 
       setEmployeeSalaryData(transformedData);

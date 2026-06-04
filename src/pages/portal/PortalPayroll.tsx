@@ -23,6 +23,7 @@ export default function PortalPayroll() {
   const payslips = data?.payslips || [];
   const attendance = data?.attendance || [];
   const leaveRequests = (data as any)?.leave_requests || [];
+  const overtimeRecords = (data as any)?.overtime_records || [];
   const events = (data as any)?.events || [];
   const profile = data?.profile;
 
@@ -104,6 +105,16 @@ export default function PortalPayroll() {
 
     const actualWorkingDays = presentDays + (shortLeaveDays * 0.5) + paidLeaveDays;
     
+    // Calculate overtime for current month
+    const startStr = format(start, 'yyyy-MM-dd');
+    const endStr = format(end, 'yyyy-MM-dd');
+    const currentMonthOvertime = overtimeRecords.filter((rec: any) => {
+      return rec.status === 'approved' && rec.date >= startStr && rec.date <= endStr;
+    });
+    
+    const overtimeHours = currentMonthOvertime.reduce((sum: number, rec: any) => sum + (Number(rec.hours) || 0), 0);
+    const overtimeEarnings = currentMonthOvertime.reduce((sum: number, rec: any) => sum + (Number(rec.total_amount) || 0), 0);
+    
     const basicSalary = Number(profile.wage_rate) || 0;
     const divisor = Number(profile.salary_divisor) || 26;
     const dailyRate = basicSalary / divisor;
@@ -111,17 +122,18 @@ export default function PortalPayroll() {
     // We already counted exact absents among working days
     const totalDeductions = absentDays * dailyRate + (shortLeaveDays * (dailyRate / 2));
     
-    const netSalary = basicSalary - totalDeductions;
+    const grossSalary = basicSalary + overtimeEarnings;
+    const netSalary = grossSalary - totalDeductions;
 
     return {
       id: 'estimate',
       month: startOfToday().toISOString(),
       basic_salary: basicSalary,
-      gross_salary: basicSalary, // Simplified
+      gross_salary: grossSalary, // Simplified
       net_salary: netSalary,
       total_deductions: totalDeductions,
-      overtime_hours: 0,
-      overtime_earnings: 0,
+      overtime_hours: overtimeHours,
+      overtime_earnings: overtimeEarnings,
       days_worked: actualWorkingDays,
       present_days: presentDays,
       absent_days: absentDays,
@@ -130,9 +142,15 @@ export default function PortalPayroll() {
       recordCount: 0,
       isEstimate: true
     };
-  }, [profile, hasCurrentMonthPayslip, attendance, leaveRequests]);
+  }, [profile, hasCurrentMonthPayslip, attendance, leaveRequests, overtimeRecords]);
 
-  const displayList = estimate ? [estimate, ...monthlyPayslips] : monthlyPayslips;
+  // Basic pagination: slice to 10 latest entries to prevent UI lag with large data
+  const [page, setPage] = useState(1);
+  const itemsPerPage = 10;
+  
+  const allList = estimate ? [estimate, ...monthlyPayslips] : monthlyPayslips;
+  const totalPages = Math.ceil(allList.length / itemsPerPage);
+  const displayList = allList.slice((page - 1) * itemsPerPage, page * itemsPerPage);
 
   return (
     <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500 mb-6">
@@ -243,6 +261,30 @@ export default function PortalPayroll() {
               </Card>
             );
           })}
+          
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between pt-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                disabled={page === 1}
+                className="rounded-full shadow-sm"
+              >
+                Previous
+              </Button>
+              <span className="text-xs font-bold text-muted-foreground">Page {page} of {totalPages}</span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                disabled={page === totalPages}
+                className="rounded-full shadow-sm"
+              >
+                Next
+              </Button>
+            </div>
+          )}
         </div>
       )}
     </div>

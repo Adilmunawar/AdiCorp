@@ -10,13 +10,15 @@ export function useEmployeePortalData() {
     queryFn: async () => {
       if (!employee?.id) throw new Error("No employee session");
 
-      const [rpcResponse, leaveRequestsResponse] = await Promise.all([
+      const [rpcResponse, leaveRequestsResponse, overtimeResponse] = await Promise.all([
         supabase.rpc("get_employee_portal_data", { p_emp_id: employee.id }),
-        supabase.from("leave_requests").select("*").eq("employee_id", employee.id).eq("status", "approved")
+        supabase.from("leave_requests").select("*").eq("employee_id", employee.id).eq("status", "approved"),
+        supabase.from("overtime_records").select("*").eq("employee_id", employee.id).order("date", { ascending: false })
       ]);
 
       if (rpcResponse.error) throw rpcResponse.error;
       if (leaveRequestsResponse.error) throw leaveRequestsResponse.error;
+      if (overtimeResponse.error) throw overtimeResponse.error;
       
       const rpcData = rpcResponse.data as any;
 
@@ -33,6 +35,7 @@ export function useEmployeePortalData() {
         payslips: rpcData.payslips,
         documents: rpcData.documents,
         leave_requests: leaveRequestsResponse.data || [],
+        overtime_records: overtimeResponse.data || [],
         events: eventsData || [],
       };
     },

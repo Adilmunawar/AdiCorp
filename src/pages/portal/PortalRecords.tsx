@@ -6,7 +6,8 @@ import { format, subDays, eachDayOfInterval, startOfToday, parseISO, isSameDay, 
 import PortalAttendance from "./PortalAttendance";
 import PortalPayroll from "./PortalPayroll";
 import PortalReports from "./PortalReports";
-import { Activity, ChevronLeft, ChevronRight, Clock, DollarSign, ShieldCheck } from "lucide-react";
+import PortalOvertime from "./PortalOvertime";
+import { Activity, ChevronLeft, ChevronRight, Clock, Clock3, DollarSign, ShieldCheck } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 
@@ -158,15 +159,18 @@ export default function PortalRecords() {
       </Card>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3 h-[52px] bg-card shadow-lg border border-border/40 rounded-2xl p-1.5 mb-6">
-          <TabsTrigger value="attendance" className="rounded-xl text-xs font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all">
-            <Clock className="w-4 h-4 mr-1.5" /> Time
+        <TabsList className="grid w-full grid-cols-4 h-[52px] bg-card shadow-lg border border-border/40 rounded-2xl p-1.5 mb-6">
+          <TabsTrigger value="attendance" className="rounded-xl text-[10px] sm:text-xs font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all">
+            <Clock className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-1.5" /> Time
           </TabsTrigger>
-          <TabsTrigger value="payroll" className="rounded-xl text-xs font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all">
-            <DollarSign className="w-4 h-4 mr-1.5" /> Pay
+          <TabsTrigger value="payroll" className="rounded-xl text-[10px] sm:text-xs font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all">
+            <DollarSign className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-1.5" /> Pay
           </TabsTrigger>
-          <TabsTrigger value="documents" className="rounded-xl text-xs font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all">
-            <ShieldCheck className="w-4 h-4 mr-1.5" /> Docs
+          <TabsTrigger value="overtime" className="rounded-xl text-[10px] sm:text-xs font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all">
+            <Clock3 className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-1.5" /> Overtime
+          </TabsTrigger>
+          <TabsTrigger value="documents" className="rounded-xl text-[10px] sm:text-xs font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all">
+            <ShieldCheck className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-1.5" /> Docs
           </TabsTrigger>
         </TabsList>
         
@@ -175,6 +179,9 @@ export default function PortalRecords() {
         </TabsContent>
         <TabsContent value="payroll" className="mt-0 outline-none animate-in fade-in zoom-in-95 duration-300">
           <PortalPayroll />
+        </TabsContent>
+        <TabsContent value="overtime" className="mt-0 outline-none animate-in fade-in zoom-in-95 duration-300">
+          <PortalOvertime />
         </TabsContent>
         <TabsContent value="documents" className="mt-0 outline-none animate-in fade-in zoom-in-95 duration-300">
           <PortalReports />
