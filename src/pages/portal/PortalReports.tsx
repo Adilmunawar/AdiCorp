@@ -37,10 +37,10 @@ export default function PortalReports() {
 
   return (
     <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500 mb-6">
-      <div className="flex items-center justify-between px-2 mb-2">
-        <h2 className="text-lg font-black tracking-tight text-foreground">Compliance Documents</h2>
-        <span className="text-xs font-medium text-muted-foreground flex items-center gap-1">
-          <ShieldCheck className="w-3.5 h-3.5" /> Secure
+      <div className="flex items-center justify-between px-1 mb-1">
+        <h3 className="text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground/70 pl-2">Compliance Documents</h3>
+        <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground/70 flex items-center gap-1">
+          <ShieldCheck className="w-3 h-3" /> Secure
         </span>
       </div>
 

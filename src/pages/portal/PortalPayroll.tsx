@@ -154,10 +154,10 @@ export default function PortalPayroll() {
 
   return (
     <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500 mb-6">
-      <div className="flex items-center justify-between px-2 mb-2">
-        <h2 className="text-lg font-black tracking-tight text-foreground">Payroll History</h2>
-        <span className="text-xs font-bold text-muted-foreground flex items-center gap-1 bg-muted/50 px-2.5 py-1 rounded-full uppercase tracking-wider">
-          <DollarSign className="w-3.5 h-3.5" /> All Months
+      <div className="flex items-center justify-between px-1 mb-1">
+        <h3 className="text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground/70 pl-2">Payroll History</h3>
+        <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground/70 flex items-center gap-1">
+          <DollarSign className="w-3 h-3" /> All Months
         </span>
       </div>
 

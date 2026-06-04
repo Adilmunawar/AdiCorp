@@ -122,31 +122,18 @@ export default function PortalSettings() {
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-12 max-w-2xl mx-auto">
-      {/* Header */}
-      <div className="px-2 mb-6 mt-2">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-primary/10 rounded-2xl">
-            <SettingsIcon className="w-6 h-6 text-primary" />
-          </div>
-          <div>
-            <h2 className="text-2xl font-black tracking-tight text-foreground">Preferences</h2>
-            <p className="text-sm text-muted-foreground mt-0.5">Manage your account and security settings</p>
-          </div>
-        </div>
-      </div>
-
       {/* Professional Profile Identity Card */}
-      <Card className="border border-border/50 shadow-sm rounded-3xl overflow-hidden bg-card">
-        <CardContent className="p-6 sm:p-8">
-          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
+      <Card className="border border-border/50 shadow-sm rounded-3xl overflow-hidden bg-card mt-2">
+        <CardContent className="p-5 sm:p-6">
+          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-5">
             
             {/* Avatar Section */}
             <div className="shrink-0 relative">
-              <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full overflow-hidden border border-border shadow-sm">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden border border-border shadow-sm">
                 {employee?.avatar_url ? (
                   <img src={employee.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
                 ) : (
-                  <div className="w-full h-full bg-primary/10 text-primary flex items-center justify-center text-3xl font-black">
+                  <div className="w-full h-full bg-primary/10 text-primary flex items-center justify-center text-2xl font-black">
                     {employee?.name?.substring(0, 2).toUpperCase()}
                   </div>
                 )}
@@ -161,23 +148,24 @@ export default function PortalSettings() {
             </div>
             
             {/* Identity Details & Actions */}
-            <div className="flex-1 flex flex-col justify-center items-center sm:items-start text-center sm:text-left pt-1">
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-muted rounded-full text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2">
+            <div className="flex-1 flex flex-col justify-center items-center sm:items-start text-center sm:text-left pt-0.5">
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-muted rounded-full text-[9px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
                 <UserCog className="w-3 h-3" /> Identity Profile
               </div>
-              <h3 className="text-2xl font-bold tracking-tight text-foreground">{employee?.name}</h3>
-              <p className="text-muted-foreground mt-1 text-sm">
+              <h3 className="text-lg sm:text-xl font-bold tracking-tight text-foreground leading-tight">{employee?.name}</h3>
+              <p className="text-muted-foreground mt-0.5 text-xs sm:text-sm">
                 {profile?.email || "No email linked to this account"}
               </p>
               
-              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 mt-5 w-full">
+              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 sm:gap-3 mt-3.5 w-full">
                 <Button 
                   onClick={() => fileInputRef.current?.click()}
                   disabled={isUploading}
                   variant="outline"
-                  className="rounded-xl font-semibold h-10 shadow-sm"
+                  size="sm"
+                  className="rounded-lg font-semibold h-8 text-xs shadow-sm"
                 >
-                  {isUploading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Upload className="w-4 h-4 mr-2 text-primary" />}
+                  {isUploading ? <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" /> : <Upload className="w-3.5 h-3.5 mr-1.5 text-primary" />}
                   Upload Picture
                 </Button>
                 
@@ -186,9 +174,10 @@ export default function PortalSettings() {
                     onClick={handleRemoveAvatar}
                     disabled={isUploading}
                     variant="ghost"
-                    className="rounded-xl font-semibold h-10 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                    size="sm"
+                    className="rounded-lg font-semibold h-8 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive px-3"
                   >
-                    <Trash2 className="w-4 h-4 mr-2" />
+                    <Trash2 className="w-3.5 h-3.5 mr-1.5" />
                     Remove
                   </Button>
                 )}
@@ -200,26 +189,26 @@ export default function PortalSettings() {
       </Card>
 
       {/* Security Settings Section */}
-      <div className="space-y-3 pt-2">
-        <h3 className="text-xs font-black text-muted-foreground uppercase tracking-widest px-2">Account Security</h3>
+      <div className="space-y-2.5 pt-2">
+        <h3 className="text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground/70 pl-1">Account Security</h3>
         
-        <Card className="border border-border/50 shadow-md rounded-3xl overflow-hidden bg-card/60 backdrop-blur-xl group hover:shadow-lg hover:border-primary/30 transition-all duration-500">
+        <Card className="border border-border/50 shadow-sm rounded-2xl overflow-hidden bg-card hover:shadow-md hover:border-primary/30 transition-all duration-300">
           <CardContent className="p-0">
             <button 
               onClick={() => setIsChangingPassword(true)}
-              className="w-full flex items-center justify-between p-6 hover:bg-primary/5 transition-colors text-left"
+              className="w-full flex items-center justify-between p-4 sm:p-5 hover:bg-muted/40 transition-colors text-left group"
             >
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shrink-0 group-hover:scale-110 group-hover:bg-primary group-hover:text-white transition-all duration-300 shadow-[inset_0_1px_2px_rgba(0,0,0,0.1)]">
-                  <Lock className="w-6 h-6" />
+              <div className="flex items-center gap-3.5">
+                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0 group-hover:scale-105 group-hover:bg-primary group-hover:text-white transition-all duration-300 shadow-[inset_0_1px_2px_rgba(0,0,0,0.05)] border border-primary/10">
+                  <Lock className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="text-base font-bold text-foreground tracking-tight">Change Password</p>
-                  <p className="text-sm text-muted-foreground mt-0.5">Update your secure login credentials</p>
+                  <p className="text-sm font-bold text-foreground tracking-tight">Change Password</p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">Update your secure login credentials</p>
                 </div>
               </div>
-              <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground group-hover:bg-primary/20 group-hover:text-primary transition-colors">
-                <ShieldCheck className="w-4 h-4" />
+              <div className="w-7 h-7 rounded-full bg-muted/50 flex items-center justify-center text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary transition-colors">
+                <ShieldCheck className="w-3.5 h-3.5" />
               </div>
             </button>
           </CardContent>
@@ -227,21 +216,21 @@ export default function PortalSettings() {
       </div>
 
       {/* Sessions Details */}
-      <div className="space-y-3 pt-2">
-        <h3 className="text-xs font-black text-muted-foreground uppercase tracking-widest px-2">Active Sessions</h3>
+      <div className="space-y-2.5 pt-2">
+        <h3 className="text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground/70 pl-1">Active Sessions</h3>
         
-        <Card className="border border-border/50 shadow-md rounded-3xl overflow-hidden bg-card/60 backdrop-blur-xl hover:shadow-lg transition-all duration-500">
+        <Card className="border border-border/50 shadow-sm rounded-2xl overflow-hidden bg-card">
           <CardContent className="p-0">
-            <div className="p-6 flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0 shadow-[inset_0_1px_2px_rgba(0,0,0,0.1)]">
-                <Smartphone className="w-6 h-6" />
+            <div className="p-4 sm:p-5 flex items-center gap-3.5">
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-500/10 shadow-[inset_0_1px_2px_rgba(0,0,0,0.05)]">
+                <Smartphone className="w-5 h-5" />
               </div>
               <div className="flex-1">
                 <div className="flex items-center justify-between">
-                  <p className="text-base font-bold text-foreground tracking-tight">Current Device</p>
-                  <span className="px-2.5 py-1 bg-emerald-500/10 text-emerald-600 text-[10px] font-black uppercase tracking-wider rounded-full border border-emerald-500/20">Active</span>
+                  <p className="text-sm font-bold text-foreground tracking-tight">Current Device</p>
+                  <span className="px-2 py-0.5 bg-emerald-500/10 text-emerald-600 text-[9px] font-bold uppercase tracking-widest rounded-full border border-emerald-500/20">Active</span>
                 </div>
-                <p className="text-sm text-muted-foreground mt-0.5">Mobile Browser • Connected</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">Mobile Browser • Connected</p>
               </div>
             </div>
           </CardContent>
@@ -249,13 +238,13 @@ export default function PortalSettings() {
       </div>
 
       {/* Logout Area */}
-      <div className="pt-6">
+      <div className="pt-4 pb-4">
         <Button 
           variant="destructive" 
-          className="w-full h-14 rounded-2xl font-black text-base tracking-wide shadow-lg shadow-destructive/20 hover:shadow-destructive/40 transition-all duration-300 hover:-translate-y-1"
+          className="w-full h-11 rounded-xl font-bold text-sm tracking-wide shadow-sm hover:shadow-md transition-all duration-300"
           onClick={handleLogout}
         >
-          <LogOut className="w-5 h-5 mr-3" /> Securely Logout
+          <LogOut className="w-4 h-4 mr-2" /> Securely Logout
         </Button>
       </div>
 

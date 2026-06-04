@@ -72,19 +72,11 @@ export default function PortalRecords() {
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-500 pb-8">
-      <div className="px-2 flex items-end justify-between">
-        <div>
-          <h2 className="text-2xl font-black tracking-tight text-foreground">My Workspace</h2>
-          <p className="text-xs text-muted-foreground mt-1 font-medium">Track your attendance activity and access your records.</p>
-        </div>
-      </div>
-
       {/* Monthly Stats */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between px-2">
-          <h3 className="text-sm font-extrabold flex items-center gap-2">
-            <Activity className="w-4 h-4 text-primary" /> Monthly Overview
+      <div className="space-y-2.5 mt-2">
+        <div className="flex items-center justify-between px-1">
+          <h3 className="text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground/70 pl-2 flex items-center gap-2">
+            <Activity className="w-3.5 h-3.5" /> Monthly Overview
           </h3>
           <div className="flex items-center gap-1 bg-muted/30 rounded-full p-1 border border-border/50">
             <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full hover:bg-background shadow-sm" onClick={handlePrevMonth}>
@@ -119,9 +111,9 @@ export default function PortalRecords() {
       {/* GitHub Style Activity Graph */}
       <Card className="border-none shadow-xl bg-gradient-to-br from-card to-muted/20 rounded-[2rem] overflow-hidden">
         <CardContent className="p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-extrabold flex items-center gap-2">
-              <Activity className="w-4 h-4 text-primary" /> Activity Heatmap
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground/70 flex items-center gap-2">
+              <Activity className="w-3.5 h-3.5" /> Activity Heatmap
             </h3>
             <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest bg-muted/50 px-3 py-1 rounded-full">Past 90 Days</span>
           </div>
