@@ -16,25 +16,12 @@ export function useEmployeePortalData() {
 
       if (error) throw error;
       
-      const { data: companyData, error: companyError } = await supabase
-        .from('companies')
-        .select('name, logo_url')
-        .eq('id', employee.company_id)
-        .single();
-        
-      if (companyError && companyError.code !== 'PGRST116') {
-        console.error("Error fetching company data:", companyError);
-      }
-      
-      return {
-        ...(data as any),
-        company: companyData
-      } as {
+      return data as {
         profile: any;
+        company: { name: string; logo_url: string };
         attendance: any[];
         payslips: any[];
         documents: any[];
-        company?: { name: string; logo_url: string };
       };
     },
     enabled: !!employee?.id,
