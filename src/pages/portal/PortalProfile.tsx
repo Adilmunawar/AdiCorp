@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useEmployeePortalData } from "@/hooks/useEmployeePortalData";
 import { Card, CardContent } from "@/components/ui/card";
-import { User, Phone, Mail, MapPin, Briefcase, Calendar, ShieldCheck, Edit2, Loader2 } from "lucide-react";
+import { User, Phone, Mail, MapPin, Briefcase, Calendar, ShieldCheck, Edit2, Loader2, Lock } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { ADICORP_LOGO_PATH } from "@/lib/branding";
 
 export default function PortalProfile() {
   const { data, isLoading } = useEmployeePortalData();
@@ -75,11 +76,19 @@ export default function PortalProfile() {
         </CardContent>
       </Card>
 
+      {/* Company Details */}
+      <Card className="border-border/40 shadow-sm rounded-2xl overflow-hidden bg-background">
+        <CardContent className="p-4 flex items-center justify-center gap-3">
+          <img src={ADICORP_LOGO_PATH} alt="Company Logo" className="w-8 h-8 object-contain drop-shadow-sm" />
+          <span className="font-bold text-foreground tracking-tight text-sm">AdiCorp</span>
+        </CardContent>
+      </Card>
+
       {/* Details Card */}
       <Card className="border-border/40 shadow-sm rounded-3xl overflow-hidden">
         <CardContent className="p-0">
           <div className="flex flex-col divide-y divide-border/30">
-            <DetailRow icon={ShieldCheck} label="CNIC" value={profile.cnic || "Not provided"} />
+            <DetailRow icon={ShieldCheck} label="CNIC" value={profile.cnic || "Not provided"} locked />
             <DetailRow icon={Phone} label="Phone" value={profile.phone || "Not provided"} editable onEdit={() => handleEditClick('phone', 'Phone', profile.phone)} />
             <DetailRow icon={Mail} label="Email" value={profile.email || "Not provided"} editable onEdit={() => handleEditClick('email', 'Email', profile.email)} />
             <DetailRow icon={Calendar} label="Date of Birth" value={profile.date_of_birth || "Not provided"} editable onEdit={() => handleEditClick('date_of_birth', 'Date of Birth', profile.date_of_birth)} />
@@ -93,9 +102,9 @@ export default function PortalProfile() {
       <Card className="border-border/40 shadow-sm rounded-3xl overflow-hidden mb-6">
         <CardContent className="p-0">
           <div className="flex flex-col divide-y divide-border/30">
-            <DetailRow icon={Briefcase} label="Shift Type" value={profile.shift_type || "Morning"} className="capitalize" />
+            <DetailRow icon={Briefcase} label="Shift Type" value={profile.shift_type || "Morning"} className="capitalize" locked />
             <DetailRow icon={Calendar} label="Joining Date" value={profile.joining_date || "Not provided"} editable onEdit={() => handleEditClick('joining_date', 'Joining Date', profile.joining_date)} />
-            <DetailRow icon={Briefcase} label="Salary Divisor" value={`${profile.salary_divisor} days`} />
+            <DetailRow icon={Briefcase} label="Salary Divisor" value={`${profile.salary_divisor} days`} locked />
           </div>
         </CardContent>
       </Card>
@@ -133,7 +142,7 @@ export default function PortalProfile() {
   );
 }
 
-function DetailRow({ icon: Icon, label, value, editable, onEdit, className = "" }: { icon: any, label: string, value: string, editable?: boolean, onEdit?: () => void, className?: string }) {
+function DetailRow({ icon: Icon, label, value, editable, locked, onEdit, className = "" }: { icon: any, label: string, value: string, editable?: boolean, locked?: boolean, onEdit?: () => void, className?: string }) {
   return (
     <div className="flex items-center justify-between p-4 hover:bg-muted/30 transition-colors group">
       <div className="flex items-center gap-3">
@@ -144,11 +153,18 @@ function DetailRow({ icon: Icon, label, value, editable, onEdit, className = "" 
       </div>
       <div className="flex items-center gap-3">
         <span className={`text-sm font-semibold text-foreground text-right ${className}`}>{value}</span>
-        {editable && (
-          <button onClick={onEdit} className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 hover:bg-muted rounded-md text-primary">
-            <Edit2 className="w-3.5 h-3.5" />
-          </button>
-        )}
+        <div className="w-6 h-6 flex items-center justify-center shrink-0">
+          {editable && (
+            <button onClick={onEdit} className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 hover:bg-muted rounded-md text-primary" title="Request Edit">
+              <Edit2 className="w-3.5 h-3.5" />
+            </button>
+          )}
+          {locked && (
+            <div className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 text-muted-foreground/40" title="Fixed Field">
+              <Lock className="w-3.5 h-3.5" />
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
