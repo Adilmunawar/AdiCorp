@@ -159,17 +159,17 @@ export default function PortalRecords() {
       </Card>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-4 h-[52px] bg-card shadow-lg border border-border/40 rounded-2xl p-1.5 mb-6">
-          <TabsTrigger value="attendance" className="rounded-xl text-[10px] sm:text-xs font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all">
+        <TabsList className="flex w-full h-auto min-h-[52px] bg-card shadow-lg border border-border/40 rounded-2xl p-1.5 mb-6 overflow-x-auto scrollbar-none snap-x shrink-0 justify-start md:grid md:grid-cols-4 gap-1 sm:gap-0">
+          <TabsTrigger value="attendance" className="flex-1 shrink-0 min-w-[80px] md:min-w-0 rounded-xl text-[10px] sm:text-xs font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all">
             <Clock className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-1.5" /> Time
           </TabsTrigger>
-          <TabsTrigger value="payroll" className="rounded-xl text-[10px] sm:text-xs font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all">
+          <TabsTrigger value="payroll" className="flex-1 shrink-0 min-w-[80px] md:min-w-0 rounded-xl text-[10px] sm:text-xs font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all">
             <DollarSign className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-1.5" /> Pay
           </TabsTrigger>
-          <TabsTrigger value="overtime" className="rounded-xl text-[10px] sm:text-xs font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all">
+          <TabsTrigger value="overtime" className="flex-1 shrink-0 min-w-[90px] md:min-w-0 rounded-xl text-[10px] sm:text-xs font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all">
             <Clock3 className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-1.5" /> Overtime
           </TabsTrigger>
-          <TabsTrigger value="documents" className="rounded-xl text-[10px] sm:text-xs font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all">
+          <TabsTrigger value="documents" className="flex-1 shrink-0 min-w-[80px] md:min-w-0 rounded-xl text-[10px] sm:text-xs font-bold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md transition-all">
             <ShieldCheck className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-1.5" /> Docs
           </TabsTrigger>
         </TabsList>

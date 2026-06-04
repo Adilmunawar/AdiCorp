@@ -57,8 +57,7 @@ export default function PortalProfile() {
     <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* Ultra-Premium Centered Header Card */}
       <Card className="border-none shadow-xl shadow-primary/20 bg-gradient-to-br from-primary via-primary/90 to-primary/80 text-primary-foreground rounded-[2rem] overflow-hidden relative">
-        <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full blur-3xl pointer-events-none -mr-10 -mt-10" />
-        <div className="absolute bottom-0 left-0 w-32 h-32 bg-black/10 rounded-full blur-2xl pointer-events-none -ml-5 -mb-5" />
+        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 mix-blend-overlay pointer-events-none" />
         
         <CardContent className="p-6 relative z-10 flex flex-col items-center text-center">
           <div className="mb-4">
@@ -108,7 +107,7 @@ export default function PortalProfile() {
       </div>
 
       {/* Work Details */}
-      <div className="space-y-2.5 pb-8 mt-6">
+      <div className="space-y-2.5 mt-6">
         <h3 className="text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground/70 pl-5">Work Information</h3>
         <Card className="border-border/30 shadow-xl shadow-primary/5 rounded-3xl overflow-hidden bg-card/60 backdrop-blur-2xl">
           <CardContent className="p-0">
@@ -119,6 +118,42 @@ export default function PortalProfile() {
             </div>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Upcoming Events */}
+      <div className="space-y-2.5 pb-8 mt-6">
+        <h3 className="text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground/70 pl-5">Upcoming Events</h3>
+        <div className="space-y-3">
+          {data.events && data.events.length > 0 ? (
+            data.events
+              .filter((e: any) => new Date(e.date) >= new Date(new Date().setHours(0,0,0,0)))
+              .sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime())
+              .slice(0, 3)
+              .map((event: any) => (
+                <Card key={event.id} className="border-none shadow-md rounded-2xl bg-gradient-to-r from-yellow-500/10 to-transparent border-l-4 border-l-yellow-500 relative overflow-hidden">
+                  <div className="p-4 flex gap-4 items-center">
+                    <div className="w-12 h-12 shrink-0 rounded-xl bg-yellow-500 text-white flex flex-col items-center justify-center font-black shadow-inner leading-none">
+                      <span className="text-xs font-semibold opacity-90 uppercase tracking-widest">{new Date(event.date).toLocaleDateString('en-US', { month: 'short' })}</span>
+                      <span className="text-xl tracking-tighter">{new Date(event.date).getDate()}</span>
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-foreground">{event.title}</h4>
+                      {event.description && <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{event.description}</p>}
+                      <Badge variant="outline" className="mt-2 bg-yellow-500/10 text-yellow-700 hover:bg-yellow-500/20 border-yellow-500/30 text-[9px] uppercase tracking-wider py-0 px-1.5 h-4">Company Event</Badge>
+                    </div>
+                  </div>
+                </Card>
+            ))
+          ) : (
+            <Card className="border-border/30 border-dashed shadow-none rounded-3xl bg-muted/20">
+              <CardContent className="p-6 flex flex-col items-center justify-center text-center">
+                <Calendar className="w-8 h-8 text-muted-foreground/30 mb-2" />
+                <p className="text-sm font-semibold text-muted-foreground">No Upcoming Events</p>
+                <p className="text-xs text-muted-foreground/70 mt-1">There are no company events scheduled.</p>
+              </CardContent>
+            </Card>
+          )}
+        </div>
       </div>
 
       {/* Edit Request Dialog */}
