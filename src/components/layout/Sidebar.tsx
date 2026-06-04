@@ -25,6 +25,7 @@ const navItems = [
   { name: "Reports", icon: ChartPie, path: "/reports", group: "finance" },
   { name: "Shift Management", icon: Calendar, path: "/working-days", group: "config" },
   { name: "Events", icon: Shield, path: "/events", group: "config" },
+  { name: "Employee Updates", icon: UserCog, path: "/employee-updates", group: "system" },
   { name: "Timeline Logs", icon: FileText, path: "/timeline-logs", group: "system" },
   { name: "Settings", icon: Settings, path: "/settings", group: "system" },
 ];
@@ -78,6 +79,24 @@ export default function Sidebar({ collapsed, mobileOpen, onToggleCollapse }: Sid
     enabled: !!user,
   });
 
+  const { data: pendingUpdatesCount } = useQuery({
+    queryKey: ['sidebar-pending-updates', user?.id],
+    queryFn: async () => {
+      const { data: profile } = await supabase.from('profiles').select('company_id').eq('id', user?.id).single();
+      if (!profile?.company_id) return 0;
+      
+      const { count, error } = await supabase
+        .from('employee_update_requests')
+        .select('*', { count: 'exact', head: true })
+        .eq('company_id', profile.company_id)
+        .eq('status', 'pending');
+        
+      if (error) return 0;
+      return count || 0;
+    },
+    enabled: !!user,
+  });
+
   const NavItem = ({ item }: { item: typeof navItems[0] }) => {
     const isActive = item.path === "/dashboard"
       ? location.pathname === item.path
@@ -104,6 +123,11 @@ export default function Sidebar({ collapsed, mobileOpen, onToggleCollapse }: Sid
         {!compact && item.name === "Documents" && (missingDocsCount ?? 0) > 0 && (
           <span className="ml-auto bg-destructive text-destructive-foreground text-[9px] font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center shadow-sm">
             {missingDocsCount}
+          </span>
+        )}
+        {!compact && item.name === "Employee Updates" && (pendingUpdatesCount ?? 0) > 0 && (
+          <span className="ml-auto bg-blue-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center shadow-sm animate-pulse">
+            {pendingUpdatesCount}
           </span>
         )}
       </Link>

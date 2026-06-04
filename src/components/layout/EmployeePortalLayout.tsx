@@ -1,15 +1,20 @@
 import React from "react";
 import { Navigate, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useEmployeeAuth } from "@/context/EmployeeAuthContext";
-import { User, Clock, DollarSign, FileText, LogOut } from "lucide-react";
+import { User, FileText, Settings as SettingsIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function EmployeePrivateRoute({ children }: { children?: React.ReactNode }) {
   const { employee, isLoading } = useEmployeeAuth();
+  const location = useLocation();
   
-  if (isLoading) return <div className="min-h-screen flex items-center justify-center bg-background">Loading...</div>;
+  if (isLoading) return <div className="min-h-[100dvh] flex items-center justify-center bg-background"><div className="animate-pulse flex flex-col items-center"><div className="w-10 h-10 bg-primary/20 rounded-full mb-2"></div><div className="text-sm text-muted-foreground">Loading...</div></div></div>;
   if (!employee) return <Navigate to="/employee-login" replace />;
   
+  if (employee.needs_password_change && location.pathname !== "/portal/setup-password") {
+    return <Navigate to="/portal/setup-password" replace />;
+  }
+
   return children ? <>{children}</> : <Outlet />;
 }
 
@@ -20,9 +25,8 @@ export function EmployeePortalLayout() {
 
   const navItems = [
     { path: "/portal/profile", label: "Profile", icon: User },
-    { path: "/portal/attendance", label: "Attendance", icon: Clock },
-    { path: "/portal/payroll", label: "Payroll", icon: DollarSign },
-    { path: "/portal/reports", label: "Reports", icon: FileText },
+    { path: "/portal/records", label: "Records", icon: FileText },
+    { path: "/portal/settings", label: "Settings", icon: SettingsIcon },
   ];
 
   const handleLogout = () => {
@@ -32,24 +36,8 @@ export function EmployeePortalLayout() {
 
   return (
     <div className="min-h-[100dvh] bg-muted/20 relative pb-24">
-      {/* Top Header */}
-      <header className="sticky top-0 z-40 w-full bg-background/80 backdrop-blur-xl border-b border-border/50 px-4 py-3 flex items-center justify-between shadow-sm">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold text-sm">
-            AC
-          </div>
-          <span className="font-bold text-sm">Employee Portal</span>
-        </div>
-        <button 
-          onClick={handleLogout}
-          className="w-8 h-8 rounded-full bg-destructive/10 text-destructive flex items-center justify-center hover:bg-destructive/20 transition-colors"
-        >
-          <LogOut className="w-4 h-4" />
-        </button>
-      </header>
-
       {/* Main Content Area */}
-      <main className="p-4 max-w-lg mx-auto">
+      <main className="p-4 pt-6 max-w-lg mx-auto">
         <Outlet />
       </main>
 

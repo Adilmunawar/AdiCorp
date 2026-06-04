@@ -7,12 +7,15 @@ export interface EmployeeSession {
   cnic: string;
   company_id: string;
   rank: string;
+  needs_password_change: boolean;
+  avatar_url?: string;
 }
 
 interface EmployeeAuthContextType {
   employee: EmployeeSession | null;
   login: (cnic: string, password: string) => Promise<void>;
   logout: () => void;
+  updateSession: (updates: Partial<EmployeeSession>) => void;
   isLoading: boolean;
 }
 
@@ -55,7 +58,9 @@ export function EmployeeAuthProvider({ children }: { children: React.ReactNode }
         name: res.name,
         cnic: res.cnic,
         company_id: res.company_id,
-        rank: res.rank
+        rank: res.rank,
+        needs_password_change: res.needs_password_change,
+        avatar_url: res.avatar_url
       };
 
       setEmployee(session);
@@ -65,13 +70,20 @@ export function EmployeeAuthProvider({ children }: { children: React.ReactNode }
     }
   };
 
+  const updateSession = (updates: Partial<EmployeeSession>) => {
+    if (!employee) return;
+    const newSession = { ...employee, ...updates };
+    setEmployee(newSession);
+    localStorage.setItem("employee_session", JSON.stringify(newSession));
+  };
+
   const logout = () => {
     setEmployee(null);
     localStorage.removeItem("employee_session");
   };
 
   return (
-    <EmployeeAuthContext.Provider value={{ employee, login, logout, isLoading }}>
+    <EmployeeAuthContext.Provider value={{ employee, login, logout, updateSession, isLoading }}>
       {children}
     </EmployeeAuthContext.Provider>
   );

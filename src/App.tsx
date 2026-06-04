@@ -24,6 +24,7 @@ const Events = lazy(() => import("./pages/Events"));
 const Salary = lazy(() => import("./pages/Salary"));
 const Settings = lazy(() => import("./pages/Settings"));
 const Reports = lazy(() => import("./pages/Reports"));
+const EmployeeUpdates = lazy(() => import("./pages/EmployeeUpdates"));
 const TimelineLogsPage = lazy(() => import("./pages/TimelineLogs"));
 const LeaveManagement = lazy(() => import("./pages/LeaveManagement"));
 const OvertimePage = lazy(() => import("./pages/Overtime"));
@@ -33,10 +34,10 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 
 // Portal Pages
 const EmployeeLogin = lazy(() => import("./pages/portal/EmployeeLogin"));
+const SetupPassword = lazy(() => import("./pages/portal/SetupPassword"));
 const PortalProfile = lazy(() => import("./pages/portal/PortalProfile"));
-const PortalAttendance = lazy(() => import("./pages/portal/PortalAttendance"));
-const PortalPayroll = lazy(() => import("./pages/portal/PortalPayroll"));
-const PortalReports = lazy(() => import("./pages/portal/PortalReports"));
+const PortalRecords = lazy(() => import("./pages/portal/PortalRecords"));
+const PortalSettings = lazy(() => import("./pages/portal/PortalSettings"));
 
 const queryClient = new QueryClient();
 
@@ -66,6 +67,7 @@ function AnimatedRoutes() {
             <Route path="/events" element={<PrivateRoute><Events /></PrivateRoute>} />
             <Route path="/salary" element={<PrivateRoute><Salary /></PrivateRoute>} />
             <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
+            <Route path="/employee-updates" element={<PrivateRoute><EmployeeUpdates /></PrivateRoute>} />
             <Route path="/reports" element={<PrivateRoute><Reports /></PrivateRoute>} />
             <Route path="/timeline-logs" element={<PrivateRoute><TimelineLogsPage /></PrivateRoute>} />
             <Route path="/leave-management" element={<PrivateRoute><LeaveManagement /></PrivateRoute>} />
@@ -75,11 +77,11 @@ function AnimatedRoutes() {
             
             {/* Employee Portal Routes */}
             <Route path="/employee-login" element={<EmployeeLogin />} />
+            <Route path="/portal/setup-password" element={<SetupPassword />} />
             <Route path="/portal" element={<EmployeePrivateRoute><EmployeePortalLayout /></EmployeePrivateRoute>}>
               <Route path="profile" element={<PortalProfile />} />
-              <Route path="attendance" element={<PortalAttendance />} />
-              <Route path="payroll" element={<PortalPayroll />} />
-              <Route path="reports" element={<PortalReports />} />
+              <Route path="records" element={<PortalRecords />} />
+              <Route path="settings" element={<PortalSettings />} />
             </Route>
 
             <Route path="/404" element={<NotFound />} />
