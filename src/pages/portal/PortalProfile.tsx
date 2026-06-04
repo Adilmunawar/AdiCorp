@@ -60,27 +60,29 @@ export default function PortalProfile() {
         <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-2xl -mr-10 -mt-10" />
         <CardContent className="p-6">
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center text-2xl font-black shadow-lg shadow-primary/30">
+            <div className="w-16 h-16 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center text-2xl font-black shadow-lg shadow-primary/30 shrink-0">
               {profile.name.substring(0, 2).toUpperCase()}
             </div>
-            <div>
-              <h2 className="text-xl font-bold text-foreground">{profile.name}</h2>
-              <p className="text-sm text-muted-foreground flex items-center gap-1 mt-0.5">
-                <Briefcase className="w-3.5 h-3.5" /> {profile.rank || "Employee"}
+            <div className="flex-1 min-w-0">
+              <h2 className="text-xl font-bold text-foreground truncate">{profile.name}</h2>
+              <p className="text-sm text-muted-foreground flex items-center gap-1 mt-0.5 truncate">
+                <Briefcase className="w-3.5 h-3.5 shrink-0" /> {profile.rank || "Employee"}
               </p>
-              <Badge variant="outline" className="mt-2 bg-background/50 backdrop-blur-sm border-primary/20 text-primary text-[10px]">
-                {profile.status === 'active' ? 'Active Employee' : profile.status}
-              </Badge>
+              
+              {data.company && (
+                <div className="flex items-center gap-2 mt-2 pt-2 border-t border-primary/10">
+                  {data.company.logo_url ? (
+                    <img src={data.company.logo_url} alt="Company" className="w-5 h-5 object-contain rounded-sm" />
+                  ) : (
+                    <div className="w-5 h-5 bg-primary/20 rounded-sm flex items-center justify-center shrink-0">
+                      <Briefcase className="w-3 h-3 text-primary" />
+                    </div>
+                  )}
+                  <span className="text-xs font-semibold text-primary truncate">{data.company.name}</span>
+                </div>
+              )}
             </div>
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Company Details */}
-      <Card className="border-border/40 shadow-sm rounded-2xl overflow-hidden bg-background">
-        <CardContent className="p-4 flex items-center justify-center gap-3">
-          <img src={ADICORP_LOGO_PATH} alt="Company Logo" className="w-8 h-8 object-contain drop-shadow-sm" />
-          <span className="font-bold text-foreground tracking-tight text-sm">AdiCorp</span>
         </CardContent>
       </Card>
 
@@ -143,8 +145,12 @@ export default function PortalProfile() {
 }
 
 function DetailRow({ icon: Icon, label, value, editable, locked, onEdit, className = "" }: { icon: any, label: string, value: string, editable?: boolean, locked?: boolean, onEdit?: () => void, className?: string }) {
+  const handleLockedClick = () => {
+    toast.info("This info is sensitive and cannot be changed here. Please contact HR.");
+  };
+
   return (
-    <div className="flex items-center justify-between p-4 hover:bg-muted/30 transition-colors group">
+    <div className="flex items-center justify-between p-4 bg-background">
       <div className="flex items-center gap-3">
         <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center shrink-0">
           <Icon className="w-4 h-4 text-muted-foreground" />
@@ -155,14 +161,14 @@ function DetailRow({ icon: Icon, label, value, editable, locked, onEdit, classNa
         <span className={`text-sm font-semibold text-foreground text-right ${className}`}>{value}</span>
         <div className="w-6 h-6 flex items-center justify-center shrink-0">
           {editable && (
-            <button onClick={onEdit} className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 hover:bg-muted rounded-md text-primary" title="Request Edit">
+            <button onClick={onEdit} className="p-1.5 bg-muted rounded-md text-primary" title="Request Edit">
               <Edit2 className="w-3.5 h-3.5" />
             </button>
           )}
           {locked && (
-            <div className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 text-muted-foreground/40" title="Fixed Field">
+            <button onClick={handleLockedClick} className="p-1.5 text-muted-foreground/40 hover:text-muted-foreground/80 transition-colors" title="Fixed Field">
               <Lock className="w-3.5 h-3.5" />
-            </div>
+            </button>
           )}
         </div>
       </div>
