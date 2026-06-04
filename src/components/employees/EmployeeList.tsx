@@ -269,6 +269,9 @@ export default function EmployeeList({ onAddEmployee, onEditEmployee }: Employee
                   <TableRow key={employee.id} className="hover:bg-muted/10 transition-colors border-b border-border/30 group h-10">
                     <TableCell className="pl-3 py-1">
                       <Avatar className="h-6 w-6 border border-background shadow-sm group-hover:border-primary/20 transition-colors">
+                        {employee.avatar_url && (
+                          <img src={employee.avatar_url} alt={employee.name} className="w-full h-full object-cover" />
+                        )}
                         <AvatarFallback className="font-bold bg-primary/10 text-primary text-[10px]">
                           {employee.name.charAt(0).toUpperCase()}
                         </AvatarFallback>

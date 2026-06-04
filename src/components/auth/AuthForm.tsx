@@ -88,10 +88,10 @@ export default function AuthForm() {
         <div className="absolute top-[-5%] right-[-5%] w-[400px] h-[400px] bg-white/5 rounded-full blur-[100px] pointer-events-none" />
         <div className="absolute bottom-[-5%] left-[-5%] w-[400px] h-[400px] bg-black/10 rounded-full blur-[100px] pointer-events-none" />
 
-        <div className="w-full max-w-[360px] space-y-6 relative z-10 flex flex-col justify-center min-h-full lg:min-h-0 py-6 lg:py-0">
+        <div className="w-full max-w-[360px] space-y-4 relative z-10 flex flex-col justify-center min-h-full lg:min-h-0 py-4 lg:py-0">
           
           {/* Mobile logo */}
-          <div className="lg:hidden flex items-center gap-2.5 justify-center mb-2">
+          <div className="lg:hidden flex items-center gap-2.5 justify-center mb-1">
             <img
               src={ADICORP_LOGO_PATH}
               alt="AdiCorp Logo"
@@ -101,11 +101,11 @@ export default function AuthForm() {
           </div>
 
           {/* Header */}
-          <div className="space-y-1.5 text-center lg:text-left">
-            <h1 className="text-2xl font-bold text-white tracking-tight drop-shadow-sm">
+          <div className="space-y-1 text-center lg:text-left">
+            <h1 className="text-xl font-bold text-white tracking-tight drop-shadow-sm">
               {mode === "signin" ? "Welcome back" : "Create account"}
             </h1>
-            <p className="text-white/80 text-sm font-medium">
+            <p className="text-white/80 text-xs font-medium">
               {mode === "signin"
                 ? "Enter your credentials to access your workspace."
                 : "Fill in your details to join the platform."}

@@ -108,6 +108,9 @@ export default function EmployeeProfile() {
         <div className="rounded-2xl border border-border bg-card shadow-sm overflow-hidden p-5 sm:p-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 mb-5">
             <Avatar className="h-20 w-20 border-2 border-primary/10 shadow-sm bg-card">
+              {employee.avatar_url && (
+                <img src={employee.avatar_url} alt={employee.name} className="w-full h-full object-cover" />
+              )}
               <AvatarFallback className="text-2xl font-bold bg-primary/10 text-primary">
                 {employee.name.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase()}
               </AvatarFallback>

@@ -140,15 +140,16 @@ export default function EmployeeForm({ employee, onSuccess, onCancel, isOpen, on
     setLoading(true);
     
     let weekend_saturday: boolean | null = null;
-    if (data.saturday_schedule === "force_off") weekend_saturday = true;
-    if (data.saturday_schedule === "force_on") weekend_saturday = false;
+    let salary_divisor: number | null = null;
+    if (data.saturday_schedule === "force_off") { weekend_saturday = true; salary_divisor = 22; }
+    if (data.saturday_schedule === "force_on") { weekend_saturday = false; salary_divisor = 26; }
 
     const payload = {
       name: data.name, email: data.email, phone: data.phone, cnic: data.cnic, 
       date_of_birth: data.date_of_birth || null, father_name: data.father_name, education: data.education, emergency_contact: data.emergency_contact,
       rank: data.rank, wage_rate: data.wage_rate, shift_type: data.shift_type ? data.shift_type.toLowerCase() : null, status: data.status,
       bank_name: data.bank_name, bank_account_number: data.bank_account_number,
-      weekend_saturday, weekend_sunday: true 
+      weekend_saturday, weekend_sunday: true, salary_divisor
     };
 
     try {
