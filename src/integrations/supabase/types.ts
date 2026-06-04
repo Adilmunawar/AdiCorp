@@ -1,1 +1,1217 @@
-{"types":"export type Json =\n  | string\n  | number\n  | boolean\n  | null\n  | { [key: string]: Json | undefined }\n  | Json[]\n\nexport type Database = {\n  // Allows to automatically instantiate createClient with right options\n  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)\n  __InternalSupabase: {\n    PostgrestVersion: \"12.2.3 (519615d)\"\n  }\n  public: {\n    Tables: {\n      activity_logs: {\n        Row: {\n          action_type: string\n          company_id: string\n          created_at: string\n          description: string\n          details: Json | null\n          id: string\n          user_id: string\n        }\n        Insert: {\n          action_type: string\n          company_id: string\n          created_at?: string\n          description: string\n          details?: Json | null\n          id?: string\n          user_id: string\n        }\n        Update: {\n          action_type?: string\n          company_id?: string\n          created_at?: string\n          description?: string\n          details?: Json | null\n          id?: string\n          user_id?: string\n        }\n        Relationships: [\n          {\n            foreignKeyName: \"activity_logs_company_id_fkey\"\n            columns: [\"company_id\"]\n            isOneToOne: false\n            referencedRelation: \"companies\"\n            referencedColumns: [\"id\"]\n          },\n          {\n            foreignKeyName: \"activity_logs_user_id_fkey\"\n            columns: [\"user_id\"]\n            isOneToOne: false\n            referencedRelation: \"profiles\"\n            referencedColumns: [\"id\"]\n          },\n        ]\n      }\n      attendance: {\n        Row: {\n          created_at: string\n          date: string\n          employee_id: string\n          id: string\n          status: string\n        }\n        Insert: {\n          created_at?: string\n          date: string\n          employee_id: string\n          id?: string\n          status: string\n        }\n        Update: {\n          created_at?: string\n          date?: string\n          employee_id?: string\n          id?: string\n          status?: string\n        }\n        Relationships: [\n          {\n            foreignKeyName: \"attendance_employee_id_fkey\"\n            columns: [\"employee_id\"]\n            isOneToOne: false\n            referencedRelation: \"employees\"\n            referencedColumns: [\"id\"]\n          },\n        ]\n      }\n      companies: {\n        Row: {\n          address: string | null\n          company_size: string | null\n          company_type: string | null\n          created_at: string\n          created_by: string | null\n          currency: string | null\n          id: string\n          logo: string | null\n          name: string\n          phone: string | null\n          website: string | null\n        }\n        Insert: {\n          address?: string | null\n          company_size?: string | null\n          company_type?: string | null\n          created_at?: string\n          created_by?: string | null\n          currency?: string | null\n          id?: string\n          logo?: string | null\n          name: string\n          phone?: string | null\n          website?: string | null\n        }\n        Update: {\n          address?: string | null\n          company_size?: string | null\n          company_type?: string | null\n          created_at?: string\n          created_by?: string | null\n          currency?: string | null\n          id?: string\n          logo?: string | null\n          name?: string\n          phone?: string | null\n          website?: string | null\n        }\n        Relationships: []\n      }\n      company_working_settings: {\n        Row: {\n          company_id: string\n          created_at: string\n          default_working_days_per_month: number\n          default_working_days_per_week: number\n          salary_divisor: number\n          updated_at: string\n          weekend_saturday: boolean\n          weekend_sunday: boolean\n        }\n        Insert: {\n          company_id: string\n          created_at?: string\n          default_working_days_per_month?: number\n          default_working_days_per_week?: number\n          salary_divisor?: number\n          updated_at?: string\n          weekend_saturday?: boolean\n          weekend_sunday?: boolean\n        }\n        Update: {\n          company_id?: string\n          created_at?: string\n          default_working_days_per_month?: number\n          default_working_days_per_week?: number\n          salary_divisor?: number\n          updated_at?: string\n          weekend_saturday?: boolean\n          weekend_sunday?: boolean\n        }\n        Relationships: [\n          {\n            foreignKeyName: \"company_working_settings_company_id_fkey\"\n            columns: [\"company_id\"]\n            isOneToOne: true\n            referencedRelation: \"companies\"\n            referencedColumns: [\"id\"]\n          },\n        ]\n      }\n      employee_documents: {\n        Row: {\n          company_id: string\n          created_at: string\n          document_name: string\n          document_type: Database[\"public\"][\"Enums\"][\"document_type\"]\n          employee_id: string\n          file_name: string\n          file_path: string\n          file_size: number | null\n          id: string\n          mime_type: string | null\n          updated_at: string\n          uploaded_by: string | null\n        }\n        Insert: {\n          company_id: string\n          created_at?: string\n          document_name: string\n          document_type?: Database[\"public\"][\"Enums\"][\"document_type\"]\n          employee_id: string\n          file_name: string\n          file_path: string\n          file_size?: number | null\n          id?: string\n          mime_type?: string | null\n          updated_at?: string\n          uploaded_by?: string | null\n        }\n        Update: {\n          company_id?: string\n          created_at?: string\n          document_name?: string\n          document_type?: Database[\"public\"][\"Enums\"][\"document_type\"]\n          employee_id?: string\n          file_name?: string\n          file_path?: string\n          file_size?: number | null\n          id?: string\n          mime_type?: string | null\n          updated_at?: string\n          uploaded_by?: string | null\n        }\n        Relationships: [\n          {\n            foreignKeyName: \"employee_documents_company_id_fkey\"\n            columns: [\"company_id\"]\n            isOneToOne: false\n            referencedRelation: \"companies\"\n            referencedColumns: [\"id\"]\n          },\n          {\n            foreignKeyName: \"employee_documents_employee_id_fkey\"\n            columns: [\"employee_id\"]\n            isOneToOne: false\n            referencedRelation: \"employees\"\n            referencedColumns: [\"id\"]\n          },\n          {\n            foreignKeyName: \"employee_documents_uploaded_by_fkey\"\n            columns: [\"uploaded_by\"]\n            isOneToOne: false\n            referencedRelation: \"profiles\"\n            referencedColumns: [\"id\"]\n          },\n        ]\n      }\n      employee_update_requests: {\n        Row: {\n          company_id: string | null\n          created_at: string | null\n          employee_id: string | null\n          id: string\n          requested_changes: Json\n          reviewed_at: string | null\n          reviewed_by: string | null\n          status: string | null\n        }\n        Insert: {\n          company_id?: string | null\n          created_at?: string | null\n          employee_id?: string | null\n          id?: string\n          requested_changes: Json\n          reviewed_at?: string | null\n          reviewed_by?: string | null\n          status?: string | null\n        }\n        Update: {\n          company_id?: string | null\n          created_at?: string | null\n          employee_id?: string | null\n          id?: string\n          requested_changes?: Json\n          reviewed_at?: string | null\n          reviewed_by?: string | null\n          status?: string | null\n        }\n        Relationships: [\n          {\n            foreignKeyName: \"employee_update_requests_company_id_fkey\"\n            columns: [\"company_id\"]\n            isOneToOne: false\n            referencedRelation: \"companies\"\n            referencedColumns: [\"id\"]\n          },\n          {\n            foreignKeyName: \"employee_update_requests_employee_id_fkey\"\n            columns: [\"employee_id\"]\n            isOneToOne: false\n            referencedRelation: \"employees\"\n            referencedColumns: [\"id\"]\n          },\n        ]\n      }\n      employees: {\n        Row: {\n          avatar_url: string | null\n          bank_account_number: string | null\n          bank_name: string | null\n          cnic: string | null\n          company_id: string\n          created_at: string\n          date_of_birth: string | null\n          education: string | null\n          email: string | null\n          emergency_contact: string | null\n          father_name: string | null\n          id: string\n          joining_date: string | null\n          name: string\n          password: string | null\n          phone: string | null\n          rank: string\n          salary_divisor: number | null\n          shift_type: string | null\n          status: string\n          tier: Database[\"public\"][\"Enums\"][\"employee_tier\"] | null\n          user_id: string | null\n          wage_rate: number\n          weekend_saturday: boolean | null\n          weekend_sunday: boolean | null\n          working_days_per_week: number | null\n          working_hours_per_day: number | null\n        }\n        Insert: {\n          avatar_url?: string | null\n          bank_account_number?: string | null\n          bank_name?: string | null\n          cnic?: string | null\n          company_id: string\n          created_at?: string\n          date_of_birth?: string | null\n          education?: string | null\n          email?: string | null\n          emergency_contact?: string | null\n          father_name?: string | null\n          id?: string\n          joining_date?: string | null\n          name: string\n          password?: string | null\n          phone?: string | null\n          rank: string\n          salary_divisor?: number | null\n          shift_type?: string | null\n          status?: string\n          tier?: Database[\"public\"][\"Enums\"][\"employee_tier\"] | null\n          user_id?: string | null\n          wage_rate: number\n          weekend_saturday?: boolean | null\n          weekend_sunday?: boolean | null\n          working_days_per_week?: number | null\n          working_hours_per_day?: number | null\n        }\n        Update: {\n          avatar_url?: string | null\n          bank_account_number?: string | null\n          bank_name?: string | null\n          cnic?: string | null\n          company_id?: string\n          created_at?: string\n          date_of_birth?: string | null\n          education?: string | null\n          email?: string | null\n          emergency_contact?: string | null\n          father_name?: string | null\n          id?: string\n          joining_date?: string | null\n          name?: string\n          password?: string | null\n          phone?: string | null\n          rank?: string\n          salary_divisor?: number | null\n          shift_type?: string | null\n          status?: string\n          tier?: Database[\"public\"][\"Enums\"][\"employee_tier\"] | null\n          user_id?: string | null\n          wage_rate?: number\n          weekend_saturday?: boolean | null\n          weekend_sunday?: boolean | null\n          working_days_per_week?: number | null\n          working_hours_per_day?: number | null\n        }\n        Relationships: [\n          {\n            foreignKeyName: \"employees_company_id_fkey\"\n            columns: [\"company_id\"]\n            isOneToOne: false\n            referencedRelation: \"companies\"\n            referencedColumns: [\"id\"]\n          },\n        ]\n      }\n      events: {\n        Row: {\n          affects_attendance: boolean\n          company_id: string\n          created_at: string\n          date: string\n          description: string | null\n          id: string\n          title: string\n          type: string\n        }\n        Insert: {\n          affects_attendance?: boolean\n          company_id: string\n          created_at?: string\n          date: string\n          description?: string | null\n          id?: string\n          title: string\n          type: string\n        }\n        Update: {\n          affects_attendance?: boolean\n          company_id?: string\n          created_at?: string\n          date?: string\n          description?: string | null\n          id?: string\n          title?: string\n          type?: string\n        }\n        Relationships: [\n          {\n            foreignKeyName: \"events_company_id_fkey\"\n            columns: [\"company_id\"]\n            isOneToOne: false\n            referencedRelation: \"companies\"\n            referencedColumns: [\"id\"]\n          },\n        ]\n      }\n      health_check: {\n        Row: {\n          created_at: string | null\n          id: number\n        }\n        Insert: {\n          created_at?: string | null\n          id: number\n        }\n        Update: {\n          created_at?: string | null\n          id?: number\n        }\n        Relationships: []\n      }\n      leave_balances: {\n        Row: {\n          created_at: string\n          employee_id: string\n          id: string\n          leave_type_id: string\n          total_days: number\n          updated_at: string\n          used_days: number\n          year: number\n        }\n        Insert: {\n          created_at?: string\n          employee_id: string\n          id?: string\n          leave_type_id: string\n          total_days?: number\n          updated_at?: string\n          used_days?: number\n          year: number\n        }\n        Update: {\n          created_at?: string\n          employee_id?: string\n          id?: string\n          leave_type_id?: string\n          total_days?: number\n          updated_at?: string\n          used_days?: number\n          year?: number\n        }\n        Relationships: [\n          {\n            foreignKeyName: \"leave_balances_employee_id_fkey\"\n            columns: [\"employee_id\"]\n            isOneToOne: false\n            referencedRelation: \"employees\"\n            referencedColumns: [\"id\"]\n          },\n          {\n            foreignKeyName: \"leave_balances_leave_type_id_fkey\"\n            columns: [\"leave_type_id\"]\n            isOneToOne: false\n            referencedRelation: \"leave_types\"\n            referencedColumns: [\"id\"]\n          },\n        ]\n      }\n      leave_requests: {\n        Row: {\n          company_id: string\n          created_at: string\n          days_count: number\n          employee_id: string\n          end_date: string\n          id: string\n          leave_type_id: string\n          reason: string | null\n          review_notes: string | null\n          reviewed_at: string | null\n          reviewed_by: string | null\n          start_date: string\n          status: Database[\"public\"][\"Enums\"][\"leave_status\"]\n          updated_at: string\n        }\n        Insert: {\n          company_id: string\n          created_at?: string\n          days_count: number\n          employee_id: string\n          end_date: string\n          id?: string\n          leave_type_id: string\n          reason?: string | null\n          review_notes?: string | null\n          reviewed_at?: string | null\n          reviewed_by?: string | null\n          start_date: string\n          status?: Database[\"public\"][\"Enums\"][\"leave_status\"]\n          updated_at?: string\n        }\n        Update: {\n          company_id?: string\n          created_at?: string\n          days_count?: number\n          employee_id?: string\n          end_date?: string\n          id?: string\n          leave_type_id?: string\n          reason?: string | null\n          review_notes?: string | null\n          reviewed_at?: string | null\n          reviewed_by?: string | null\n          start_date?: string\n          status?: Database[\"public\"][\"Enums\"][\"leave_status\"]\n          updated_at?: string\n        }\n        Relationships: [\n          {\n            foreignKeyName: \"leave_requests_company_id_fkey\"\n            columns: [\"company_id\"]\n            isOneToOne: false\n            referencedRelation: \"companies\"\n            referencedColumns: [\"id\"]\n          },\n          {\n            foreignKeyName: \"leave_requests_employee_id_fkey\"\n            columns: [\"employee_id\"]\n            isOneToOne: false\n            referencedRelation: \"employees\"\n            referencedColumns: [\"id\"]\n          },\n          {\n            foreignKeyName: \"leave_requests_leave_type_id_fkey\"\n            columns: [\"leave_type_id\"]\n            isOneToOne: false\n            referencedRelation: \"leave_types\"\n            referencedColumns: [\"id\"]\n          },\n          {\n            foreignKeyName: \"leave_requests_reviewed_by_fkey\"\n            columns: [\"reviewed_by\"]\n            isOneToOne: false\n            referencedRelation: \"profiles\"\n            referencedColumns: [\"id\"]\n          },\n        ]\n      }\n      leave_types: {\n        Row: {\n          company_id: string\n          created_at: string\n          days_per_year: number\n          id: string\n          is_active: boolean\n          is_paid: boolean\n          name: string\n          type: Database[\"public\"][\"Enums\"][\"leave_type_enum\"]\n        }\n        Insert: {\n          company_id: string\n          created_at?: string\n          days_per_year?: number\n          id?: string\n          is_active?: boolean\n          is_paid?: boolean\n          name: string\n          type?: Database[\"public\"][\"Enums\"][\"leave_type_enum\"]\n        }\n        Update: {\n          company_id?: string\n          created_at?: string\n          days_per_year?: number\n          id?: string\n          is_active?: boolean\n          is_paid?: boolean\n          name?: string\n          type?: Database[\"public\"][\"Enums\"][\"leave_type_enum\"]\n        }\n        Relationships: [\n          {\n            foreignKeyName: \"leave_types_company_id_fkey\"\n            columns: [\"company_id\"]\n            isOneToOne: false\n            referencedRelation: \"companies\"\n            referencedColumns: [\"id\"]\n          },\n        ]\n      }\n      monthly_working_days: {\n        Row: {\n          company_id: string\n          configuration: Json\n          created_at: string\n          daily_rate_divisor: number\n          id: string\n          month: string\n          updated_at: string\n          working_days_count: number\n        }\n        Insert: {\n          company_id: string\n          configuration?: Json\n          created_at?: string\n          daily_rate_divisor?: number\n          id?: string\n          month: string\n          updated_at?: string\n          working_days_count?: number\n        }\n        Update: {\n          company_id?: string\n          configuration?: Json\n          created_at?: string\n          daily_rate_divisor?: number\n          id?: string\n          month?: string\n          updated_at?: string\n          working_days_count?: number\n        }\n        Relationships: [\n          {\n            foreignKeyName: \"monthly_working_days_company_id_fkey\"\n            columns: [\"company_id\"]\n            isOneToOne: false\n            referencedRelation: \"companies\"\n            referencedColumns: [\"id\"]\n          },\n        ]\n      }\n      overtime_config: {\n        Row: {\n          company_id: string\n          created_at: string\n          holiday_multiplier: number\n          max_daily_hours: number\n          max_monthly_hours: number\n          regular_multiplier: number\n          requires_approval: boolean\n          updated_at: string\n          weekend_multiplier: number\n        }\n        Insert: {\n          company_id: string\n          created_at?: string\n          holiday_multiplier?: number\n          max_daily_hours?: number\n          max_monthly_hours?: number\n          regular_multiplier?: number\n          requires_approval?: boolean\n          updated_at?: string\n          weekend_multiplier?: number\n        }\n        Update: {\n          company_id?: string\n          created_at?: string\n          holiday_multiplier?: number\n          max_daily_hours?: number\n          max_monthly_hours?: number\n          regular_multiplier?: number\n          requires_approval?: boolean\n          updated_at?: string\n          weekend_multiplier?: number\n        }\n        Relationships: [\n          {\n            foreignKeyName: \"overtime_config_company_id_fkey\"\n            columns: [\"company_id\"]\n            isOneToOne: true\n            referencedRelation: \"companies\"\n            referencedColumns: [\"id\"]\n          },\n        ]\n      }\n      overtime_records: {\n        Row: {\n          company_id: string\n          created_at: string\n          date: string\n          employee_id: string\n          hourly_rate: number\n          hours: number\n          id: string\n          multiplier: number\n          overtime_type: string\n          reason: string | null\n          requested_by: string | null\n          review_notes: string | null\n          reviewed_at: string | null\n          reviewed_by: string | null\n          status: string\n          total_amount: number\n          updated_at: string\n        }\n        Insert: {\n          company_id: string\n          created_at?: string\n          date: string\n          employee_id: string\n          hourly_rate: number\n          hours: number\n          id?: string\n          multiplier: number\n          overtime_type?: string\n          reason?: string | null\n          requested_by?: string | null\n          review_notes?: string | null\n          reviewed_at?: string | null\n          reviewed_by?: string | null\n          status?: string\n          total_amount: number\n          updated_at?: string\n        }\n        Update: {\n          company_id?: string\n          created_at?: string\n          date?: string\n          employee_id?: string\n          hourly_rate?: number\n          hours?: number\n          id?: string\n          multiplier?: number\n          overtime_type?: string\n          reason?: string | null\n          requested_by?: string | null\n          review_notes?: string | null\n          reviewed_at?: string | null\n          reviewed_by?: string | null\n          status?: string\n          total_amount?: number\n          updated_at?: string\n        }\n        Relationships: [\n          {\n            foreignKeyName: \"overtime_records_company_id_fkey\"\n            columns: [\"company_id\"]\n            isOneToOne: false\n            referencedRelation: \"companies\"\n            referencedColumns: [\"id\"]\n          },\n          {\n            foreignKeyName: \"overtime_records_employee_id_fkey\"\n            columns: [\"employee_id\"]\n            isOneToOne: false\n            referencedRelation: \"employees\"\n            referencedColumns: [\"id\"]\n          },\n        ]\n      }\n      payslips: {\n        Row: {\n          basic_salary: number\n          company_id: string\n          created_at: string\n          daily_rate: number\n          days_worked: number\n          deductions: Json | null\n          employee_id: string\n          generated_by: string | null\n          gross_salary: number\n          id: string\n          month: string\n          net_salary: number\n          notes: string | null\n          overtime_earnings: number | null\n          overtime_hours: number | null\n          present_days: number\n          short_leave_days: number\n          total_deductions: number\n        }\n        Insert: {\n          basic_salary: number\n          company_id: string\n          created_at?: string\n          daily_rate: number\n          days_worked: number\n          deductions?: Json | null\n          employee_id: string\n          generated_by?: string | null\n          gross_salary: number\n          id?: string\n          month: string\n          net_salary: number\n          notes?: string | null\n          overtime_earnings?: number | null\n          overtime_hours?: number | null\n          present_days?: number\n          short_leave_days?: number\n          total_deductions?: number\n        }\n        Update: {\n          basic_salary?: number\n          company_id?: string\n          created_at?: string\n          daily_rate?: number\n          days_worked?: number\n          deductions?: Json | null\n          employee_id?: string\n          generated_by?: string | null\n          gross_salary?: number\n          id?: string\n          month?: string\n          net_salary?: number\n          notes?: string | null\n          overtime_earnings?: number | null\n          overtime_hours?: number | null\n          present_days?: number\n          short_leave_days?: number\n          total_deductions?: number\n        }\n        Relationships: [\n          {\n            foreignKeyName: \"payslips_company_id_fkey\"\n            columns: [\"company_id\"]\n            isOneToOne: false\n            referencedRelation: \"companies\"\n            referencedColumns: [\"id\"]\n          },\n          {\n            foreignKeyName: \"payslips_employee_id_fkey\"\n            columns: [\"employee_id\"]\n            isOneToOne: false\n            referencedRelation: \"employees\"\n            referencedColumns: [\"id\"]\n          },\n          {\n            foreignKeyName: \"payslips_generated_by_fkey\"\n            columns: [\"generated_by\"]\n            isOneToOne: false\n            referencedRelation: \"profiles\"\n            referencedColumns: [\"id\"]\n          },\n        ]\n      }\n      profiles: {\n        Row: {\n          avatar_url: string | null\n          company_id: string | null\n          created_at: string\n          first_name: string | null\n          id: string\n          is_admin: boolean\n          last_name: string | null\n        }\n        Insert: {\n          avatar_url?: string | null\n          company_id?: string | null\n          created_at?: string\n          first_name?: string | null\n          id: string\n          is_admin?: boolean\n          last_name?: string | null\n        }\n        Update: {\n          avatar_url?: string | null\n          company_id?: string | null\n          created_at?: string\n          first_name?: string | null\n          id?: string\n          is_admin?: boolean\n          last_name?: string | null\n        }\n        Relationships: [\n          {\n            foreignKeyName: \"profiles_company_id_fkey\"\n            columns: [\"company_id\"]\n            isOneToOne: false\n            referencedRelation: \"companies\"\n            referencedColumns: [\"id\"]\n          },\n        ]\n      }\n      tier_config: {\n        Row: {\n          company_id: string\n          created_at: string\n          description: string | null\n          holiday_multiplier: number\n          id: string\n          max_daily_hours: number\n          max_monthly_hours: number\n          regular_multiplier: number\n          tier: Database[\"public\"][\"Enums\"][\"employee_tier\"]\n          tier_name: string\n          updated_at: string\n          weekend_multiplier: number\n        }\n        Insert: {\n          company_id: string\n          created_at?: string\n          description?: string | null\n          holiday_multiplier?: number\n          id?: string\n          max_daily_hours?: number\n          max_monthly_hours?: number\n          regular_multiplier?: number\n          tier: Database[\"public\"][\"Enums\"][\"employee_tier\"]\n          tier_name: string\n          updated_at?: string\n          weekend_multiplier?: number\n        }\n        Update: {\n          company_id?: string\n          created_at?: string\n          description?: string | null\n          holiday_multiplier?: number\n          id?: string\n          max_daily_hours?: number\n          max_monthly_hours?: number\n          regular_multiplier?: number\n          tier?: Database[\"public\"][\"Enums\"][\"employee_tier\"]\n          tier_name?: string\n          updated_at?: string\n          weekend_multiplier?: number\n        }\n        Relationships: []\n      }\n      working_days_config: {\n        Row: {\n          company_id: string\n          created_at: string\n          friday: boolean\n          monday: boolean\n          saturday: boolean\n          sunday: boolean\n          thursday: boolean\n          tuesday: boolean\n          updated_at: string\n          wednesday: boolean\n        }\n        Insert: {\n          company_id: string\n          created_at?: string\n          friday?: boolean\n          monday?: boolean\n          saturday?: boolean\n          sunday?: boolean\n          thursday?: boolean\n          tuesday?: boolean\n          updated_at?: string\n          wednesday?: boolean\n        }\n        Update: {\n          company_id?: string\n          created_at?: string\n          friday?: boolean\n          monday?: boolean\n          saturday?: boolean\n          sunday?: boolean\n          thursday?: boolean\n          tuesday?: boolean\n          updated_at?: string\n          wednesday?: boolean\n        }\n        Relationships: [\n          {\n            foreignKeyName: \"working_days_config_company_id_fkey\"\n            columns: [\"company_id\"]\n            isOneToOne: true\n            referencedRelation: \"companies\"\n            referencedColumns: [\"id\"]\n          },\n        ]\n      }\n    }\n    Views: {\n      [_ in never]: never\n    }\n    Functions: {\n      employee_login: {\n        Args: { p_cnic: string; p_password: string }\n        Returns: Json\n      }\n      get_employee_portal_data: { Args: { p_emp_id: string }; Returns: Json }\n      get_employee_working_days_for_month: {\n        Args: { target_employee_id: string; target_month: string }\n        Returns: {\n          daily_rate_divisor: number\n          total_working_days: number\n          working_dates: string[]\n        }[]\n      }\n      get_monthly_salary_stats: {\n        Args: { in_company_id: string; target_month: string }\n        Returns: {\n          average_daily_rate: number\n          employee_count: number\n          total_budget_salary: number\n          total_calculated_salary: number\n        }[]\n      }\n      get_user_company_id: { Args: { user_id: string }; Returns: string }\n      get_user_profile: {\n        Args: { user_id: string }\n        Returns: {\n          avatar_url: string | null\n          company_id: string | null\n          created_at: string\n          first_name: string | null\n          id: string\n          is_admin: boolean\n          last_name: string | null\n        }[]\n        SetofOptions: {\n          from: \"*\"\n          to: \"profiles\"\n          isOneToOne: false\n          isSetofReturn: true\n        }\n      }\n      get_working_days_for_month: {\n        Args: { target_company_id: string; target_month: string }\n        Returns: {\n          daily_rate_divisor: number\n          total_working_days: number\n          working_dates: string[]\n        }[]\n      }\n      initialize_tier_config: {\n        Args: { target_company_id: string }\n        Returns: undefined\n      }\n      is_admin: { Args: { user_id: string }; Returns: boolean }\n      process_update_request: {\n        Args: { p_req_id: string; p_status: string }\n        Returns: Json\n      }\n      submit_update_request: {\n        Args: { p_changes: Json; p_emp_id: string }\n        Returns: Json\n      }\n      update_employee_password: {\n        Args: {\n          p_emp_id: string\n          p_new_password: string\n          p_old_password: string\n        }\n        Returns: Json\n      }\n    }\n    Enums: {\n      document_type: \"contract\" | \"id_copy\" | \"certificate\" | \"resume\" | \"other\"\n      employee_tier: \"tier_a\" | \"tier_b\" | \"tier_c\"\n      leave_status: \"pending\" | \"approved\" | \"rejected\" | \"cancelled\"\n      leave_type_enum:\n        | \"annual\"\n        | \"sick\"\n        | \"unpaid\"\n        | \"maternity\"\n        | \"paternity\"\n        | \"other\"\n    }\n    CompositeTypes: {\n      [_ in never]: never\n    }\n  }\n}\n\ntype DatabaseWithoutInternals = Omit<Database, \"__InternalSupabase\">\n\ntype DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, \"public\">]\n\nexport type Tables<\n  DefaultSchemaTableNameOrOptions extends\n    | keyof (DefaultSchema[\"Tables\"] & DefaultSchema[\"Views\"])\n    | { schema: keyof DatabaseWithoutInternals },\n  TableName extends DefaultSchemaTableNameOrOptions extends {\n    schema: keyof DatabaseWithoutInternals\n  }\n    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions[\"schema\"]][\"Tables\"] &\n        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions[\"schema\"]][\"Views\"])\n    : never = never,\n> = DefaultSchemaTableNameOrOptions extends {\n  schema: keyof DatabaseWithoutInternals\n}\n  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions[\"schema\"]][\"Tables\"] &\n      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions[\"schema\"]][\"Views\"])[TableName] extends {\n      Row: infer R\n    }\n    ? R\n    : never\n  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema[\"Tables\"] &\n        DefaultSchema[\"Views\"])\n    ? (DefaultSchema[\"Tables\"] &\n        DefaultSchema[\"Views\"])[DefaultSchemaTableNameOrOptions] extends {\n        Row: infer R\n      }\n      ? R\n      : never\n    : never\n\nexport type TablesInsert<\n  DefaultSchemaTableNameOrOptions extends\n    | keyof DefaultSchema[\"Tables\"]\n    | { schema: keyof DatabaseWithoutInternals },\n  TableName extends DefaultSchemaTableNameOrOptions extends {\n    schema: keyof DatabaseWithoutInternals\n  }\n    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions[\"schema\"]][\"Tables\"]\n    : never = never,\n> = DefaultSchemaTableNameOrOptions extends {\n  schema: keyof DatabaseWithoutInternals\n}\n  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions[\"schema\"]][\"Tables\"][TableName] extends {\n      Insert: infer I\n    }\n    ? I\n    : never\n  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema[\"Tables\"]\n    ? DefaultSchema[\"Tables\"][DefaultSchemaTableNameOrOptions] extends {\n        Insert: infer I\n      }\n      ? I\n      : never\n    : never\n\nexport type TablesUpdate<\n  DefaultSchemaTableNameOrOptions extends\n    | keyof DefaultSchema[\"Tables\"]\n    | { schema: keyof DatabaseWithoutInternals },\n  TableName extends DefaultSchemaTableNameOrOptions extends {\n    schema: keyof DatabaseWithoutInternals\n  }\n    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions[\"schema\"]][\"Tables\"]\n    : never = never,\n> = DefaultSchemaTableNameOrOptions extends {\n  schema: keyof DatabaseWithoutInternals\n}\n  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions[\"schema\"]][\"Tables\"][TableName] extends {\n      Update: infer U\n    }\n    ? U\n    : never\n  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema[\"Tables\"]\n    ? DefaultSchema[\"Tables\"][DefaultSchemaTableNameOrOptions] extends {\n        Update: infer U\n      }\n      ? U\n      : never\n    : never\n\nexport type Enums<\n  DefaultSchemaEnumNameOrOptions extends\n    | keyof DefaultSchema[\"Enums\"]\n    | { schema: keyof DatabaseWithoutInternals },\n  EnumName extends DefaultSchemaEnumNameOrOptions extends {\n    schema: keyof DatabaseWithoutInternals\n  }\n    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions[\"schema\"]][\"Enums\"]\n    : never = never,\n> = DefaultSchemaEnumNameOrOptions extends {\n  schema: keyof DatabaseWithoutInternals\n}\n  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions[\"schema\"]][\"Enums\"][EnumName]\n  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema[\"Enums\"]\n    ? DefaultSchema[\"Enums\"][DefaultSchemaEnumNameOrOptions]\n    : never\n\nexport type CompositeTypes<\n  PublicCompositeTypeNameOrOptions extends\n    | keyof DefaultSchema[\"CompositeTypes\"]\n    | { schema: keyof DatabaseWithoutInternals },\n  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {\n    schema: keyof DatabaseWithoutInternals\n  }\n    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions[\"schema\"]][\"CompositeTypes\"]\n    : never = never,\n> = PublicCompositeTypeNameOrOptions extends {\n  schema: keyof DatabaseWithoutInternals\n}\n  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions[\"schema\"]][\"CompositeTypes\"][CompositeTypeName]\n  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema[\"CompositeTypes\"]\n    ? DefaultSchema[\"CompositeTypes\"][PublicCompositeTypeNameOrOptions]\n    : never\n\nexport const Constants = {\n  public: {\n    Enums: {\n      document_type: [\"contract\", \"id_copy\", \"certificate\", \"resume\", \"other\"],\n      employee_tier: [\"tier_a\", \"tier_b\", \"tier_c\"],\n      leave_status: [\"pending\", \"approved\", \"rejected\", \"cancelled\"],\n      leave_type_enum: [\n        \"annual\",\n        \"sick\",\n        \"unpaid\",\n        \"maternity\",\n        \"paternity\",\n        \"other\",\n      ],\n    },\n  },\n} as const\n"}
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]
+
+export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "12.2.3 (519615d)"
+  }
+  public: {
+    Tables: {
+      activity_logs: {
+        Row: {
+          action_type: string
+          company_id: string
+          created_at: string
+          description: string
+          details: Json | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          action_type: string
+          company_id: string
+          created_at?: string
+          description: string
+          details?: Json | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          action_type?: string
+          company_id?: string
+          created_at?: string
+          description?: string
+          details?: Json | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activity_logs_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activity_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      attendance: {
+        Row: {
+          created_at: string
+          date: string
+          employee_id: string
+          id: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          employee_id: string
+          id?: string
+          status: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          employee_id?: string
+          id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attendance_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      companies: {
+        Row: {
+          address: string | null
+          company_size: string | null
+          company_type: string | null
+          created_at: string
+          created_by: string | null
+          currency: string | null
+          id: string
+          logo: string | null
+          name: string
+          phone: string | null
+          website: string | null
+        }
+        Insert: {
+          address?: string | null
+          company_size?: string | null
+          company_type?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string | null
+          id?: string
+          logo?: string | null
+          name: string
+          phone?: string | null
+          website?: string | null
+        }
+        Update: {
+          address?: string | null
+          company_size?: string | null
+          company_type?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string | null
+          id?: string
+          logo?: string | null
+          name?: string
+          phone?: string | null
+          website?: string | null
+        }
+        Relationships: []
+      }
+      company_working_settings: {
+        Row: {
+          company_id: string
+          created_at: string
+          default_working_days_per_month: number
+          default_working_days_per_week: number
+          salary_divisor: number
+          updated_at: string
+          weekend_saturday: boolean
+          weekend_sunday: boolean
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          default_working_days_per_month?: number
+          default_working_days_per_week?: number
+          salary_divisor?: number
+          updated_at?: string
+          weekend_saturday?: boolean
+          weekend_sunday?: boolean
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          default_working_days_per_month?: number
+          default_working_days_per_week?: number
+          salary_divisor?: number
+          updated_at?: string
+          weekend_saturday?: boolean
+          weekend_sunday?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_working_settings_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: true
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      employee_documents: {
+        Row: {
+          company_id: string
+          created_at: string
+          document_name: string
+          document_type: Database["public"]["Enums"]["document_type"]
+          employee_id: string
+          file_name: string
+          file_path: string
+          file_size: number | null
+          id: string
+          mime_type: string | null
+          updated_at: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          document_name: string
+          document_type?: Database["public"]["Enums"]["document_type"]
+          employee_id: string
+          file_name: string
+          file_path: string
+          file_size?: number | null
+          id?: string
+          mime_type?: string | null
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          document_name?: string
+          document_type?: Database["public"]["Enums"]["document_type"]
+          employee_id?: string
+          file_name?: string
+          file_path?: string
+          file_size?: number | null
+          id?: string
+          mime_type?: string | null
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_documents_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_documents_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_documents_uploaded_by_fkey"
+            columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      employee_update_requests: {
+        Row: {
+          company_id: string | null
+          created_at: string | null
+          employee_id: string | null
+          id: string
+          requested_changes: Json
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string | null
+        }
+        Insert: {
+          company_id?: string | null
+          created_at?: string | null
+          employee_id?: string | null
+          id?: string
+          requested_changes: Json
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
+        }
+        Update: {
+          company_id?: string | null
+          created_at?: string | null
+          employee_id?: string | null
+          id?: string
+          requested_changes?: Json
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_update_requests_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_update_requests_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      employees: {
+        Row: {
+          avatar_url: string | null
+          bank_account_number: string | null
+          bank_name: string | null
+          cnic: string | null
+          company_id: string
+          created_at: string
+          date_of_birth: string | null
+          education: string | null
+          email: string | null
+          emergency_contact: string | null
+          father_name: string | null
+          id: string
+          joining_date: string | null
+          name: string
+          password: string | null
+          phone: string | null
+          rank: string
+          salary_divisor: number | null
+          shift_type: string | null
+          status: string
+          tier: Database["public"]["Enums"]["employee_tier"] | null
+          user_id: string | null
+          wage_rate: number
+          weekend_saturday: boolean | null
+          weekend_sunday: boolean | null
+          working_days_per_week: number | null
+          working_hours_per_day: number | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bank_account_number?: string | null
+          bank_name?: string | null
+          cnic?: string | null
+          company_id: string
+          created_at?: string
+          date_of_birth?: string | null
+          education?: string | null
+          email?: string | null
+          emergency_contact?: string | null
+          father_name?: string | null
+          id?: string
+          joining_date?: string | null
+          name: string
+          password?: string | null
+          phone?: string | null
+          rank: string
+          salary_divisor?: number | null
+          shift_type?: string | null
+          status?: string
+          tier?: Database["public"]["Enums"]["employee_tier"] | null
+          user_id?: string | null
+          wage_rate: number
+          weekend_saturday?: boolean | null
+          weekend_sunday?: boolean | null
+          working_days_per_week?: number | null
+          working_hours_per_day?: number | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bank_account_number?: string | null
+          bank_name?: string | null
+          cnic?: string | null
+          company_id?: string
+          created_at?: string
+          date_of_birth?: string | null
+          education?: string | null
+          email?: string | null
+          emergency_contact?: string | null
+          father_name?: string | null
+          id?: string
+          joining_date?: string | null
+          name?: string
+          password?: string | null
+          phone?: string | null
+          rank?: string
+          salary_divisor?: number | null
+          shift_type?: string | null
+          status?: string
+          tier?: Database["public"]["Enums"]["employee_tier"] | null
+          user_id?: string | null
+          wage_rate?: number
+          weekend_saturday?: boolean | null
+          weekend_sunday?: boolean | null
+          working_days_per_week?: number | null
+          working_hours_per_day?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employees_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      events: {
+        Row: {
+          affects_attendance: boolean
+          company_id: string
+          created_at: string
+          date: string
+          description: string | null
+          id: string
+          title: string
+          type: string
+        }
+        Insert: {
+          affects_attendance?: boolean
+          company_id: string
+          created_at?: string
+          date: string
+          description?: string | null
+          id?: string
+          title: string
+          type: string
+        }
+        Update: {
+          affects_attendance?: boolean
+          company_id?: string
+          created_at?: string
+          date?: string
+          description?: string | null
+          id?: string
+          title?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "events_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      health_check: {
+        Row: {
+          created_at: string | null
+          id: number
+        }
+        Insert: {
+          created_at?: string | null
+          id: number
+        }
+        Update: {
+          created_at?: string | null
+          id?: number
+        }
+        Relationships: []
+      }
+      leave_balances: {
+        Row: {
+          created_at: string
+          employee_id: string
+          id: string
+          leave_type_id: string
+          total_days: number
+          updated_at: string
+          used_days: number
+          year: number
+        }
+        Insert: {
+          created_at?: string
+          employee_id: string
+          id?: string
+          leave_type_id: string
+          total_days?: number
+          updated_at?: string
+          used_days?: number
+          year: number
+        }
+        Update: {
+          created_at?: string
+          employee_id?: string
+          id?: string
+          leave_type_id?: string
+          total_days?: number
+          updated_at?: string
+          used_days?: number
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leave_balances_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leave_balances_leave_type_id_fkey"
+            columns: ["leave_type_id"]
+            isOneToOne: false
+            referencedRelation: "leave_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      leave_requests: {
+        Row: {
+          company_id: string
+          created_at: string
+          days_count: number
+          employee_id: string
+          end_date: string
+          id: string
+          leave_type_id: string
+          reason: string | null
+          review_notes: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          start_date: string
+          status: Database["public"]["Enums"]["leave_status"]
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          days_count: number
+          employee_id: string
+          end_date: string
+          id?: string
+          leave_type_id: string
+          reason?: string | null
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          start_date: string
+          status?: Database["public"]["Enums"]["leave_status"]
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          days_count?: number
+          employee_id?: string
+          end_date?: string
+          id?: string
+          leave_type_id?: string
+          reason?: string | null
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          start_date?: string
+          status?: Database["public"]["Enums"]["leave_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leave_requests_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leave_requests_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leave_requests_leave_type_id_fkey"
+            columns: ["leave_type_id"]
+            isOneToOne: false
+            referencedRelation: "leave_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leave_requests_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      leave_types: {
+        Row: {
+          company_id: string
+          created_at: string
+          days_per_year: number
+          id: string
+          is_active: boolean
+          is_paid: boolean
+          name: string
+          type: Database["public"]["Enums"]["leave_type_enum"]
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          days_per_year?: number
+          id?: string
+          is_active?: boolean
+          is_paid?: boolean
+          name: string
+          type?: Database["public"]["Enums"]["leave_type_enum"]
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          days_per_year?: number
+          id?: string
+          is_active?: boolean
+          is_paid?: boolean
+          name?: string
+          type?: Database["public"]["Enums"]["leave_type_enum"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leave_types_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      monthly_working_days: {
+        Row: {
+          company_id: string
+          configuration: Json
+          created_at: string
+          daily_rate_divisor: number
+          id: string
+          month: string
+          updated_at: string
+          working_days_count: number
+        }
+        Insert: {
+          company_id: string
+          configuration?: Json
+          created_at?: string
+          daily_rate_divisor?: number
+          id?: string
+          month: string
+          updated_at?: string
+          working_days_count?: number
+        }
+        Update: {
+          company_id?: string
+          configuration?: Json
+          created_at?: string
+          daily_rate_divisor?: number
+          id?: string
+          month?: string
+          updated_at?: string
+          working_days_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "monthly_working_days_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      overtime_config: {
+        Row: {
+          company_id: string
+          created_at: string
+          holiday_multiplier: number
+          max_daily_hours: number
+          max_monthly_hours: number
+          regular_multiplier: number
+          requires_approval: boolean
+          updated_at: string
+          weekend_multiplier: number
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          holiday_multiplier?: number
+          max_daily_hours?: number
+          max_monthly_hours?: number
+          regular_multiplier?: number
+          requires_approval?: boolean
+          updated_at?: string
+          weekend_multiplier?: number
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          holiday_multiplier?: number
+          max_daily_hours?: number
+          max_monthly_hours?: number
+          regular_multiplier?: number
+          requires_approval?: boolean
+          updated_at?: string
+          weekend_multiplier?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "overtime_config_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: true
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      overtime_records: {
+        Row: {
+          company_id: string
+          created_at: string
+          date: string
+          employee_id: string
+          hourly_rate: number
+          hours: number
+          id: string
+          multiplier: number
+          overtime_type: string
+          reason: string | null
+          requested_by: string | null
+          review_notes: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          total_amount: number
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          date: string
+          employee_id: string
+          hourly_rate: number
+          hours: number
+          id?: string
+          multiplier: number
+          overtime_type?: string
+          reason?: string | null
+          requested_by?: string | null
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          total_amount: number
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          date?: string
+          employee_id?: string
+          hourly_rate?: number
+          hours?: number
+          id?: string
+          multiplier?: number
+          overtime_type?: string
+          reason?: string | null
+          requested_by?: string | null
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          total_amount?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "overtime_records_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "overtime_records_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payslips: {
+        Row: {
+          basic_salary: number
+          company_id: string
+          created_at: string
+          daily_rate: number
+          days_worked: number
+          deductions: Json | null
+          employee_id: string
+          generated_by: string | null
+          gross_salary: number
+          id: string
+          month: string
+          net_salary: number
+          notes: string | null
+          overtime_earnings: number | null
+          overtime_hours: number | null
+          present_days: number
+          short_leave_days: number
+          total_deductions: number
+        }
+        Insert: {
+          basic_salary: number
+          company_id: string
+          created_at?: string
+          daily_rate: number
+          days_worked: number
+          deductions?: Json | null
+          employee_id: string
+          generated_by?: string | null
+          gross_salary: number
+          id?: string
+          month: string
+          net_salary: number
+          notes?: string | null
+          overtime_earnings?: number | null
+          overtime_hours?: number | null
+          present_days?: number
+          short_leave_days?: number
+          total_deductions?: number
+        }
+        Update: {
+          basic_salary?: number
+          company_id?: string
+          created_at?: string
+          daily_rate?: number
+          days_worked?: number
+          deductions?: Json | null
+          employee_id?: string
+          generated_by?: string | null
+          gross_salary?: number
+          id?: string
+          month?: string
+          net_salary?: number
+          notes?: string | null
+          overtime_earnings?: number | null
+          overtime_hours?: number | null
+          present_days?: number
+          short_leave_days?: number
+          total_deductions?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payslips_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payslips_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payslips_generated_by_fkey"
+            columns: ["generated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          company_id: string | null
+          created_at: string
+          first_name: string | null
+          id: string
+          is_admin: boolean
+          last_name: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          company_id?: string | null
+          created_at?: string
+          first_name?: string | null
+          id: string
+          is_admin?: boolean
+          last_name?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          company_id?: string | null
+          created_at?: string
+          first_name?: string | null
+          id?: string
+          is_admin?: boolean
+          last_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tier_config: {
+        Row: {
+          company_id: string
+          created_at: string
+          description: string | null
+          holiday_multiplier: number
+          id: string
+          max_daily_hours: number
+          max_monthly_hours: number
+          regular_multiplier: number
+          tier: Database["public"]["Enums"]["employee_tier"]
+          tier_name: string
+          updated_at: string
+          weekend_multiplier: number
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          description?: string | null
+          holiday_multiplier?: number
+          id?: string
+          max_daily_hours?: number
+          max_monthly_hours?: number
+          regular_multiplier?: number
+          tier: Database["public"]["Enums"]["employee_tier"]
+          tier_name: string
+          updated_at?: string
+          weekend_multiplier?: number
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          description?: string | null
+          holiday_multiplier?: number
+          id?: string
+          max_daily_hours?: number
+          max_monthly_hours?: number
+          regular_multiplier?: number
+          tier?: Database["public"]["Enums"]["employee_tier"]
+          tier_name?: string
+          updated_at?: string
+          weekend_multiplier?: number
+        }
+        Relationships: []
+      }
+      working_days_config: {
+        Row: {
+          company_id: string
+          created_at: string
+          friday: boolean
+          monday: boolean
+          saturday: boolean
+          sunday: boolean
+          thursday: boolean
+          tuesday: boolean
+          updated_at: string
+          wednesday: boolean
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          friday?: boolean
+          monday?: boolean
+          saturday?: boolean
+          sunday?: boolean
+          thursday?: boolean
+          tuesday?: boolean
+          updated_at?: string
+          wednesday?: boolean
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          friday?: boolean
+          monday?: boolean
+          saturday?: boolean
+          sunday?: boolean
+          thursday?: boolean
+          tuesday?: boolean
+          updated_at?: string
+          wednesday?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "working_days_config_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: true
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      employee_login: {
+        Args: { p_cnic: string; p_password: string }
+        Returns: Json
+      }
+      get_employee_portal_data: { Args: { p_emp_id: string }; Returns: Json }
+      get_employee_working_days_for_month: {
+        Args: { target_employee_id: string; target_month: string }
+        Returns: {
+          daily_rate_divisor: number
+          total_working_days: number
+          working_dates: string[]
+        }[]
+      }
+      get_monthly_salary_stats: {
+        Args: { in_company_id: string; target_month: string }
+        Returns: {
+          average_daily_rate: number
+          employee_count: number
+          total_budget_salary: number
+          total_calculated_salary: number
+        }[]
+      }
+      get_user_company_id: { Args: { user_id: string }; Returns: string }
+      get_user_profile: {
+        Args: { user_id: string }
+        Returns: {
+          avatar_url: string | null
+          company_id: string | null
+          created_at: string
+          first_name: string | null
+          id: string
+          is_admin: boolean
+          last_name: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "profiles"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      get_working_days_for_month: {
+        Args: { target_company_id: string; target_month: string }
+        Returns: {
+          daily_rate_divisor: number
+          total_working_days: number
+          working_dates: string[]
+        }[]
+      }
+      initialize_tier_config: {
+        Args: { target_company_id: string }
+        Returns: undefined
+      }
+      is_admin: { Args: { user_id: string }; Returns: boolean }
+      process_update_request: {
+        Args: { p_req_id: string; p_status: string }
+        Returns: Json
+      }
+      submit_update_request: {
+        Args: { p_changes: Json; p_emp_id: string }
+        Returns: Json
+      }
+      update_employee_password: {
+        Args: {
+          p_emp_id: string
+          p_new_password: string
+          p_old_password: string
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      document_type: "contract" | "id_copy" | "certificate" | "resume" | "other"
+      employee_tier: "tier_a" | "tier_b" | "tier_c"
+      leave_status: "pending" | "approved" | "rejected" | "cancelled"
+      leave_type_enum:
+        | "annual"
+        | "sick"
+        | "unpaid"
+        | "maternity"
+        | "paternity"
+        | "other"
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
+}
+
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+
+export type Tables<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
+
+export type TablesInsert<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
+
+export type TablesUpdate<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
+
+export type Enums<
+  DefaultSchemaEnumNameOrOptions extends
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never = never,
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
+
+export const Constants = {
+  public: {
+    Enums: {
+      document_type: ["contract", "id_copy", "certificate", "resume", "other"],
+      employee_tier: ["tier_a", "tier_b", "tier_c"],
+      leave_status: ["pending", "approved", "rejected", "cancelled"],
+      leave_type_enum: [
+        "annual",
+        "sick",
+        "unpaid",
+        "maternity",
+        "paternity",
+        "other",
+      ],
+    },
+  },
+} as const
