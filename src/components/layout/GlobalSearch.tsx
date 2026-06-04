@@ -57,7 +57,7 @@ function SearchAnalytics({ companyId }: { companyId: string }) {
       // 3. Fetch recent "activity" (mocked by recent employees/attendance)
       const { data: recentEmployees } = await supabase
         .from('employees')
-        .select('id, first_name, last_name, created_at')
+        .select('id, name, created_at')
         .eq('company_id', companyId)
         .order('created_at', { ascending: false })
         .limit(2);
@@ -90,7 +90,7 @@ function SearchAnalytics({ companyId }: { companyId: string }) {
       const recentActivity = (recentEmployees || []).map(e => ({
         id: e.id,
         title: 'New Hire',
-        desc: `${e.first_name} ${e.last_name || ''}`,
+        desc: e.name || 'Unnamed Employee',
         time: new Date(e.created_at || new Date())
       }));
 
@@ -231,13 +231,13 @@ export default function GlobalSearch() {
     try {
       let q = supabase
         .from('employees')
-        .select('id, first_name, last_name, rank, status')
+        .select('id, name, rank, status')
         .eq('company_id', userProfile.company_id)
         .eq('status', 'active')
         .limit(8);
         
       if (query) {
-        q = q.or(`first_name.ilike.%${query}%,last_name.ilike.%${query}%`);
+        q = q.ilike('name', `%${query}%`);
       }
       
       const { data, error } = await q;
@@ -267,10 +267,10 @@ export default function GlobalSearch() {
   const employeeResults: SearchResult[] = useMemo(() => {
     return employees.map(emp => ({
       id: emp.id,
-      title: `${emp.first_name} ${emp.last_name || ''}`.trim(),
+      title: emp.name?.trim() || 'Unnamed',
       subtitle: emp.rank || 'Employee',
       type: 'employee' as const,
-      action: () => navigate(`/employees?search=${emp.first_name}`),
+      action: () => navigate(`/employees?search=${emp.name}`),
       icon: Users
     }));
   }, [employees, navigate]);

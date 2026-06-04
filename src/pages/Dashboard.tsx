@@ -18,11 +18,11 @@ export default function DashboardPage() {
     <Dashboard title="">
       <div className="flex flex-col gap-5 p-4 lg:p-6 bg-background min-h-screen">
         {/* Command Bar: Plain Text Greeting + Professional Buttons */}
-        <StaggerIn delay={0}>
+        <StaggerIn staggerDelay={0}>
           <div className="flex items-center justify-between pb-2 border-b border-border/40">
             <div className="flex flex-col">
               <h1 className="text-2xl font-black text-foreground tracking-tight">
-                Welcome, {userProfile?.name || 'Admin'}!
+                Welcome, {userProfile?.first_name || 'Admin'}!
               </h1>
               <p className="text-xs text-muted-foreground flex items-center gap-1.5 mt-1 font-medium">
                 <Clock className="w-3.5 h-3.5" />
@@ -53,18 +53,17 @@ export default function DashboardPage() {
         </StaggerIn>
 
         {/* Dashboard Stats Micro-Grid */}
-        <StaggerIn delay={150}>
+        <StaggerIn staggerDelay={150}>
           <DashboardStats />
         </StaggerIn>
 
         {/* Analytics & Activity Split */}
         <div className="grid grid-cols-1 xl:grid-cols-[1fr_350px] gap-5 items-start">
-          <StaggerIn delay={300} className="w-full h-full flex flex-col gap-5">
+          <StaggerIn staggerDelay={300} className="w-full h-full flex flex-col gap-5">
             <AnalyticsWidget />
             <RecentDocumentsWidget />
           </StaggerIn>
-          
-          <StaggerIn delay={450} className="w-full h-full flex flex-col gap-5">
+          <StaggerIn staggerDelay={450} className="w-full h-full flex flex-col gap-5">
             <TodayAttendanceChart />
             <ActivityFeed />
           </StaggerIn>

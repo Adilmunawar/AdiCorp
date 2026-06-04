@@ -122,7 +122,7 @@ export default function EmployeeForm({ employee, onSuccess, onCancel, isOpen, on
         employee_id: empId,
         company_id: userProfile?.company_id,
         document_name: docName,
-        document_type: docType,
+        document_type: docType as "contract" | "id_copy" | "certificate" | "resume" | "other",
         file_name: file.name,
         file_path: filePath,
         file_size: file.size,

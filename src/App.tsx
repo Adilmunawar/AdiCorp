@@ -11,6 +11,8 @@ import AnimatedRoute from "@/components/layout/AnimatedRoute";
 import BiometricLockScreen from "./components/auth/BiometricLockScreen";
 import PermissionErrorToaster from "./components/common/PermissionErrorToaster";
 import BrandLoader from "./components/common/BrandLoader";
+import { EmployeeAuthProvider } from "@/context/EmployeeAuthContext";
+import { EmployeePrivateRoute, EmployeePortalLayout } from "@/components/layout/EmployeePortalLayout";
 
 const Auth = lazy(() => import("./pages/Auth"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
@@ -28,6 +30,13 @@ const OvertimePage = lazy(() => import("./pages/Overtime"));
 const OnboardingPage = lazy(() => import("./pages/Onboarding"));
 const DocumentTracking = lazy(() => import("./pages/DocumentTracking"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+
+// Portal Pages
+const EmployeeLogin = lazy(() => import("./pages/portal/EmployeeLogin"));
+const PortalProfile = lazy(() => import("./pages/portal/PortalProfile"));
+const PortalAttendance = lazy(() => import("./pages/portal/PortalAttendance"));
+const PortalPayroll = lazy(() => import("./pages/portal/PortalPayroll"));
+const PortalReports = lazy(() => import("./pages/portal/PortalReports"));
 
 const queryClient = new QueryClient();
 
@@ -63,6 +72,16 @@ function AnimatedRoutes() {
             <Route path="/overtime" element={<PrivateRoute><OvertimePage /></PrivateRoute>} />
             <Route path="/document-tracking" element={<PrivateRoute><DocumentTracking /></PrivateRoute>} />
             <Route path="/onboarding" element={<PrivateRoute><OnboardingPage /></PrivateRoute>} />
+            
+            {/* Employee Portal Routes */}
+            <Route path="/employee-login" element={<EmployeeLogin />} />
+            <Route path="/portal" element={<EmployeePrivateRoute><EmployeePortalLayout /></EmployeePrivateRoute>}>
+              <Route path="profile" element={<PortalProfile />} />
+              <Route path="attendance" element={<PortalAttendance />} />
+              <Route path="payroll" element={<PortalPayroll />} />
+              <Route path="reports" element={<PortalReports />} />
+            </Route>
+
             <Route path="/404" element={<NotFound />} />
             <Route path="*" element={<Navigate to="/404" replace />} />
           </Routes>
@@ -80,9 +99,11 @@ const App = () => (
         <Sonner />
         <PermissionErrorToaster />
         <BiometricLockScreen />
-        <BrowserRouter>
-          <AnimatedRoutes />
-        </BrowserRouter>
+        <EmployeeAuthProvider>
+          <BrowserRouter>
+            <AnimatedRoutes />
+          </BrowserRouter>
+        </EmployeeAuthProvider>
       </TooltipProvider>
     </AuthProvider>
   </QueryClientProvider>

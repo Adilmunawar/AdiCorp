@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2, Mail, Lock, User, ArrowRight, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { Link } from "react-router-dom";
 import { ADICORP_LOGO_PATH } from "@/lib/branding";
 
 export default function AuthForm() {
@@ -238,6 +239,23 @@ export default function AuthForm() {
                 </>
               )}
             </Button>
+            
+            {mode === "signin" && (
+              <div className="flex flex-col gap-4 mt-2">
+                <div className="relative flex items-center py-2">
+                  <div className="flex-grow border-t border-white/10"></div>
+                  <span className="flex-shrink-0 mx-4 text-white/50 text-[10px] font-bold uppercase tracking-wider">or</span>
+                  <div className="flex-grow border-t border-white/10"></div>
+                </div>
+                <Link 
+                  to="/employee-login" 
+                  className="w-full h-11 rounded-lg border border-white/20 bg-white/5 hover:bg-white/10 flex items-center justify-center text-sm font-bold tracking-wide text-white transition-all duration-200"
+                >
+                  <User className="w-4 h-4 mr-2 opacity-70" />
+                  Continue as Employee
+                </Link>
+              </div>
+            )}
           </form>
 
           {/* Footer */}
