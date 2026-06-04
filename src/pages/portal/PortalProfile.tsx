@@ -55,61 +55,77 @@ export default function PortalProfile() {
 
   return (
     <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      {/* Header Card */}
-      <Card className="border-none shadow-sm bg-gradient-to-br from-primary/10 to-primary/5 rounded-3xl overflow-hidden relative">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-2xl -mr-10 -mt-10" />
-        <CardContent className="p-6">
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center text-2xl font-black shadow-lg shadow-primary/30 shrink-0">
-              {profile.name.substring(0, 2).toUpperCase()}
-            </div>
-            <div className="flex-1 min-w-0">
-              <h2 className="text-xl font-bold text-foreground truncate">{profile.name}</h2>
-              <p className="text-sm text-muted-foreground flex items-center gap-1 mt-0.5 truncate">
-                <Briefcase className="w-3.5 h-3.5 shrink-0" /> {profile.rank || "Employee"}
-              </p>
-              
-              {data.company && (
-                <div className="flex items-center gap-2 mt-2 pt-2 border-t border-primary/10">
-                  {data.company.logo_url ? (
-                    <img src={data.company.logo_url} alt="Company" className="w-5 h-5 object-contain rounded-sm" />
-                  ) : (
-                    <div className="w-5 h-5 bg-primary/20 rounded-sm flex items-center justify-center shrink-0">
-                      <Briefcase className="w-3 h-3 text-primary" />
-                    </div>
-                  )}
-                  <span className="text-xs font-semibold text-primary truncate">{data.company.name}</span>
-                </div>
+      {/* Ultra-Premium Centered Header Card */}
+      <Card className="border-none shadow-2xl shadow-primary/20 bg-gradient-to-br from-primary via-primary/90 to-primary/80 text-primary-foreground rounded-[2.5rem] overflow-hidden relative">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
+        <div className="absolute bottom-0 left-0 w-40 h-40 bg-black/10 rounded-full blur-2xl pointer-events-none -ml-10 -mb-10" />
+        
+        <CardContent className="p-8 relative z-10 flex flex-col items-center text-center">
+          <div className="relative mb-5">
+            <div className="w-24 h-24 rounded-[2rem] bg-white/20 backdrop-blur-md text-white flex items-center justify-center text-3xl font-black shadow-xl border-4 border-white/20 overflow-hidden ring-4 ring-black/5 transition-transform hover:scale-105 duration-500">
+              {profile.avatar_url ? (
+                <img src={profile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+              ) : (
+                profile.name.substring(0, 2).toUpperCase()
               )}
             </div>
+            {profile.status === 'active' && (
+              <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-emerald-400 border-4 border-primary rounded-full shadow-lg" title="Active Employee" />
+            )}
           </div>
+          
+          <h2 className="text-[26px] leading-none font-black text-white drop-shadow-md tracking-tight mb-2">{profile.name}</h2>
+          <p className="text-sm text-primary-foreground/90 flex items-center justify-center gap-1.5 font-semibold mb-6 tracking-wide">
+            <Briefcase className="w-4 h-4 opacity-80" /> {profile.rank || "Employee"}
+          </p>
+          
+          {data.company && (
+            <div className="flex items-center gap-2.5 px-5 py-2.5 bg-black/15 backdrop-blur-md rounded-2xl border border-white/10 shadow-inner">
+              {data.company.logo_url ? (
+                <div className="w-7 h-7 bg-white rounded-xl p-1 shadow-sm flex items-center justify-center shrink-0">
+                  <img src={data.company.logo_url} alt="Company" className="w-full h-full object-contain" />
+                </div>
+              ) : (
+                <div className="w-7 h-7 bg-white/20 rounded-xl flex items-center justify-center shrink-0">
+                  <Briefcase className="w-3.5 h-3.5 text-white" />
+                </div>
+              )}
+              <span className="text-[11px] font-black text-white tracking-[0.15em] uppercase drop-shadow-sm">{data.company.name}</span>
+            </div>
+          )}
         </CardContent>
       </Card>
 
       {/* Details Card */}
-      <Card className="border-border/40 shadow-sm rounded-3xl overflow-hidden">
-        <CardContent className="p-0">
-          <div className="flex flex-col divide-y divide-border/30">
-            <DetailRow icon={ShieldCheck} label="CNIC" value={profile.cnic || "Not provided"} locked />
-            <DetailRow icon={Phone} label="Phone" value={profile.phone || "Not provided"} editable onEdit={() => handleEditClick('phone', 'Phone', profile.phone)} />
-            <DetailRow icon={Mail} label="Email" value={profile.email || "Not provided"} editable onEdit={() => handleEditClick('email', 'Email', profile.email)} />
-            <DetailRow icon={Calendar} label="Date of Birth" value={profile.date_of_birth || "Not provided"} editable onEdit={() => handleEditClick('date_of_birth', 'Date of Birth', profile.date_of_birth)} />
-            <DetailRow icon={User} label="Father's Name" value={profile.father_name || "Not provided"} editable onEdit={() => handleEditClick('father_name', 'Father\'s Name', profile.father_name)} />
-            <DetailRow icon={MapPin} label="Emergency Contact" value={profile.emergency_contact || "Not provided"} editable onEdit={() => handleEditClick('emergency_contact', 'Emergency Contact', profile.emergency_contact)} />
-          </div>
-        </CardContent>
-      </Card>
+      <div className="space-y-3 mt-8">
+        <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 pl-6">Personal Information</h3>
+        <Card className="border-border/30 shadow-xl shadow-primary/5 rounded-[2rem] overflow-hidden bg-card/60 backdrop-blur-2xl">
+          <CardContent className="p-0">
+            <div className="flex flex-col divide-y divide-border/20">
+              <DetailRow icon={ShieldCheck} label="CNIC" value={profile.cnic || "Not provided"} locked />
+              <DetailRow icon={Phone} label="Phone" value={profile.phone || "Not provided"} editable onEdit={() => handleEditClick('phone', 'Phone', profile.phone)} />
+              <DetailRow icon={Mail} label="Email" value={profile.email || "Not provided"} editable onEdit={() => handleEditClick('email', 'Email', profile.email)} />
+              <DetailRow icon={Calendar} label="Date of Birth" value={profile.date_of_birth || "Not provided"} editable onEdit={() => handleEditClick('date_of_birth', 'Date of Birth', profile.date_of_birth)} />
+              <DetailRow icon={User} label="Father's Name" value={profile.father_name || "Not provided"} editable onEdit={() => handleEditClick('father_name', 'Father\'s Name', profile.father_name)} />
+              <DetailRow icon={MapPin} label="Emergency Contact" value={profile.emergency_contact || "Not provided"} editable onEdit={() => handleEditClick('emergency_contact', 'Emergency Contact', profile.emergency_contact)} />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Work Details */}
-      <Card className="border-border/40 shadow-sm rounded-3xl overflow-hidden mb-6">
-        <CardContent className="p-0">
-          <div className="flex flex-col divide-y divide-border/30">
-            <DetailRow icon={Briefcase} label="Shift Type" value={profile.shift_type || "Morning"} className="capitalize" locked />
-            <DetailRow icon={Calendar} label="Joining Date" value={profile.joining_date || "Not provided"} editable onEdit={() => handleEditClick('joining_date', 'Joining Date', profile.joining_date)} />
-            <DetailRow icon={Briefcase} label="Salary Divisor" value={`${profile.salary_divisor} days`} locked />
-          </div>
-        </CardContent>
-      </Card>
+      <div className="space-y-3 pb-8 mt-6">
+        <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 pl-6">Work Information</h3>
+        <Card className="border-border/30 shadow-xl shadow-primary/5 rounded-[2rem] overflow-hidden bg-card/60 backdrop-blur-2xl">
+          <CardContent className="p-0">
+            <div className="flex flex-col divide-y divide-border/20">
+              <DetailRow icon={Briefcase} label="Shift Type" value={profile.shift_type || "Morning"} className="capitalize" locked />
+              <DetailRow icon={Calendar} label="Joining Date" value={profile.joining_date || "Not provided"} editable onEdit={() => handleEditClick('joining_date', 'Joining Date', profile.joining_date)} />
+              <DetailRow icon={Briefcase} label="Salary Divisor" value={`${profile.salary_divisor} days`} locked />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Edit Request Dialog */}
       <Dialog open={!!editingField} onOpenChange={(open) => !open && setEditingField(null)}>
@@ -150,24 +166,24 @@ function DetailRow({ icon: Icon, label, value, editable, locked, onEdit, classNa
   };
 
   return (
-    <div className="flex items-center justify-between p-4 bg-background">
-      <div className="flex items-center gap-3">
-        <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center shrink-0">
-          <Icon className="w-4 h-4 text-muted-foreground" />
+    <div className="flex items-center justify-between p-4 px-5 bg-transparent hover:bg-muted/40 transition-colors active:bg-muted/60">
+      <div className="flex items-center gap-4">
+        <div className="w-10 h-10 rounded-2xl bg-primary/5 flex items-center justify-center shrink-0 shadow-[inset_0_1px_2px_rgba(0,0,0,0.05)] border border-primary/5">
+          <Icon className="w-[18px] h-[18px] text-primary" strokeWidth={2.5} />
         </div>
-        <span className="text-xs font-medium text-muted-foreground">{label}</span>
+        <span className="text-[11px] font-extrabold text-muted-foreground/80 uppercase tracking-widest">{label}</span>
       </div>
       <div className="flex items-center gap-3">
-        <span className={`text-sm font-semibold text-foreground text-right ${className}`}>{value}</span>
-        <div className="w-6 h-6 flex items-center justify-center shrink-0">
+        <span className={`text-[13px] font-bold text-foreground text-right tracking-wide ${className}`}>{value}</span>
+        <div className="w-8 h-8 flex items-center justify-center shrink-0">
           {editable && (
-            <button onClick={onEdit} className="p-1.5 bg-muted rounded-md text-primary" title="Request Edit">
-              <Edit2 className="w-3.5 h-3.5" />
+            <button onClick={onEdit} className="p-2 bg-primary/10 hover:bg-primary/20 rounded-xl text-primary transition-all active:scale-90" title="Request Edit">
+              <Edit2 className="w-4 h-4" />
             </button>
           )}
           {locked && (
-            <button onClick={handleLockedClick} className="p-1.5 text-muted-foreground/40 hover:text-muted-foreground/80 transition-colors" title="Fixed Field">
-              <Lock className="w-3.5 h-3.5" />
+            <button onClick={handleLockedClick} className="p-2 text-muted-foreground/30 hover:text-muted-foreground/60 transition-colors active:scale-90" title="Fixed Field">
+              <Lock className="w-4 h-4" />
             </button>
           )}
         </div>

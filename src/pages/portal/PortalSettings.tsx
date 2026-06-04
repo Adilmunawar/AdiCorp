@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { LogOut, User, Lock, Upload, Smartphone, Loader2 } from "lucide-react";
+import { LogOut, User, Lock, Upload, Smartphone, Loader2, Trash2 } from "lucide-react";
 
 export default function PortalSettings() {
   const { employee, logout, updateSession } = useEmployeeAuth();
@@ -84,20 +84,42 @@ export default function PortalSettings() {
         .from('employee-documents')
         .getPublicUrl(filePath);
 
-      // Submit an update request for the avatar so Admin can approve it
-      const { error: updateError } = await supabase.rpc("submit_update_request", {
+      // Update avatar immediately
+      const { error: updateError } = await supabase.rpc("update_employee_avatar", {
         p_emp_id: employee?.id,
-        p_changes: { avatar_url: publicUrlData.publicUrl }
+        p_avatar_url: publicUrlData.publicUrl
       });
 
       if (updateError) throw updateError;
 
-      toast.success('Avatar update request submitted to HR for approval.');
+      // Update local session
+      updateSession({ avatar_url: publicUrlData.publicUrl });
+      toast.success('Profile picture updated successfully!');
     } catch (error: any) {
       toast.error(error.message || 'Failed to upload avatar');
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const handleRemoveAvatar = async () => {
+    setIsUploading(true);
+    try {
+      const { error: updateError } = await supabase.rpc("update_employee_avatar", {
+        p_emp_id: employee?.id,
+        p_avatar_url: null
+      });
+
+      if (updateError) throw updateError;
+
+      // Update local session
+      updateSession({ avatar_url: undefined });
+      toast.success('Profile picture removed successfully!');
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to remove avatar');
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -127,13 +149,26 @@ export default function PortalSettings() {
                 accept="image/*" 
                 className="hidden" 
               />
-              <button 
-                onClick={() => fileInputRef.current?.click()}
-                disabled={isUploading}
-                className="absolute -bottom-1 -right-1 w-7 h-7 bg-background border border-border/50 rounded-full flex items-center justify-center text-primary shadow-sm hover:scale-110 transition-transform"
-              >
-                {isUploading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
-              </button>
+              <div className="absolute -bottom-2 -right-3 flex items-center gap-1">
+                <button 
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isUploading}
+                  className="w-8 h-8 bg-background border border-border/50 rounded-full flex items-center justify-center text-primary shadow-sm hover:scale-110 transition-transform active:scale-95"
+                  title="Upload picture"
+                >
+                  {isUploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                </button>
+                {employee?.avatar_url && (
+                  <button 
+                    onClick={handleRemoveAvatar}
+                    disabled={isUploading}
+                    className="w-7 h-7 bg-destructive/10 border border-destructive/20 rounded-full flex items-center justify-center text-destructive shadow-sm hover:scale-110 transition-transform active:scale-95"
+                    title="Remove picture"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
             </div>
             <div>
               <h3 className="font-bold text-foreground">{employee?.name}</h3>
