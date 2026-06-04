@@ -72,6 +72,7 @@ export default function PortalRecords() {
   };
 
   return (
+    <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* Monthly Stats */}
       <div className="space-y-2.5 mt-2">
         <div className="flex items-center justify-between px-1">
