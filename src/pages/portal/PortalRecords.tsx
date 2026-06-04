@@ -2,18 +2,38 @@ import React, { useState, useMemo } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { useEmployeePortalData } from "@/hooks/useEmployeePortalData";
-import { format, subDays, eachDayOfInterval, startOfToday, parseISO, isSameDay, getDay } from "date-fns";
+import { format, subDays, eachDayOfInterval, startOfToday, parseISO, isSameDay, startOfMonth, endOfMonth, addMonths, isSameMonth } from "date-fns";
 import PortalAttendance from "./PortalAttendance";
 import PortalPayroll from "./PortalPayroll";
 import PortalReports from "./PortalReports";
-import { Clock, DollarSign, ShieldCheck, Activity, TrendingUp } from "lucide-react";
+import { Activity, ChevronLeft, ChevronRight } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Button } from "@/components/ui/button";
 
 export default function PortalRecords() {
   const [activeTab, setActiveTab] = useState("attendance");
+  const [selectedMonth, setSelectedMonth] = useState(startOfMonth(startOfToday()));
   const { data } = useEmployeePortalData();
   
   const attendance = data?.attendance || [];
+
+  const handlePrevMonth = () => setSelectedMonth(prev => addMonths(prev, -1));
+  const handleNextMonth = () => setSelectedMonth(prev => addMonths(prev, 1));
+  const isCurrentMonth = isSameMonth(selectedMonth, startOfToday());
+
+  const currentMonthAttendance = useMemo(() => {
+    const start = startOfMonth(selectedMonth);
+    const end = endOfMonth(selectedMonth);
+    return attendance.filter((a: any) => {
+      const date = parseISO(a.date);
+      return date >= start && date <= end;
+    });
+  }, [attendance, selectedMonth]);
+
+  const presentCount = currentMonthAttendance.filter((a: any) => a.status === 'present').length;
+  const leaveCount = currentMonthAttendance.filter((a: any) => a.status === 'leave').length;
+  const shortLeaveCount = currentMonthAttendance.filter((a: any) => a.status === 'short_leave').length;
+  const absentCount = currentMonthAttendance.filter((a: any) => a.status === 'absent').length;
 
   const activityGraphData = useMemo(() => {
     const end = startOfToday();
@@ -41,9 +61,47 @@ export default function PortalRecords() {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500 pb-8">
-      <div className="px-2">
-        <h2 className="text-2xl font-black tracking-tight text-foreground">My Workspace</h2>
-        <p className="text-xs text-muted-foreground mt-1 font-medium">Track your attendance activity and access your records.</p>
+      <div className="px-2 flex items-end justify-between">
+        <div>
+          <h2 className="text-2xl font-black tracking-tight text-foreground">My Workspace</h2>
+          <p className="text-xs text-muted-foreground mt-1 font-medium">Track your attendance activity and access your records.</p>
+        </div>
+      </div>
+
+      {/* Monthly Stats */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between px-2">
+          <h3 className="text-sm font-extrabold flex items-center gap-2">
+            <Activity className="w-4 h-4 text-primary" /> Monthly Overview
+          </h3>
+          <div className="flex items-center gap-1 bg-muted/30 rounded-full p-1 border border-border/50">
+            <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full hover:bg-background shadow-sm" onClick={handlePrevMonth}>
+              <ChevronLeft className="w-3 h-3" />
+            </Button>
+            <span className="text-[10px] font-bold uppercase tracking-widest w-20 text-center">{format(selectedMonth, 'MMM yyyy')}</span>
+            <Button variant="ghost" size="icon" className="h-6 w-6 rounded-full hover:bg-background shadow-sm" onClick={handleNextMonth} disabled={isCurrentMonth}>
+              <ChevronRight className="w-3 h-3" />
+            </Button>
+          </div>
+        </div>
+        <div className="grid grid-cols-4 gap-2">
+          <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-3xl p-3 flex flex-col items-center justify-center text-center shadow-sm hover:scale-105 transition-transform">
+            <p className="text-[9px] font-black text-emerald-600 uppercase tracking-widest mb-1 opacity-80">Present</p>
+            <p className="text-xl font-black text-emerald-700 tracking-tighter">{presentCount}</p>
+          </div>
+          <div className="bg-amber-400/10 border border-amber-500/20 rounded-3xl p-3 flex flex-col items-center justify-center text-center shadow-sm hover:scale-105 transition-transform">
+            <p className="text-[9px] font-black text-amber-600 uppercase tracking-widest mb-1 opacity-80">Leave</p>
+            <p className="text-xl font-black text-amber-700 tracking-tighter">{leaveCount}</p>
+          </div>
+          <div className="bg-orange-500/10 border border-orange-500/20 rounded-3xl p-3 flex flex-col items-center justify-center text-center shadow-sm hover:scale-105 transition-transform">
+            <p className="text-[9px] font-black text-orange-600 uppercase tracking-widest leading-none mb-1 opacity-80">Short<br/>Leave</p>
+            <p className="text-xl font-black text-orange-700 tracking-tighter">{shortLeaveCount}</p>
+          </div>
+          <div className="bg-red-500/10 border border-red-500/20 rounded-3xl p-3 flex flex-col items-center justify-center text-center shadow-sm hover:scale-105 transition-transform">
+            <p className="text-[9px] font-black text-red-600 uppercase tracking-widest mb-1 opacity-80">Absent</p>
+            <p className="text-xl font-black text-red-700 tracking-tighter">{absentCount}</p>
+          </div>
+        </div>
       </div>
 
       {/* GitHub Style Activity Graph */}

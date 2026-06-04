@@ -32,18 +32,10 @@ export default function PortalAttendance() {
   return (
     <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500 mb-6">
       <div className="flex items-center justify-between px-2 mb-2">
-        <h2 className="text-lg font-black tracking-tight text-foreground">Attendance</h2>
+        <h2 className="text-lg font-black tracking-tight text-foreground">Attendance History</h2>
         <span className="text-xs font-medium text-muted-foreground flex items-center gap-1">
-          <CalendarIcon className="w-3.5 h-3.5" /> Last 30 Days
+          <CalendarIcon className="w-3.5 h-3.5" /> All Records
         </span>
-      </div>
-
-      {/* Stats Overview */}
-      <div className="grid grid-cols-2 gap-3">
-        <StatCard title="Present" value={presentCount} icon={CheckCircle2} colorClass="text-emerald-600 bg-emerald-500/10 border-emerald-500/20" />
-        <StatCard title="Absent" value={absentCount} icon={XCircle} colorClass="text-red-600 bg-red-500/10 border-red-500/20" />
-        <StatCard title="Leave" value={leaveCount} icon={AlertCircle} colorClass="text-amber-600 bg-amber-400/10 border-amber-500/20" />
-        <StatCard title="Short Leave" value={shortLeaveCount} icon={AlertCircle} colorClass="text-orange-600 bg-orange-500/10 border-orange-500/20" />
       </div>
 
       {/* History List */}

@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import { useEmployeePortalData } from "@/hooks/useEmployeePortalData";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { format, parseISO } from "date-fns";
-import { DollarSign, FileText, ChevronDown, ChevronUp, Calendar } from "lucide-react";
+import { format, parseISO, startOfToday, startOfMonth, endOfMonth } from "date-fns";
+import { DollarSign, FileText, ChevronDown, ChevronUp, Calendar, Clock, Calculator } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function PortalPayroll() {
@@ -20,34 +20,30 @@ export default function PortalPayroll() {
   }
 
   const payslips = data?.payslips || [];
+  const attendance = data?.attendance || [];
+  const profile = data?.profile;
 
   const monthlyPayslips = React.useMemo(() => {
-    const grouped = payslips.reduce((acc: any, slip: any) => {
+    // Sort slips so newest is first (by created_at or id)
+    const sortedSlips = [...payslips].sort((a: any, b: any) => {
+      const timeA = a.created_at ? new Date(a.created_at).getTime() : a.id;
+      const timeB = b.created_at ? new Date(b.created_at).getTime() : b.id;
+      return timeB - timeA;
+    });
+
+    const grouped = sortedSlips.reduce((acc: any, slip: any) => {
       const monthKey = format(parseISO(slip.month), 'yyyy-MM');
+      // Only keep the first (newest) record we encounter for any given month
       if (!acc[monthKey]) {
         acc[monthKey] = {
-          id: monthKey,
-          month: slip.month,
-          basic_salary: 0,
-          gross_salary: 0,
-          net_salary: 0,
-          total_deductions: 0,
-          overtime_hours: 0,
-          overtime_earnings: 0,
-          days_worked: 0,
-          recordCount: 0
+          ...slip,
+          id: slip.id || monthKey,
+          recordCount: 1
         };
+      } else {
+        // If we see another record for the same month, just increment the count to indicate a revision
+        acc[monthKey].recordCount += 1;
       }
-      
-      acc[monthKey].basic_salary += Number(slip.basic_salary) || 0;
-      acc[monthKey].gross_salary += Number(slip.gross_salary) || 0;
-      acc[monthKey].net_salary += Number(slip.net_salary) || 0;
-      acc[monthKey].total_deductions += Number(slip.total_deductions) || 0;
-      acc[monthKey].overtime_hours += Number(slip.overtime_hours) || 0;
-      acc[monthKey].overtime_earnings += Number(slip.overtime_earnings) || 0;
-      acc[monthKey].days_worked += Number(slip.days_worked) || 0;
-      acc[monthKey].recordCount += 1;
-      
       return acc;
     }, {});
     
@@ -55,6 +51,55 @@ export default function PortalPayroll() {
       new Date(b.month).getTime() - new Date(a.month).getTime()
     );
   }, [payslips]);
+
+  const currentMonthKey = format(startOfToday(), 'yyyy-MM');
+  const hasCurrentMonthPayslip = monthlyPayslips.some((p: any) => format(parseISO(p.month), 'yyyy-MM') === currentMonthKey);
+
+  const estimate = React.useMemo(() => {
+    if (!profile || hasCurrentMonthPayslip) return null;
+    
+    const start = startOfMonth(startOfToday());
+    const end = endOfMonth(startOfToday());
+    
+    const currentMonthAttendance = attendance.filter((a: any) => {
+      const date = parseISO(a.date);
+      return date >= start && date <= end;
+    });
+
+    const presentDays = currentMonthAttendance.filter((a: any) => a.status === 'present').length;
+    const absentDays = currentMonthAttendance.filter((a: any) => a.status === 'absent').length;
+    const shortLeaveDays = currentMonthAttendance.filter((a: any) => a.status === 'short_leave').length;
+    
+    // Convert wages to Number
+    const basicSalary = Number(profile.wage_rate) || 0;
+    const divisor = Number(profile.salary_divisor) || 26;
+    const dailyRate = basicSalary / divisor;
+    
+    const absentDeduction = absentDays * dailyRate;
+    const shortLeaveDeduction = shortLeaveDays * (dailyRate / 2); // usually half day
+    const totalDeductions = absentDeduction + shortLeaveDeduction;
+    
+    const netSalary = basicSalary - totalDeductions;
+
+    return {
+      id: 'estimate',
+      month: startOfToday().toISOString(),
+      basic_salary: basicSalary,
+      gross_salary: basicSalary, // Simplified
+      net_salary: netSalary,
+      total_deductions: totalDeductions,
+      overtime_hours: 0,
+      overtime_earnings: 0,
+      days_worked: presentDays,
+      present_days: presentDays,
+      absent_days: absentDays,
+      short_leave_days: shortLeaveDays,
+      recordCount: 0,
+      isEstimate: true
+    };
+  }, [profile, hasCurrentMonthPayslip, attendance]);
+
+  const displayList = estimate ? [estimate, ...monthlyPayslips] : monthlyPayslips;
 
   return (
     <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500 mb-6">
@@ -65,7 +110,7 @@ export default function PortalPayroll() {
         </span>
       </div>
 
-      {monthlyPayslips.length === 0 ? (
+      {displayList.length === 0 ? (
         <Card className="border-border/40 shadow-sm rounded-[2rem] bg-muted/10">
           <CardContent className="p-10 text-center text-muted-foreground text-sm flex flex-col items-center justify-center gap-3">
             <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-2">
@@ -76,7 +121,7 @@ export default function PortalPayroll() {
         </Card>
       ) : (
         <div className="space-y-4">
-          {monthlyPayslips.map((payslip: any) => {
+          {displayList.map((payslip: any) => {
             const isExpanded = expandedId === payslip.id;
             return (
               <Card key={payslip.id} className={`border border-border/40 shadow-lg rounded-[2rem] overflow-hidden transition-all duration-300 ${isExpanded ? 'bg-card ring-1 ring-primary/10' : 'bg-card/60 hover:bg-card'}`}>
@@ -85,15 +130,15 @@ export default function PortalPayroll() {
                   onClick={() => setExpandedId(isExpanded ? null : payslip.id)}
                 >
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 text-primary flex items-center justify-center shrink-0 shadow-inner border border-primary/10">
-                      <Calendar className="w-6 h-6" strokeWidth={2.5} />
+                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-inner border ${payslip.isEstimate ? 'bg-gradient-to-br from-blue-500/20 to-blue-500/5 text-blue-500 border-blue-500/10' : 'bg-gradient-to-br from-primary/20 to-primary/5 text-primary border-primary/10'}`}>
+                      {payslip.isEstimate ? <Calculator className="w-6 h-6" strokeWidth={2.5} /> : <Calendar className="w-6 h-6" strokeWidth={2.5} />}
                     </div>
                     <div>
                       <p className="text-base font-black text-foreground tracking-tight">
                         {format(parseISO(payslip.month), 'MMMM yyyy')}
                       </p>
-                      <p className="text-[11px] font-bold text-muted-foreground tracking-wide mt-0.5">
-                        {payslip.recordCount} {payslip.recordCount === 1 ? 'Record' : 'Records'} Processed
+                      <p className={`text-[11px] font-bold tracking-wide mt-0.5 ${payslip.isEstimate ? 'text-blue-500' : 'text-muted-foreground'}`}>
+                        {payslip.isEstimate ? 'Real-Time Estimate' : payslip.recordCount > 1 ? `Latest Revision (${payslip.recordCount})` : 'Finalized Record'}
                       </p>
                     </div>
                   </div>
@@ -101,7 +146,7 @@ export default function PortalPayroll() {
                     <div className="text-right">
                       <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-0.5">Total Net</p>
                       <p className="text-sm font-black text-primary tracking-tight">
-                        <span className="opacity-70 mr-0.5">PKR</span>{Math.round(payslip.net_salary).toLocaleString()}
+                        <span className="opacity-70 mr-0.5">PKR</span>{Math.round(Number(payslip.net_salary) || 0).toLocaleString()}
                       </p>
                     </div>
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${isExpanded ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
@@ -117,38 +162,43 @@ export default function PortalPayroll() {
                         <div className="bg-muted/30 p-4 rounded-2xl border border-border/30">
                           <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center mb-2"><DollarSign className="w-3 h-3 text-muted-foreground" /></div>
                           <p className="text-[10px] text-muted-foreground font-extrabold uppercase tracking-widest">Base Salary</p>
-                          <p className="font-black text-base mt-1 tracking-tight">{Math.round(payslip.basic_salary).toLocaleString()}</p>
+                          <p className="font-black text-base mt-1 tracking-tight">{Math.round(Number(payslip.basic_salary) || 0).toLocaleString()}</p>
                         </div>
                         <div className="bg-emerald-500/10 p-4 rounded-2xl border border-emerald-500/20 shadow-[inset_0_1px_2px_rgba(0,0,0,0.05)]">
                           <div className="w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center mb-2"><DollarSign className="w-3 h-3 text-emerald-700" /></div>
                           <p className="text-[10px] text-emerald-700 font-extrabold uppercase tracking-widest">Gross Earnings</p>
-                          <p className="font-black text-base text-emerald-700 mt-1 tracking-tight">{Math.round(payslip.gross_salary).toLocaleString()}</p>
+                          <p className="font-black text-base text-emerald-700 mt-1 tracking-tight">{Math.round(Number(payslip.gross_salary) || 0).toLocaleString()}</p>
                         </div>
                       </div>
 
                       <div className="grid grid-cols-2 gap-3">
                         <div className="bg-muted/30 p-4 rounded-2xl border border-border/30">
                           <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center mb-2"><Clock className="w-3 h-3 text-muted-foreground" /></div>
-                          <p className="text-[10px] text-muted-foreground font-extrabold uppercase tracking-widest">Total Days</p>
-                          <p className="font-black text-base mt-1 tracking-tight">{payslip.days_worked}</p>
+                          <p className="text-[10px] text-muted-foreground font-extrabold uppercase tracking-widest">Attendance</p>
+                          <p className="font-black text-base mt-1 tracking-tight">{Number(payslip.days_worked) || 0} <span className="text-xs text-muted-foreground font-semibold">Total Days</span></p>
+                          <div className="flex items-center gap-2 mt-2 pt-2 border-t border-border/50 text-[10px] font-bold text-muted-foreground">
+                            <span className="text-emerald-600">{Number(payslip.present_days) || 0} P</span>
+                            <span className="text-red-500">{Number(payslip.absent_days) || 0} A</span>
+                            <span className="text-orange-500">{Number(payslip.short_leave_days) || 0} SL</span>
+                          </div>
                         </div>
                         <div className="bg-red-500/10 p-4 rounded-2xl border border-red-500/20 shadow-[inset_0_1px_2px_rgba(0,0,0,0.05)]">
                           <div className="w-6 h-6 rounded-full bg-red-500/20 flex items-center justify-center mb-2"><DollarSign className="w-3 h-3 text-red-700" /></div>
                           <p className="text-[10px] text-red-700 font-extrabold uppercase tracking-widest">Total Deductions</p>
-                          <p className="font-black text-base text-red-700 mt-1 tracking-tight">{Math.round(payslip.total_deductions).toLocaleString()}</p>
+                          <p className="font-black text-base text-red-700 mt-1 tracking-tight">{Math.round(Number(payslip.total_deductions) || 0).toLocaleString()}</p>
                         </div>
                       </div>
 
-                      {payslip.overtime_hours > 0 && (
+                      {Number(payslip.overtime_hours) > 0 && (
                         <div className="bg-amber-500/10 p-4 rounded-2xl border border-amber-500/20 shadow-[inset_0_1px_2px_rgba(0,0,0,0.05)] mt-1">
                           <div className="flex items-center justify-between">
                             <div>
                               <p className="text-[10px] text-amber-700 font-extrabold uppercase tracking-widest">Overtime Logged</p>
-                              <p className="font-black text-sm text-amber-700 mt-1 tracking-tight">{payslip.overtime_hours} Hours</p>
+                              <p className="font-black text-sm text-amber-700 mt-1 tracking-tight">{Number(payslip.overtime_hours) || 0} Hours</p>
                             </div>
                             <div className="text-right">
                               <p className="text-[10px] text-amber-700 font-extrabold uppercase tracking-widest">Extra Earnings</p>
-                              <p className="font-black text-sm text-amber-700 mt-1 tracking-tight">+{Math.round(payslip.overtime_earnings).toLocaleString()}</p>
+                              <p className="font-black text-sm text-amber-700 mt-1 tracking-tight">+{Math.round(Number(payslip.overtime_earnings) || 0).toLocaleString()}</p>
                             </div>
                           </div>
                         </div>
