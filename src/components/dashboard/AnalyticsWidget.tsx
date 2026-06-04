@@ -91,6 +91,12 @@ export default function AnalyticsWidget() {
         const isSunday = dateObj.getDay() === 0;
 
         activeEmployees.forEach(emp => {
+          const isEventHoliday = eventsData?.some(e => e.date === dateStr);
+          if (isEventHoliday) {
+            leave++;
+            return;
+          }
+
           const record = dayAttendance.find(a => a.employee_id === emp.id);
           if (record?.status === 'present') {
             present++;
@@ -99,9 +105,8 @@ export default function AnalyticsWidget() {
           } else {
             // Check if there is an approved leave request for this date
             const isLeaveApproved = leaveRequestsData?.some(l => l.employee_id === emp.id && dateStr >= l.start_date && dateStr <= l.end_date);
-            const isEventHoliday = eventsData?.some(e => e.date === dateStr);
 
-            if (isLeaveApproved || isEventHoliday) {
+            if (isLeaveApproved) {
               leave++;
             } else if (!isSunday) {
               // Only count as absent if it's a working day (not Sunday)
@@ -181,20 +186,15 @@ export default function AnalyticsWidget() {
   const eventPeriods: any[] = [];
   let currentPeriod: any = null;
   
-  trends.forEach((day: any, i: number) => {
+  trends.forEach((day: any) => {
     if (day.eventTitle) {
-      if (!currentPeriod || currentPeriod.title !== day.eventTitle) {
-        if (currentPeriod) eventPeriods.push(currentPeriod);
-        const startIdx = Math.max(0, i - 1);
-        const endIdx = Math.min(trends.length - 1, i + 1);
+      if (!currentPeriod) {
         currentPeriod = { 
-          start: trends[startIdx].date, 
-          end: trends[endIdx].date, 
-          title: day.eventTitle 
+          start: day.date, 
+          end: day.date
         };
       } else {
-        const endIdx = Math.min(trends.length - 1, i + 1);
-        currentPeriod.end = trends[endIdx].date;
+        currentPeriod.end = day.date;
       }
     } else {
       if (currentPeriod) {

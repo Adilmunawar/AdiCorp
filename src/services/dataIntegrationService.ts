@@ -199,6 +199,12 @@ class DataIntegrationService {
           if (isWorkingDayForEmployee(day, workingDaysPerWeek)) {
              workingDays++;
              const dateStr = format(day, 'yyyy-MM-dd');
+             const isEventHoliday = events.some(e => e.date === dateStr);
+             if (isEventHoliday) {
+                 paidLeaveDays++;
+                 return; // `return` acts as `continue` inside forEach
+             }
+             
              const record = employeeAttendance.find(a => a.date === dateStr);
              
              if (record?.status === 'present') {
@@ -207,9 +213,8 @@ class DataIntegrationService {
                  shortLeaveDays++;
              } else {
                  const isLeaveApproved = employeeLeaves.some(l => dateStr >= l.start_date && dateStr <= l.end_date);
-                 const isEventHoliday = events.some(e => e.date === dateStr);
                  
-                 if (isLeaveApproved || isEventHoliday) {
+                 if (isLeaveApproved) {
                      paidLeaveDays++;
                  } else {
                      absentDays++;

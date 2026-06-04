@@ -78,6 +78,12 @@ export default function PortalPayroll() {
       if (isWorkingDayForEmployee(day, workingDaysPerWeek)) {
          workingDaysCount++;
          const dateStr = format(day, 'yyyy-MM-dd');
+         const isEventHoliday = events.some((e: any) => e.date === dateStr);
+         if (isEventHoliday) {
+             paidLeaveDays++;
+             return;
+         }
+
          const record = attendance.find((a: any) => a.date === dateStr);
          
          if (record?.status === 'present') {
@@ -86,9 +92,8 @@ export default function PortalPayroll() {
              shortLeaveDays++;
          } else {
              const isLeaveApproved = leaveRequests.some((l: any) => dateStr >= l.start_date && dateStr <= l.end_date);
-             const isEventHoliday = events.some((e: any) => e.date === dateStr);
              
-             if (isLeaveApproved || isEventHoliday) {
+             if (isLeaveApproved) {
                  paidLeaveDays++;
              } else {
                  absentDays++;
