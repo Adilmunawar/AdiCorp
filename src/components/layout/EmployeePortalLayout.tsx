@@ -37,12 +37,12 @@ export function EmployeePortalLayout() {
   return (
     <div className="min-h-[100dvh] bg-muted/20 relative pb-24">
       {/* Main Content Area */}
-      <main className="p-4 pt-6 max-w-lg mx-auto">
+      <main className="p-4 md:p-8 pt-6 max-w-7xl mx-auto w-full">
         <Outlet />
       </main>
 
       {/* Floating Bottom Navigation */}
-      <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-sm bg-background/90 backdrop-blur-xl border border-border/50 rounded-full shadow-lg z-50 px-2 py-2 flex items-center justify-between">
+      <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-md md:max-w-2xl bg-background/90 backdrop-blur-xl border border-border/50 rounded-full shadow-lg z-50 px-2 md:px-6 py-2 flex items-center justify-between">
         {navItems.map((item) => {
           const isActive = location.pathname.startsWith(item.path);
           const Icon = item.icon;

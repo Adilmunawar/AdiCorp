@@ -127,11 +127,11 @@ export default function ReportsPage() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-4 px-5 bg-muted/5 border-b border-border/50">
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
-                  <BarChart3 className="h-5 w-5 text-primary" /> Reports Center
+                <h2 className="text-base font-bold text-foreground flex items-center gap-2">
+                  <BarChart3 className="h-4 w-4 text-primary" /> Reports Center
                 </h2>
               </div>
-              <p className="text-[11px] text-muted-foreground mt-1">Operational salary and attendance insights with downloadable reports.</p>
+              <p className="text-[10px] text-muted-foreground mt-1">Operational salary and attendance insights with downloadable reports.</p>
             </div>
             <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
               <Button variant="outline" size="sm" onClick={() => setCurrentMonth(prev => subMonths(prev, 1))} className="h-8 text-xs">
@@ -156,8 +156,8 @@ export default function ReportsPage() {
               <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">{stat.title}</CardTitle></CardHeader>
               <CardContent>
                 <div className="flex items-center">
-                  <Icon className="h-5 w-5 mr-2 text-primary transition-transform duration-300 group-hover:scale-110" />
-                  <span className="text-2xl font-bold text-foreground">{stat.value}</span>
+                  <Icon className="h-4 w-4 mr-2 text-primary transition-transform duration-300 group-hover:scale-110" />
+                  <span className="text-xl font-bold text-foreground">{stat.value}</span>
                 </div>
               </CardContent>
             </Card>
@@ -173,10 +173,10 @@ export default function ReportsPage() {
         
         <TabsContent value="attendance-report" className="animate-fade-in">
           <Card className="border border-border bg-card shadow-sm">
-            <CardHeader className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-              <CardTitle>Monthly Attendance Report - {format(currentMonth, "MMMM yyyy")}</CardTitle>
-              <Button onClick={() => handleDownload('attendance')} disabled={downloading}>
-                {downloading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />} Export
+            <CardHeader className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between py-3 px-4">
+              <CardTitle className="text-sm font-semibold">Monthly Attendance Report - {format(currentMonth, "MMMM yyyy")}</CardTitle>
+              <Button size="sm" onClick={() => handleDownload('attendance')} disabled={downloading} className="h-8 text-xs">
+                {downloading ? <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" /> : <Download className="mr-2 h-3.5 w-3.5" />} Export
               </Button>
             </CardHeader>
             <CardContent>
@@ -184,24 +184,24 @@ export default function ReportsPage() {
                 <div className="text-center py-8 text-muted-foreground"><p>No attendance data found for {format(currentMonth, "MMMM yyyy")}.</p></div>
               ) : (
                 <div className="overflow-x-auto rounded-xl border border-border bg-background">
-                  <Table>
+                  <Table className="text-xs">
                     <TableHeader className="bg-muted/40">
-                      <TableRow className="border-border hover:bg-transparent">
-                        <TableHead>Employee</TableHead><TableHead>Position</TableHead><TableHead>Present Days</TableHead>
-                        <TableHead>Short Leave</TableHead><TableHead>Leave Days</TableHead><TableHead>Actual Working Days</TableHead><TableHead>Performance</TableHead>
+                      <TableRow className="border-border hover:bg-transparent h-10">
+                        <TableHead className="py-2">Employee</TableHead><TableHead className="py-2">Position</TableHead><TableHead className="py-2">Present Days</TableHead>
+                        <TableHead className="py-2">Short Leave</TableHead><TableHead className="py-2">Leave Days</TableHead><TableHead className="py-2">Actual Working Days</TableHead><TableHead className="py-2">Performance</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {attendanceReport.map((report) => (
-                        <TableRow key={report.employeeId} className="border-border hover:bg-muted/30">
-                          <TableCell className="font-medium">{report.employeeName}</TableCell>
-                          <TableCell>{report.rank}</TableCell>
-                          <TableCell>{report.presentDays}</TableCell>
-                          <TableCell>{report.shortLeaveDays}</TableCell>
-                          <TableCell>{report.leaveDays}</TableCell>
-                          <TableCell className="font-bold">{report.actualWorkingDays}</TableCell>
-                          <TableCell>
-                            <Badge variant={
+                        <TableRow key={report.employeeId} className="border-border hover:bg-muted/30 h-10">
+                          <TableCell className="font-medium py-2">{report.employeeName}</TableCell>
+                          <TableCell className="py-2">{report.rank}</TableCell>
+                          <TableCell className="py-2">{report.presentDays}</TableCell>
+                          <TableCell className="py-2">{report.shortLeaveDays}</TableCell>
+                          <TableCell className="py-2">{report.leaveDays}</TableCell>
+                          <TableCell className="font-bold py-2">{report.actualWorkingDays}</TableCell>
+                          <TableCell className="py-2">
+                            <Badge className="text-[10px] px-1.5 py-0" variant={
                               report.actualWorkingDays >= (stats.totalWorkingDaysThisMonth * 0.9) ? "default"
                                 : report.actualWorkingDays >= (stats.totalWorkingDaysThisMonth * 0.7) ? "secondary"
                                 : "destructive"
@@ -221,10 +221,10 @@ export default function ReportsPage() {
         
         <TabsContent value="salary-report" className="animate-fade-in">
           <Card className="border border-border bg-card shadow-sm">
-            <CardHeader className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-              <CardTitle>Salary Report Based on Attendance - {format(currentMonth, "MMMM yyyy")}</CardTitle>
-              <Button onClick={() => handleDownload('salary')} disabled={downloading}>
-                {downloading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />} Export
+            <CardHeader className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between py-3 px-4">
+              <CardTitle className="text-sm font-semibold">Salary Report Based on Attendance - {format(currentMonth, "MMMM yyyy")}</CardTitle>
+              <Button size="sm" onClick={() => handleDownload('salary')} disabled={downloading} className="h-8 text-xs">
+                {downloading ? <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" /> : <Download className="mr-2 h-3.5 w-3.5" />} Export
               </Button>
             </CardHeader>
             <CardContent>
@@ -232,23 +232,23 @@ export default function ReportsPage() {
                 <div className="text-center py-8 text-muted-foreground"><p>No salary data found for {format(currentMonth, "MMMM yyyy")}.</p></div>
               ) : (
                 <div className="overflow-x-auto rounded-xl border border-border bg-background">
-                  <Table>
+                  <Table className="text-xs">
                     <TableHeader className="bg-muted/40">
-                      <TableRow className="border-border hover:bg-transparent">
-                        <TableHead>Employee</TableHead><TableHead>Position</TableHead><TableHead>Monthly Salary</TableHead>
-                        <TableHead>Daily Rate</TableHead><TableHead>Working Days</TableHead><TableHead>Calculated Salary</TableHead><TableHead>Status</TableHead>
+                      <TableRow className="border-border hover:bg-transparent h-10">
+                        <TableHead className="py-2">Employee</TableHead><TableHead className="py-2">Position</TableHead><TableHead className="py-2">Monthly Salary</TableHead>
+                        <TableHead className="py-2">Daily Rate</TableHead><TableHead className="py-2">Working Days</TableHead><TableHead className="py-2">Calculated Salary</TableHead><TableHead className="py-2">Status</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {attendanceReport.map((report) => (
-                        <TableRow key={report.employeeId} className="border-border hover:bg-muted/30">
-                          <TableCell className="font-medium">{report.employeeName}</TableCell>
-                          <TableCell>{report.rank}</TableCell>
-                          <TableCell>{formatCurrencySync(report.monthlySalary)}</TableCell>
-                          <TableCell>{formatCurrencySync(report.dailyRate)}</TableCell>
-                          <TableCell>{report.actualWorkingDays} / {report.totalWorkingDaysInMonth}</TableCell>
-                          <TableCell className="font-bold text-foreground">{formatCurrencySync(report.calculatedSalary)}</TableCell>
-                          <TableCell><Badge variant="outline">Calculated</Badge></TableCell>
+                        <TableRow key={report.employeeId} className="border-border hover:bg-muted/30 h-10">
+                          <TableCell className="font-medium py-2">{report.employeeName}</TableCell>
+                          <TableCell className="py-2">{report.rank}</TableCell>
+                          <TableCell className="py-2">{formatCurrencySync(report.monthlySalary)}</TableCell>
+                          <TableCell className="py-2">{formatCurrencySync(report.dailyRate)}</TableCell>
+                          <TableCell className="py-2">{report.actualWorkingDays} / {report.totalWorkingDaysInMonth}</TableCell>
+                          <TableCell className="font-bold text-foreground py-2">{formatCurrencySync(report.calculatedSalary)}</TableCell>
+                          <TableCell className="py-2"><Badge className="text-[10px] px-1.5 py-0" variant="outline">Calculated</Badge></TableCell>
                         </TableRow>
                       ))}
                     </TableBody>

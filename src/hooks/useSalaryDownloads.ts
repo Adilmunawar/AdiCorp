@@ -16,6 +16,8 @@ interface EmployeeSalaryData {
   calculatedSalary: number;
   actualWorkingDays: number;
   dailyRate: number;
+  overtimeHours?: number;
+  overtimePay?: number;
 }
 
 export function useSalaryDownloads(
@@ -43,9 +45,9 @@ export function useSalaryDownloads(
   const handleSalarySheetDownload = useCallback(async () => {
     setDownloading(true);
     try {
-      let csvContent = 'Employee,Position,Monthly Salary,Daily Rate,Working Days,Calculated Salary,Status\n';
+      let csvContent = 'Employee,Position,Monthly Salary,Daily Rate,Working Days,Overtime Hours,Overtime Pay,Calculated Salary,Status\n';
       employeeSalaryData.forEach(data => {
-        csvContent += `"${data.employeeName}","${data.rank}","${formatCurrency(data.monthlySalary)}","${formatCurrency(data.dailyRate)}","${data.actualWorkingDays}/${totalWorkingDaysThisMonth}","${formatCurrency(data.calculatedSalary)}","${data.actualWorkingDays > 0 ? 'Earned' : 'No Attendance'}"\n`;
+        csvContent += `"${data.employeeName}","${data.rank}","${formatCurrency(data.monthlySalary)}","${formatCurrency(data.dailyRate)}","${data.actualWorkingDays}/${totalWorkingDaysThisMonth}","${data.overtimeHours || 0}","${formatCurrency(data.overtimePay || 0)}","${formatCurrency(data.calculatedSalary)}","${data.actualWorkingDays > 0 ? 'Earned' : 'No Attendance'}"\n`;
       });
       
       downloadFile(csvContent, `salary-sheet-${currentMonthName.replace(' ', '-')}.csv`);
@@ -69,9 +71,9 @@ export function useSalaryDownloads(
   const handlePayslipsDownload = useCallback(async () => {
     setDownloading(true);
     try {
-      let csvContent = 'Employee,Position,Monthly Salary,Daily Rate,Present Days,Short Leave,Working Days,Calculated Salary\n';
+      let csvContent = 'Employee,Position,Monthly Salary,Daily Rate,Present Days,Short Leave,Working Days,Overtime Hours,Overtime Pay,Calculated Salary\n';
       employeeSalaryData.forEach(data => {
-        csvContent += `"${data.employeeName}","${data.rank}","${formatCurrency(data.monthlySalary)}","${formatCurrency(data.dailyRate)}","${data.presentDays}","${data.shortLeaveDays}","${data.actualWorkingDays}/${totalWorkingDaysThisMonth}","${formatCurrency(data.calculatedSalary)}"\n`;
+        csvContent += `"${data.employeeName}","${data.rank}","${formatCurrency(data.monthlySalary)}","${formatCurrency(data.dailyRate)}","${data.presentDays}","${data.shortLeaveDays}","${data.actualWorkingDays}/${totalWorkingDaysThisMonth}","${data.overtimeHours || 0}","${formatCurrency(data.overtimePay || 0)}","${formatCurrency(data.calculatedSalary)}"\n`;
       });
       
       downloadFile(csvContent, `payslips-${currentMonthName.replace(' ', '-')}.csv`);
@@ -135,11 +137,28 @@ export function useSalaryDownloads(
         headStyles: { fillColor: [41, 128, 185] },
       });
 
+      // Overtime Info Table (if applicable)
+      let finalY = (doc as any).lastAutoTable.finalY + 10;
+      if (data.overtimeHours && data.overtimeHours > 0) {
+        autoTable(doc, {
+          startY: finalY,
+          head: [['Overtime Details', '']],
+          body: [
+            ['Overtime Logged', `${data.overtimeHours} Hrs`],
+            ['Overtime Earnings', formatCurrency(data.overtimePay || 0)],
+          ],
+          theme: 'grid',
+          headStyles: { fillColor: [243, 156, 18] }, // Amber/Orange color for overtime
+        });
+        finalY = (doc as any).lastAutoTable.finalY + 10;
+      }
+
       // Final Calculation Table
       autoTable(doc, {
-        startY: (doc as any).lastAutoTable.finalY + 10,
+        startY: finalY,
         head: [['Salary Calculation', 'Amount']],
         body: [
+          ['Gross Earnings', formatCurrency(data.calculatedSalary)],
           ['Calculated Net Salary', formatCurrency(data.calculatedSalary)],
         ],
         theme: 'grid',
