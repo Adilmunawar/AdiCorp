@@ -9,10 +9,11 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/components/ui/use-toast";
-import { Loader2, Save, Calendar as CalendarIcon, ChevronLeft, ChevronRight, CalendarDays } from "lucide-react";
+import { Loader2, Save, Calendar as CalendarIcon, ChevronLeft, ChevronRight, CalendarDays, Search } from "lucide-react";
 import { EmployeeRow } from "@/types/supabase";
 import { useNavigate } from "react-router-dom";
 import { ATTENDANCE_STATUS_OPTIONS, AttendanceRecord, AttendanceStatusValue } from "@/components/attendance/types";
@@ -27,6 +28,7 @@ export default function AttendanceTable() {
   const [attendanceData, setAttendanceData] = useState<AttendanceRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const [activeEvent, setActiveEvent] = useState<any>(null);
   const { userProfile } = useAuth();
   const { toast } = useToast();
@@ -137,14 +139,24 @@ export default function AttendanceTable() {
   }, [employees]);
 
   const summary = useMemo(() => {
-    const isSunday = date.getDay() === 0;
-    const isEvent = !!activeEvent;
-    const present = attendanceData.filter((record) => record.status === "present").length;
-    const shortLeave = attendanceData.filter((record) => record.status === "short_leave").length;
-    const absent = (isSunday || isEvent) ? 0 : attendanceData.filter((record) => record.status === "absent").length;
+    return attendanceData.reduce(
+      (acc, curr) => {
+        if (curr.status === "present") acc.present++;
+        else if (curr.status === "short_leave") acc.shortLeave++;
+        else if (curr.status === "absent") acc.absent++;
+        return acc;
+      },
+      { present: 0, absent: 0, shortLeave: 0 }
+    );
+  }, [attendanceData]);
 
-    return { present, shortLeave, absent };
-  }, [attendanceData, date, activeEvent]);
+  const filteredAttendance = useMemo(() => {
+    if (!searchQuery) return attendanceData;
+    const lowerQuery = searchQuery.toLowerCase();
+    return attendanceData.filter(record => 
+      record.employeeName?.toLowerCase().includes(lowerQuery)
+    );
+  }, [attendanceData, searchQuery]);
 
   if (loading) {
     return (<div className="flex justify-center items-center py-8"><div className="flex items-center space-x-2"><Loader2 className="h-8 w-8 animate-spin text-primary" /><span className="text-muted-foreground">Loading employees...</span></div></div>);
@@ -236,23 +248,35 @@ export default function AttendanceTable() {
             <p className="mt-0.5 text-[10px] text-muted-foreground">Use quick actions to mark everyone, then adjust individual records if needed.</p>
           </div>
           
-          {activeEvent ? (
-            <div className="bg-primary/10 text-primary border border-primary/20 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5">
-              <CalendarIcon className="w-3.5 h-3.5" /> Event Triggered: {activeEvent.title} - Attendance Locked
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+            <div className="relative w-full sm:w-48">
+              <Search className="absolute left-2.5 top-2 h-3.5 w-3.5 text-muted-foreground" />
+              <Input
+                placeholder="Search employee..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="h-7 text-xs pl-8 bg-background border-border/50"
+              />
             </div>
-          ) : date.getDay() === 0 ? (
-            <div className="bg-amber-500/10 text-amber-600 border border-amber-500/20 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5">
-              <CalendarIcon className="w-3.5 h-3.5" /> Sunday is a designated Off-Day. Attendance tracking is disabled.
-            </div>
-          ) : (
-            <div className="flex flex-wrap items-center gap-1.5 bg-background p-1 rounded-xl border border-border/50 shadow-sm">
-              <span className="text-[9px] uppercase font-bold text-muted-foreground px-2">Apply to all</span>
-              <div className="h-4 w-[1px] bg-border/50 mx-0.5"></div>
-              <Button size="sm" variant="ghost" className="h-6 text-[10px] rounded-md px-2 hover:bg-green-500/10 hover:text-green-600" onClick={() => applyStatusToAll("present")}>Present</Button>
-              <Button size="sm" variant="ghost" className="h-6 text-[10px] rounded-md px-2 hover:bg-amber-500/10 hover:text-amber-600" onClick={() => applyStatusToAll("short_leave")}>Short Leave</Button>
-              <Button size="sm" variant="ghost" className="h-6 text-[10px] rounded-md px-2 hover:bg-red-500/10 hover:text-red-600" onClick={() => applyStatusToAll("absent")}>Absent</Button>
-            </div>
-          )}
+            
+            {activeEvent ? (
+              <div className="bg-primary/10 text-primary border border-primary/20 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 w-full sm:w-auto">
+                <CalendarIcon className="w-3.5 h-3.5" /> Event Triggered: {activeEvent.title}
+              </div>
+            ) : date.getDay() === 0 ? (
+              <div className="bg-amber-500/10 text-amber-600 border border-amber-500/20 px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 w-full sm:w-auto">
+                <CalendarIcon className="w-3.5 h-3.5" /> Sunday (Off-Day)
+              </div>
+            ) : (
+              <div className="flex flex-wrap items-center gap-1.5 bg-background p-1 rounded-xl border border-border/50 shadow-sm w-full sm:w-auto justify-center">
+                <span className="text-[9px] uppercase font-bold text-muted-foreground px-2">Apply to all</span>
+                <div className="h-4 w-[1px] bg-border/50 mx-0.5"></div>
+                <Button size="sm" variant="ghost" className="h-6 text-[10px] rounded-md px-2 hover:bg-green-500/10 hover:text-green-600" onClick={() => applyStatusToAll("present")}>Present</Button>
+                <Button size="sm" variant="ghost" className="h-6 text-[10px] rounded-md px-2 hover:bg-amber-500/10 hover:text-amber-600" onClick={() => applyStatusToAll("short_leave")}>Short Leave</Button>
+                <Button size="sm" variant="ghost" className="h-6 text-[10px] rounded-md px-2 hover:bg-red-500/10 hover:text-red-600" onClick={() => applyStatusToAll("absent")}>Absent</Button>
+              </div>
+            )}
+          </div>
         </CardHeader>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
@@ -265,7 +289,14 @@ export default function AttendanceTable() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {attendanceData.map((record) => (
+                {filteredAttendance.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={3} className="h-24 text-center">
+                      <p className="text-muted-foreground text-xs">No employees match your search.</p>
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredAttendance.map((record) => (
                   <TableRow key={record.employeeId} className="border-border/30 hover:bg-muted/10 transition-colors h-10">
                     <TableCell className="pl-4 py-1">
                       <p className="font-semibold text-xs text-foreground leading-tight">{record.employeeName}</p>
@@ -300,7 +331,8 @@ export default function AttendanceTable() {
                       </div>
                     </TableCell>
                   </TableRow>
-                ))}
+                  ))
+                )}
               </TableBody>
             </Table>
           </div>
