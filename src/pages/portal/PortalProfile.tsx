@@ -56,50 +56,44 @@ export default function PortalProfile() {
   return (
     <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* Ultra-Premium Centered Header Card */}
-      <Card className="border-none shadow-2xl shadow-primary/20 bg-gradient-to-br from-primary via-primary/90 to-primary/80 text-primary-foreground rounded-[2.5rem] overflow-hidden relative">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
-        <div className="absolute bottom-0 left-0 w-40 h-40 bg-black/10 rounded-full blur-2xl pointer-events-none -ml-10 -mb-10" />
+      <Card className="border-none shadow-xl shadow-primary/20 bg-gradient-to-br from-primary via-primary/90 to-primary/80 text-primary-foreground rounded-[2rem] overflow-hidden relative">
+        <div className="absolute top-0 right-0 w-48 h-48 bg-white/10 rounded-full blur-3xl pointer-events-none -mr-10 -mt-10" />
+        <div className="absolute bottom-0 left-0 w-32 h-32 bg-black/10 rounded-full blur-2xl pointer-events-none -ml-5 -mb-5" />
         
-        <CardContent className="p-8 relative z-10 flex flex-col items-center text-center">
-          <div className="relative mb-5">
-            <div className="w-24 h-24 rounded-[2rem] bg-white/20 backdrop-blur-md text-white flex items-center justify-center text-3xl font-black shadow-xl border-4 border-white/20 overflow-hidden ring-4 ring-black/5 transition-transform hover:scale-105 duration-500">
+        <CardContent className="p-6 relative z-10 flex flex-col items-center text-center">
+          <div className="mb-4">
+            <div className="w-20 h-20 rounded-3xl bg-white/20 backdrop-blur-md text-white flex items-center justify-center text-2xl font-black shadow-lg border-2 border-white/20 overflow-hidden ring-4 ring-black/5 transition-transform hover:scale-105 duration-500">
               {profile.avatar_url ? (
                 <img src={profile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
               ) : (
                 profile.name.substring(0, 2).toUpperCase()
               )}
             </div>
-            {profile.status === 'active' && (
-              <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-emerald-400 border-4 border-primary rounded-full shadow-lg" title="Active Employee" />
-            )}
           </div>
           
-          <h2 className="text-[26px] leading-none font-black text-white drop-shadow-md tracking-tight mb-2">{profile.name}</h2>
-          <p className="text-sm text-primary-foreground/90 flex items-center justify-center gap-1.5 font-semibold mb-6 tracking-wide">
-            <Briefcase className="w-4 h-4 opacity-80" /> {profile.rank || "Employee"}
-          </p>
+          <div className="flex items-center justify-center gap-2 mb-2 mt-1">
+            <h2 className="text-lg font-black text-white drop-shadow-sm tracking-tight">{profile.name}</h2>
+            <div className="w-1.5 h-1.5 rounded-full bg-white/30"></div>
+            <p className="text-lg font-black text-white/80 drop-shadow-sm tracking-tight">
+              {profile.rank || "Employee"}
+            </p>
+          </div>
           
           {data.company && (
-            <div className="flex items-center gap-2.5 px-5 py-2.5 bg-black/15 backdrop-blur-md rounded-2xl border border-white/10 shadow-inner">
-              {data.company.logo_url ? (
-                <div className="w-7 h-7 bg-white rounded-xl p-1 shadow-sm flex items-center justify-center shrink-0">
-                  <img src={data.company.logo_url} alt="Company" className="w-full h-full object-contain" />
-                </div>
-              ) : (
-                <div className="w-7 h-7 bg-white/20 rounded-xl flex items-center justify-center shrink-0">
-                  <Briefcase className="w-3.5 h-3.5 text-white" />
-                </div>
+            <div className="flex items-center gap-1.5 mt-1">
+              {data.company.logo_url && (
+                <img src={data.company.logo_url} alt="Company" className="w-4 h-4 object-contain drop-shadow-sm opacity-90" />
               )}
-              <span className="text-[11px] font-black text-white tracking-[0.15em] uppercase drop-shadow-sm">{data.company.name}</span>
+              <span className="text-[10px] font-bold text-white/90 tracking-widest uppercase drop-shadow-sm">{data.company.name}</span>
             </div>
           )}
         </CardContent>
       </Card>
 
       {/* Details Card */}
-      <div className="space-y-3 mt-8">
-        <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 pl-6">Personal Information</h3>
-        <Card className="border-border/30 shadow-xl shadow-primary/5 rounded-[2rem] overflow-hidden bg-card/60 backdrop-blur-2xl">
+      <div className="space-y-2.5 mt-6">
+        <h3 className="text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground/70 pl-5">Personal Information</h3>
+        <Card className="border-border/30 shadow-xl shadow-primary/5 rounded-3xl overflow-hidden bg-card/60 backdrop-blur-2xl">
           <CardContent className="p-0">
             <div className="flex flex-col divide-y divide-border/20">
               <DetailRow icon={ShieldCheck} label="CNIC" value={profile.cnic || "Not provided"} locked />
@@ -114,9 +108,9 @@ export default function PortalProfile() {
       </div>
 
       {/* Work Details */}
-      <div className="space-y-3 pb-8 mt-6">
-        <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 pl-6">Work Information</h3>
-        <Card className="border-border/30 shadow-xl shadow-primary/5 rounded-[2rem] overflow-hidden bg-card/60 backdrop-blur-2xl">
+      <div className="space-y-2.5 pb-8 mt-6">
+        <h3 className="text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground/70 pl-5">Work Information</h3>
+        <Card className="border-border/30 shadow-xl shadow-primary/5 rounded-3xl overflow-hidden bg-card/60 backdrop-blur-2xl">
           <CardContent className="p-0">
             <div className="flex flex-col divide-y divide-border/20">
               <DetailRow icon={Briefcase} label="Shift Type" value={profile.shift_type || "Morning"} className="capitalize" locked />
@@ -166,24 +160,24 @@ function DetailRow({ icon: Icon, label, value, editable, locked, onEdit, classNa
   };
 
   return (
-    <div className="flex items-center justify-between p-4 px-5 bg-transparent hover:bg-muted/40 transition-colors active:bg-muted/60">
-      <div className="flex items-center gap-4">
-        <div className="w-10 h-10 rounded-2xl bg-primary/5 flex items-center justify-center shrink-0 shadow-[inset_0_1px_2px_rgba(0,0,0,0.05)] border border-primary/5">
-          <Icon className="w-[18px] h-[18px] text-primary" strokeWidth={2.5} />
-        </div>
-        <span className="text-[11px] font-extrabold text-muted-foreground/80 uppercase tracking-widest">{label}</span>
-      </div>
+    <div className="flex items-center justify-between p-3.5 px-4 bg-transparent hover:bg-muted/40 transition-colors active:bg-muted/60">
       <div className="flex items-center gap-3">
-        <span className={`text-[13px] font-bold text-foreground text-right tracking-wide ${className}`}>{value}</span>
-        <div className="w-8 h-8 flex items-center justify-center shrink-0">
+        <div className="w-8 h-8 rounded-xl bg-primary/5 flex items-center justify-center shrink-0 shadow-[inset_0_1px_2px_rgba(0,0,0,0.05)] border border-primary/5">
+          <Icon className="w-4 h-4 text-primary/80" strokeWidth={2.5} />
+        </div>
+        <span className="text-[10px] font-bold text-muted-foreground/80 uppercase tracking-widest">{label}</span>
+      </div>
+      <div className="flex items-center gap-2.5">
+        <span className={`text-xs font-semibold text-foreground text-right tracking-wide ${className}`}>{value}</span>
+        <div className="w-7 h-7 flex items-center justify-center shrink-0">
           {editable && (
-            <button onClick={onEdit} className="p-2 bg-primary/10 hover:bg-primary/20 rounded-xl text-primary transition-all active:scale-90" title="Request Edit">
-              <Edit2 className="w-4 h-4" />
+            <button onClick={onEdit} className="p-1.5 bg-primary/5 hover:bg-primary/15 rounded-lg text-primary transition-all active:scale-90" title="Request Edit">
+              <Edit2 className="w-3.5 h-3.5" />
             </button>
           )}
           {locked && (
-            <button onClick={handleLockedClick} className="p-2 text-muted-foreground/30 hover:text-muted-foreground/60 transition-colors active:scale-90" title="Fixed Field">
-              <Lock className="w-4 h-4" />
+            <button onClick={handleLockedClick} className="p-1.5 text-muted-foreground/20 hover:text-muted-foreground/50 transition-colors active:scale-90" title="Fixed Field">
+              <Lock className="w-3.5 h-3.5" />
             </button>
           )}
         </div>
