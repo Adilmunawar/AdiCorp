@@ -42,6 +42,11 @@
 @layer base {
   * {
     @apply border-border;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  *:focus {
+    outline: none;
   }
   
   html, body, #root {
