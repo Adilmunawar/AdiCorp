@@ -21,81 +21,136 @@ export default function PortalPayroll() {
 
   const payslips = data?.payslips || [];
 
+  const monthlyPayslips = React.useMemo(() => {
+    const grouped = payslips.reduce((acc: any, slip: any) => {
+      const monthKey = format(parseISO(slip.month), 'yyyy-MM');
+      if (!acc[monthKey]) {
+        acc[monthKey] = {
+          id: monthKey,
+          month: slip.month,
+          basic_salary: 0,
+          gross_salary: 0,
+          net_salary: 0,
+          total_deductions: 0,
+          overtime_hours: 0,
+          overtime_earnings: 0,
+          days_worked: 0,
+          recordCount: 0
+        };
+      }
+      
+      acc[monthKey].basic_salary += Number(slip.basic_salary) || 0;
+      acc[monthKey].gross_salary += Number(slip.gross_salary) || 0;
+      acc[monthKey].net_salary += Number(slip.net_salary) || 0;
+      acc[monthKey].total_deductions += Number(slip.total_deductions) || 0;
+      acc[monthKey].overtime_hours += Number(slip.overtime_hours) || 0;
+      acc[monthKey].overtime_earnings += Number(slip.overtime_earnings) || 0;
+      acc[monthKey].days_worked += Number(slip.days_worked) || 0;
+      acc[monthKey].recordCount += 1;
+      
+      return acc;
+    }, {});
+    
+    return Object.values(grouped).sort((a: any, b: any) => 
+      new Date(b.month).getTime() - new Date(a.month).getTime()
+    );
+  }, [payslips]);
+
   return (
     <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500 mb-6">
       <div className="flex items-center justify-between px-2 mb-2">
         <h2 className="text-lg font-black tracking-tight text-foreground">Payroll History</h2>
-        <span className="text-xs font-medium text-muted-foreground flex items-center gap-1">
-          <DollarSign className="w-3.5 h-3.5" /> All Records
+        <span className="text-xs font-bold text-muted-foreground flex items-center gap-1 bg-muted/50 px-2.5 py-1 rounded-full uppercase tracking-wider">
+          <DollarSign className="w-3.5 h-3.5" /> All Months
         </span>
       </div>
 
-      {payslips.length === 0 ? (
-        <Card className="border-border/40 shadow-sm rounded-3xl">
-          <CardContent className="p-8 text-center text-muted-foreground text-sm flex flex-col items-center justify-center gap-2">
-            <FileText className="w-8 h-8 opacity-20" />
-            No payslips found yet.
+      {monthlyPayslips.length === 0 ? (
+        <Card className="border-border/40 shadow-sm rounded-[2rem] bg-muted/10">
+          <CardContent className="p-10 text-center text-muted-foreground text-sm flex flex-col items-center justify-center gap-3">
+            <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-2">
+              <FileText className="w-6 h-6 opacity-40" />
+            </div>
+            <p className="font-semibold">No payslips generated yet.</p>
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-3">
-          {payslips.map((payslip: any) => {
+        <div className="space-y-4">
+          {monthlyPayslips.map((payslip: any) => {
             const isExpanded = expandedId === payslip.id;
             return (
-              <Card key={payslip.id} className="border-border/40 shadow-sm rounded-3xl overflow-hidden transition-all duration-300">
+              <Card key={payslip.id} className={`border border-border/40 shadow-lg rounded-[2rem] overflow-hidden transition-all duration-300 ${isExpanded ? 'bg-card ring-1 ring-primary/10' : 'bg-card/60 hover:bg-card'}`}>
                 <div 
-                  className="p-4 flex items-center justify-between cursor-pointer hover:bg-muted/30"
+                  className="p-5 flex items-center justify-between cursor-pointer"
                   onClick={() => setExpandedId(isExpanded ? null : payslip.id)}
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                      <Calendar className="w-5 h-5" />
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 text-primary flex items-center justify-center shrink-0 shadow-inner border border-primary/10">
+                      <Calendar className="w-6 h-6" strokeWidth={2.5} />
                     </div>
                     <div>
-                      <p className="text-sm font-bold text-foreground">
+                      <p className="text-base font-black text-foreground tracking-tight">
                         {format(parseISO(payslip.month), 'MMMM yyyy')}
                       </p>
-                      <p className="text-[10px] font-semibold text-primary uppercase tracking-wider mt-0.5">
-                        Net: {Number(payslip.net_salary).toLocaleString()}
+                      <p className="text-[11px] font-bold text-muted-foreground tracking-wide mt-0.5">
+                        {payslip.recordCount} {payslip.recordCount === 1 ? 'Record' : 'Records'} Processed
                       </p>
                     </div>
                   </div>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground">
-                    {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                  </Button>
+                  <div className="flex items-center gap-4">
+                    <div className="text-right">
+                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-0.5">Total Net</p>
+                      <p className="text-sm font-black text-primary tracking-tight">
+                        <span className="opacity-70 mr-0.5">PKR</span>{Math.round(payslip.net_salary).toLocaleString()}
+                      </p>
+                    </div>
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${isExpanded ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
+                      {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                    </div>
+                  </div>
                 </div>
 
                 {isExpanded && (
-                  <div className="px-4 pb-4 animate-in slide-in-from-top-2 duration-300">
-                    <div className="pt-4 border-t border-border/40 flex flex-col gap-3">
-                      <div className="grid grid-cols-2 gap-2 text-xs">
-                        <div className="bg-muted/30 p-3 rounded-xl border border-border/30">
-                          <p className="text-[10px] text-muted-foreground font-semibold uppercase">Basic Salary</p>
-                          <p className="font-bold text-sm mt-0.5">{Number(payslip.basic_salary).toLocaleString()}</p>
+                  <div className="px-5 pb-5 animate-in slide-in-from-top-2 duration-300">
+                    <div className="pt-5 border-t border-border/40 flex flex-col gap-3">
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="bg-muted/30 p-4 rounded-2xl border border-border/30">
+                          <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center mb-2"><DollarSign className="w-3 h-3 text-muted-foreground" /></div>
+                          <p className="text-[10px] text-muted-foreground font-extrabold uppercase tracking-widest">Base Salary</p>
+                          <p className="font-black text-base mt-1 tracking-tight">{Math.round(payslip.basic_salary).toLocaleString()}</p>
                         </div>
-                        <div className="bg-green-500/10 p-3 rounded-xl border border-green-500/20">
-                          <p className="text-[10px] text-green-700 font-semibold uppercase">Gross Salary</p>
-                          <p className="font-bold text-sm text-green-700 mt-0.5">{Number(payslip.gross_salary).toLocaleString()}</p>
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-2 text-xs">
-                        <div className="bg-muted/30 p-3 rounded-xl border border-border/30">
-                          <p className="text-[10px] text-muted-foreground font-semibold uppercase">Days Worked</p>
-                          <p className="font-bold text-sm mt-0.5">{payslip.days_worked}</p>
-                        </div>
-                        <div className="bg-red-500/10 p-3 rounded-xl border border-red-500/20">
-                          <p className="text-[10px] text-red-700 font-semibold uppercase">Deductions</p>
-                          <p className="font-bold text-sm text-red-700 mt-0.5">{Number(payslip.total_deductions).toLocaleString()}</p>
+                        <div className="bg-emerald-500/10 p-4 rounded-2xl border border-emerald-500/20 shadow-[inset_0_1px_2px_rgba(0,0,0,0.05)]">
+                          <div className="w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center mb-2"><DollarSign className="w-3 h-3 text-emerald-700" /></div>
+                          <p className="text-[10px] text-emerald-700 font-extrabold uppercase tracking-widest">Gross Earnings</p>
+                          <p className="font-black text-base text-emerald-700 mt-1 tracking-tight">{Math.round(payslip.gross_salary).toLocaleString()}</p>
                         </div>
                       </div>
 
-                      {Number(payslip.overtime_hours) > 0 && (
-                        <div className="bg-orange-500/10 p-3 rounded-xl border border-orange-500/20 text-xs">
-                          <p className="text-[10px] text-orange-700 font-semibold uppercase flex justify-between">
-                            <span>Overtime ({payslip.overtime_hours} hrs)</span>
-                            <span>+{Number(payslip.overtime_earnings).toLocaleString()}</span>
-                          </p>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="bg-muted/30 p-4 rounded-2xl border border-border/30">
+                          <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center mb-2"><Clock className="w-3 h-3 text-muted-foreground" /></div>
+                          <p className="text-[10px] text-muted-foreground font-extrabold uppercase tracking-widest">Total Days</p>
+                          <p className="font-black text-base mt-1 tracking-tight">{payslip.days_worked}</p>
+                        </div>
+                        <div className="bg-red-500/10 p-4 rounded-2xl border border-red-500/20 shadow-[inset_0_1px_2px_rgba(0,0,0,0.05)]">
+                          <div className="w-6 h-6 rounded-full bg-red-500/20 flex items-center justify-center mb-2"><DollarSign className="w-3 h-3 text-red-700" /></div>
+                          <p className="text-[10px] text-red-700 font-extrabold uppercase tracking-widest">Total Deductions</p>
+                          <p className="font-black text-base text-red-700 mt-1 tracking-tight">{Math.round(payslip.total_deductions).toLocaleString()}</p>
+                        </div>
+                      </div>
+
+                      {payslip.overtime_hours > 0 && (
+                        <div className="bg-amber-500/10 p-4 rounded-2xl border border-amber-500/20 shadow-[inset_0_1px_2px_rgba(0,0,0,0.05)] mt-1">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="text-[10px] text-amber-700 font-extrabold uppercase tracking-widest">Overtime Logged</p>
+                              <p className="font-black text-sm text-amber-700 mt-1 tracking-tight">{payslip.overtime_hours} Hours</p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-[10px] text-amber-700 font-extrabold uppercase tracking-widest">Extra Earnings</p>
+                              <p className="font-black text-sm text-amber-700 mt-1 tracking-tight">+{Math.round(payslip.overtime_earnings).toLocaleString()}</p>
+                            </div>
+                          </div>
                         </div>
                       )}
                     </div>

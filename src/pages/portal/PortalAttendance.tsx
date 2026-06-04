@@ -40,33 +40,33 @@ export default function PortalAttendance() {
 
       {/* Stats Overview */}
       <div className="grid grid-cols-2 gap-3">
-        <StatCard title="Present" value={presentCount} icon={CheckCircle2} colorClass="text-green-500 bg-green-500/10" />
-        <StatCard title="Absent" value={absentCount} icon={XCircle} colorClass="text-red-500 bg-red-500/10" />
-        <StatCard title="Leave" value={leaveCount} icon={AlertCircle} colorClass="text-yellow-500 bg-yellow-500/10" />
-        <StatCard title="Short Leave" value={shortLeaveCount} icon={AlertCircle} colorClass="text-orange-500 bg-orange-500/10" />
+        <StatCard title="Present" value={presentCount} icon={CheckCircle2} colorClass="text-emerald-600 bg-emerald-500/10 border-emerald-500/20" />
+        <StatCard title="Absent" value={absentCount} icon={XCircle} colorClass="text-red-600 bg-red-500/10 border-red-500/20" />
+        <StatCard title="Leave" value={leaveCount} icon={AlertCircle} colorClass="text-amber-600 bg-amber-400/10 border-amber-500/20" />
+        <StatCard title="Short Leave" value={shortLeaveCount} icon={AlertCircle} colorClass="text-orange-600 bg-orange-500/10 border-orange-500/20" />
       </div>
 
       {/* History List */}
-      <Card className="border-border/40 shadow-sm rounded-3xl overflow-hidden mt-6">
-        <div className="bg-muted/30 px-5 py-3 border-b border-border/40">
-          <h3 className="text-sm font-bold text-foreground">Recent Records</h3>
+      <Card className="border-border/40 shadow-lg rounded-[2rem] overflow-hidden mt-6 bg-card/60 backdrop-blur-sm">
+        <div className="bg-muted/30 px-6 py-4 border-b border-border/40">
+          <h3 className="text-sm font-extrabold text-foreground tracking-tight">Recent Records</h3>
         </div>
         <CardContent className="p-0">
           {attendance.length === 0 ? (
-            <div className="p-8 text-center text-muted-foreground text-sm">
+            <div className="p-8 text-center text-muted-foreground text-sm font-medium">
               No attendance records found.
             </div>
           ) : (
             <div className="flex flex-col divide-y divide-border/30">
               {attendance.map((record: any) => (
-                <div key={record.id} className="flex items-center justify-between p-4 hover:bg-muted/20 transition-colors">
-                  <div className="flex items-center gap-3">
+                <div key={record.id} className="flex items-center justify-between p-5 hover:bg-muted/30 transition-colors">
+                  <div className="flex items-center gap-4">
                     <StatusIcon status={record.status} />
                     <div>
-                      <p className="text-sm font-semibold text-foreground">
+                      <p className="text-sm font-black text-foreground tracking-tight">
                         {format(parseISO(record.date), 'MMMM d, yyyy')}
                       </p>
-                      <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider mt-0.5">
+                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5">
                         {format(parseISO(record.date), 'EEEE')}
                       </p>
                     </div>
@@ -84,14 +84,14 @@ export default function PortalAttendance() {
 
 function StatCard({ title, value, icon: Icon, colorClass }: any) {
   return (
-    <Card className="border-border/40 shadow-sm rounded-2xl overflow-hidden">
-      <CardContent className="p-4 flex flex-col gap-2">
-        <div className={cn("w-8 h-8 rounded-full flex items-center justify-center shrink-0", colorClass)}>
-          <Icon className="w-4 h-4" />
+    <Card className={`border shadow-sm rounded-3xl overflow-hidden bg-card/40 backdrop-blur-sm transition-transform hover:scale-[1.02] active:scale-[0.98] ${colorClass.split(' ').find(c => c.startsWith('border-'))}`}>
+      <CardContent className="p-5 flex flex-col gap-3">
+        <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 shadow-[inset_0_1px_2px_rgba(0,0,0,0.1)]", colorClass.split(' ').slice(0, 2).join(' '))}>
+          <Icon className="w-5 h-5" strokeWidth={2.5} />
         </div>
         <div>
-          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">{title}</p>
-          <p className="text-xl font-black text-foreground mt-0.5">{value}</p>
+          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{title}</p>
+          <p className="text-2xl font-black text-foreground mt-1 tracking-tight">{value}</p>
         </div>
       </CardContent>
     </Card>
@@ -99,15 +99,15 @@ function StatCard({ title, value, icon: Icon, colorClass }: any) {
 }
 
 function StatusIcon({ status }: { status: string }) {
-  if (status === 'present') return <div className="w-8 h-8 rounded-full bg-green-500/10 text-green-500 flex items-center justify-center"><CheckCircle2 className="w-4 h-4" /></div>;
-  if (status === 'absent') return <div className="w-8 h-8 rounded-full bg-red-500/10 text-red-500 flex items-center justify-center"><XCircle className="w-4 h-4" /></div>;
-  if (status === 'leave') return <div className="w-8 h-8 rounded-full bg-yellow-500/10 text-yellow-500 flex items-center justify-center"><AlertCircle className="w-4 h-4" /></div>;
-  return <div className="w-8 h-8 rounded-full bg-orange-500/10 text-orange-500 flex items-center justify-center"><AlertCircle className="w-4 h-4" /></div>;
+  if (status === 'present') return <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center shadow-sm border border-emerald-500/20"><CheckCircle2 className="w-5 h-5" /></div>;
+  if (status === 'absent') return <div className="w-10 h-10 rounded-2xl bg-red-500/10 text-red-600 flex items-center justify-center shadow-sm border border-red-500/20"><XCircle className="w-5 h-5" /></div>;
+  if (status === 'leave') return <div className="w-10 h-10 rounded-2xl bg-amber-400/10 text-amber-600 flex items-center justify-center shadow-sm border border-amber-500/20"><AlertCircle className="w-5 h-5" /></div>;
+  return <div className="w-10 h-10 rounded-2xl bg-orange-500/10 text-orange-600 flex items-center justify-center shadow-sm border border-orange-500/20"><AlertCircle className="w-5 h-5" /></div>;
 }
 
 function StatusBadge({ status }: { status: string }) {
-  if (status === 'present') return <span className="px-2.5 py-1 text-[10px] font-bold bg-green-500/10 text-green-600 rounded-full">PRESENT</span>;
-  if (status === 'absent') return <span className="px-2.5 py-1 text-[10px] font-bold bg-red-500/10 text-red-600 rounded-full">ABSENT</span>;
-  if (status === 'leave') return <span className="px-2.5 py-1 text-[10px] font-bold bg-yellow-500/10 text-yellow-600 rounded-full">LEAVE</span>;
-  return <span className="px-2.5 py-1 text-[10px] font-bold bg-orange-500/10 text-orange-600 rounded-full text-center leading-tight">SHORT<br/>LEAVE</span>;
+  if (status === 'present') return <span className="px-3 py-1.5 text-[10px] font-black bg-emerald-500/10 text-emerald-600 rounded-full border border-emerald-500/20 tracking-widest shadow-sm">PRESENT</span>;
+  if (status === 'absent') return <span className="px-3 py-1.5 text-[10px] font-black bg-red-500/10 text-red-600 rounded-full border border-red-500/20 tracking-widest shadow-sm">ABSENT</span>;
+  if (status === 'leave') return <span className="px-3 py-1.5 text-[10px] font-black bg-amber-400/10 text-amber-600 rounded-full border border-amber-500/20 tracking-widest shadow-sm">LEAVE</span>;
+  return <span className="px-3 py-1.5 text-[10px] font-black bg-orange-500/10 text-orange-600 rounded-full border border-orange-500/20 text-center leading-tight tracking-widest shadow-sm">SHORT<br/>LEAVE</span>;
 }

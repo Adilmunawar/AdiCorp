@@ -160,15 +160,15 @@ function DetailRow({ icon: Icon, label, value, editable, locked, onEdit, classNa
   };
 
   return (
-    <div className="flex items-center justify-between p-3.5 px-4 bg-transparent hover:bg-muted/40 transition-colors active:bg-muted/60">
-      <div className="flex items-center gap-3">
+    <div className="flex items-center justify-between p-3.5 px-4 bg-transparent hover:bg-muted/40 transition-colors active:bg-muted/60 gap-3">
+      <div className="flex items-center gap-3 shrink-0">
         <div className="w-8 h-8 rounded-xl bg-primary/5 flex items-center justify-center shrink-0 shadow-[inset_0_1px_2px_rgba(0,0,0,0.05)] border border-primary/5">
           <Icon className="w-4 h-4 text-primary/80" strokeWidth={2.5} />
         </div>
         <span className="text-[10px] font-bold text-muted-foreground/80 uppercase tracking-widest">{label}</span>
       </div>
-      <div className="flex items-center gap-2.5">
-        <span className={`text-xs font-semibold text-foreground text-right tracking-wide ${className}`}>{value}</span>
+      <div className="flex items-center gap-2.5 min-w-0 flex-1 justify-end">
+        <span className={`text-xs font-semibold text-foreground text-right tracking-wide truncate ${className}`}>{value}</span>
         <div className="w-7 h-7 flex items-center justify-center shrink-0">
           {editable && (
             <button onClick={onEdit} className="p-1.5 bg-primary/5 hover:bg-primary/15 rounded-lg text-primary transition-all active:scale-90" title="Request Edit">

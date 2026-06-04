@@ -45,24 +45,26 @@ export default function PortalReports() {
       </div>
 
       {documents.length === 0 ? (
-        <Card className="border-border/40 shadow-sm rounded-3xl">
-          <CardContent className="p-8 text-center text-muted-foreground text-sm flex flex-col items-center justify-center gap-2">
-            <FileText className="w-8 h-8 opacity-20" />
-            No documents uploaded yet.
+        <Card className="border-border/40 shadow-sm rounded-[2rem] bg-muted/10">
+          <CardContent className="p-10 text-center text-muted-foreground text-sm flex flex-col items-center justify-center gap-3">
+            <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-2">
+              <FileText className="w-6 h-6 opacity-40" />
+            </div>
+            <p className="font-semibold">No documents uploaded yet.</p>
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-4">
           {documents.map((doc: any) => (
-            <Card key={doc.id} className="border-border/40 shadow-sm rounded-3xl overflow-hidden hover:bg-muted/30 transition-colors">
-              <div className="p-4 flex items-center justify-between">
-                <div className="flex items-center gap-3 min-w-0 flex-1">
-                  <div className="w-10 h-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
-                    <FileText className="w-5 h-5" />
+            <Card key={doc.id} className="border border-border/40 shadow-lg rounded-[2rem] overflow-hidden hover:bg-card/80 transition-all duration-300 bg-card/60 backdrop-blur-sm group">
+              <div className="p-5 flex items-center justify-between">
+                <div className="flex items-center gap-4 min-w-0 flex-1">
+                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 text-primary flex items-center justify-center shrink-0 shadow-inner border border-primary/10 group-hover:scale-105 transition-transform duration-500">
+                    <FileText className="w-6 h-6" strokeWidth={2.5} />
                   </div>
                   <div className="min-w-0 pr-2">
-                    <p className="text-sm font-bold text-foreground truncate">{doc.document_name}</p>
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-0.5">
+                    <p className="text-base font-black text-foreground truncate tracking-tight">{doc.document_name}</p>
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold mt-0.5">
                       {doc.document_type.replace('_', ' ')} • {format(parseISO(doc.created_at), 'MMM d, yyyy')}
                     </p>
                   </div>
@@ -70,10 +72,10 @@ export default function PortalReports() {
                 <Button 
                   variant="outline" 
                   size="icon" 
-                  className="h-8 w-8 rounded-full border-border/50 text-primary shrink-0"
+                  className="h-10 w-10 rounded-xl border-border/50 text-primary shrink-0 shadow-sm hover:scale-105 hover:bg-primary/10 hover:text-primary transition-all duration-300"
                   onClick={() => handleViewDocument(doc.file_path, doc.document_name, doc.mime_type || 'application/pdf')}
                 >
-                  <Eye className="w-4 h-4" />
+                  <Eye className="w-5 h-5" />
                 </Button>
               </div>
             </Card>

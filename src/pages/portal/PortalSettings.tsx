@@ -133,8 +133,8 @@ export default function PortalSettings() {
       {/* Avatar & Basic Info */}
       <Card className="border-border/40 shadow-sm rounded-3xl overflow-hidden">
         <CardContent className="p-6 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="relative">
+          <div className="flex items-center gap-4 min-w-0 flex-1">
+            <div className="relative shrink-0">
               {employee?.avatar_url ? (
                 <img src={employee.avatar_url} alt="Avatar" className="w-16 h-16 rounded-full object-cover shadow-sm" />
               ) : (
@@ -170,9 +170,9 @@ export default function PortalSettings() {
                 )}
               </div>
             </div>
-            <div>
-              <h3 className="font-bold text-foreground">{employee?.name}</h3>
-              <p className="text-xs text-muted-foreground mt-0.5">{profile?.email || "No email added"}</p>
+            <div className="min-w-0 flex-1">
+              <h3 className="font-bold text-foreground truncate">{employee?.name}</h3>
+              <p className="text-xs text-muted-foreground mt-0.5 truncate">{profile?.email || "No email added"}</p>
             </div>
           </div>
         </CardContent>
