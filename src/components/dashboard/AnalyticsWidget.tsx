@@ -49,24 +49,61 @@ export default function AnalyticsWidget() {
 
       const { data: attendanceData } = await supabase
         .from('attendance')
-        .select(`date, status, employees!inner(company_id)`)
+        .select(`date, status, employee_id, employees!inner(company_id)`)
         .eq('employees.company_id', userProfile.company_id)
         .gte('date', last30Days[0])
         .lte('date', last30Days[last30Days.length - 1]);
 
+      const { data: leaveRequestsData } = await supabase
+        .from('leave_requests')
+        .select('employee_id, start_date, end_date')
+        .eq('company_id', userProfile.company_id)
+        .eq('status', 'approved')
+        .lte('start_date', last30Days[last30Days.length - 1])
+        .gte('end_date', last30Days[0]);
+
       const { data: employeesData } = await supabase
         .from('employees')
-        .select('rank, wage_rate, status')
+        .select('id, rank, wage_rate, status')
         .eq('company_id', userProfile.company_id)
         .eq('status', 'active');
 
-      const attendanceTrends = last30Days.map(date => {
-        const dayAttendance = attendanceData?.filter(a => a.date === date) || [];
+      const attendanceTrends = last30Days.map(dateStr => {
+        const dayAttendance = attendanceData?.filter(a => a.date === dateStr) || [];
+        const activeEmployees = employeesData || [];
+        
+        let present = 0;
+        let shortLeave = 0;
+        let leave = 0;
+        let absent = 0;
+
+        const dateObj = new Date(dateStr);
+        const isSunday = dateObj.getDay() === 0;
+
+        activeEmployees.forEach(emp => {
+          const record = dayAttendance.find(a => a.employee_id === emp.id);
+          if (record?.status === 'present') {
+            present++;
+          } else if (record?.status === 'short_leave') {
+            shortLeave++;
+          } else {
+            // Check if there is an approved leave request for this date
+            const isLeaveApproved = leaveRequestsData?.some(l => l.employee_id === emp.id && dateStr >= l.start_date && dateStr <= l.end_date);
+            if (isLeaveApproved) {
+              leave++;
+            } else if (!isSunday) {
+              // Only count as absent if it's a working day (not Sunday)
+              absent++;
+            }
+          }
+        });
+
         return {
-          date: format(new Date(date), 'MMM dd'),
-          present: dayAttendance.filter(a => a.status === 'present').length,
-          shortLeave: dayAttendance.filter(a => a.status === 'short_leave').length,
-          leave: dayAttendance.filter(a => a.status === 'leave').length,
+          date: format(dateObj, 'MMM dd'),
+          present,
+          shortLeave,
+          leave,
+          absent
         };
       });
 
@@ -157,9 +194,10 @@ export default function AnalyticsWidget() {
             </div>
             <div className="flex items-center gap-3 bg-background/50 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-border/50 shadow-sm">
               {[
-                { label: "Present", color: COLORS[1] },
-                { label: "Short Leave", color: COLORS[4] },
-                { label: "Leave", color: COLORS[2] },
+                { label: "Present", color: '#10b981' },
+                { label: "Short Leave", color: '#3b82f6' },
+                { label: "Paid Leave", color: '#a855f7' },
+                { label: "Absent", color: '#ef4444' },
               ].map(l => (
                 <div key={l.label} className="flex items-center gap-1.5">
                   <div className="w-2 h-2 rounded-full shadow-sm" style={{ backgroundColor: l.color }} />
@@ -173,25 +211,30 @@ export default function AnalyticsWidget() {
               <AreaChart data={analyticsData.attendanceTrends} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorPresent" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor={COLORS[1]} stopOpacity={0.5}/>
-                    <stop offset="95%" stopColor={COLORS[1]} stopOpacity={0}/>
+                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.5}/>
+                    <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
                   </linearGradient>
                   <linearGradient id="colorShortLeave" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor={COLORS[4]} stopOpacity={0.5}/>
-                    <stop offset="95%" stopColor={COLORS[4]} stopOpacity={0}/>
+                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.5}/>
+                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
                   </linearGradient>
-                  <linearGradient id="colorLeave" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor={COLORS[2]} stopOpacity={0.4}/>
-                    <stop offset="95%" stopColor={COLORS[2]} stopOpacity={0}/>
+                  <linearGradient id="colorPaidLeave" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#a855f7" stopOpacity={0.4}/>
+                    <stop offset="95%" stopColor="#a855f7" stopOpacity={0}/>
+                  </linearGradient>
+                  <linearGradient id="colorAbsent" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#ef4444" stopOpacity={0.4}/>
+                    <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.4} vertical={false} />
                 <XAxis dataKey="date" stroke="hsl(var(--muted-foreground))" fontSize={10} tickLine={false} axisLine={false} dy={10} />
                 <YAxis stroke="hsl(var(--muted-foreground))" fontSize={10} tickLine={false} axisLine={false} dx={-10} />
                 <Tooltip contentStyle={tooltipStyle} cursor={{ stroke: 'hsl(var(--primary))', strokeWidth: 1, strokeDasharray: '3 3' }} />
-                <Area type="monotone" dataKey="present" stroke={COLORS[1]} strokeWidth={3} fillOpacity={1} fill="url(#colorPresent)" name="Present" activeDot={{ r: 6, strokeWidth: 0, fill: COLORS[1] }} />
-                <Area type="monotone" dataKey="shortLeave" stroke={COLORS[4]} strokeWidth={3} fillOpacity={1} fill="url(#colorShortLeave)" name="Short Leave" activeDot={{ r: 6, strokeWidth: 0, fill: COLORS[4] }} />
-                <Area type="monotone" dataKey="leave" stroke={COLORS[2]} strokeWidth={3} fillOpacity={1} fill="url(#colorLeave)" name="Leave" activeDot={{ r: 6, strokeWidth: 0, fill: COLORS[2] }} />
+                <Area type="monotone" dataKey="present" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorPresent)" name="Present" activeDot={{ r: 6, strokeWidth: 0, fill: "#10b981" }} />
+                <Area type="monotone" dataKey="shortLeave" stroke="#3b82f6" strokeWidth={3} fillOpacity={1} fill="url(#colorShortLeave)" name="Short Leave" activeDot={{ r: 6, strokeWidth: 0, fill: "#3b82f6" }} />
+                <Area type="monotone" dataKey="leave" stroke="#a855f7" strokeWidth={3} fillOpacity={1} fill="url(#colorPaidLeave)" name="Paid Leave" activeDot={{ r: 6, strokeWidth: 0, fill: "#a855f7" }} />
+                <Area type="monotone" dataKey="absent" stroke="#ef4444" strokeWidth={3} fillOpacity={1} fill="url(#colorAbsent)" name="Absent" activeDot={{ r: 6, strokeWidth: 0, fill: "#ef4444" }} />
               </AreaChart>
             </ResponsiveContainer>
           </div>

@@ -120,12 +120,13 @@ export default function AttendanceTable() {
   }, [employees]);
 
   const summary = useMemo(() => {
+    const isSunday = date.getDay() === 0;
     const present = attendanceData.filter((record) => record.status === "present").length;
     const shortLeave = attendanceData.filter((record) => record.status === "short_leave").length;
-    const absent = attendanceData.filter((record) => record.status === "absent").length;
+    const absent = isSunday ? 0 : attendanceData.filter((record) => record.status === "absent").length;
 
     return { present, shortLeave, absent };
-  }, [attendanceData]);
+  }, [attendanceData, date]);
 
   if (loading) {
     return (<div className="flex justify-center items-center py-8"><div className="flex items-center space-x-2"><Loader2 className="h-8 w-8 animate-spin text-primary" /><span className="text-muted-foreground">Loading employees...</span></div></div>);

@@ -6,7 +6,7 @@ import { format, subDays, eachDayOfInterval, startOfToday, parseISO, isSameDay, 
 import PortalAttendance from "./PortalAttendance";
 import PortalPayroll from "./PortalPayroll";
 import PortalReports from "./PortalReports";
-import { Activity, ChevronLeft, ChevronRight } from "lucide-react";
+import { Activity, ChevronLeft, ChevronRight, Clock, DollarSign, ShieldCheck } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 

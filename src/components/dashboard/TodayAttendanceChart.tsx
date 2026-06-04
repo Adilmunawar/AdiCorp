@@ -54,6 +54,8 @@ export default function TodayAttendanceChart() {
       const leavesData = leavesRes.data || [];
       const employees = employeesRes.data || [];
 
+      const isSunday = new Date(today).getDay() === 0;
+
       employees.forEach(emp => {
         const record = attendanceData.find(a => a.employee_id === emp.id);
         if (record?.status === 'present') {
@@ -65,7 +67,7 @@ export default function TodayAttendanceChart() {
           const hasLeave = leavesData.some(l => l.employee_id === emp.id);
           if (hasLeave) {
             counts.leave++;
-          } else {
+          } else if (!isSunday) {
             counts.absent++;
           }
         }
