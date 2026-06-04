@@ -10,18 +10,23 @@ export function useEmployeePortalData() {
     queryFn: async () => {
       if (!employee?.id) throw new Error("No employee session");
 
-      const { data, error } = await supabase.rpc("get_employee_portal_data", {
-        p_emp_id: employee.id
-      });
+      const [rpcResponse, leaveRequestsResponse] = await Promise.all([
+        supabase.rpc("get_employee_portal_data", { p_emp_id: employee.id }),
+        supabase.from("leave_requests").select("*").eq("employee_id", employee.id).eq("status", "approved")
+      ]);
 
-      if (error) throw error;
+      if (rpcResponse.error) throw rpcResponse.error;
+      if (leaveRequestsResponse.error) throw leaveRequestsResponse.error;
       
-      return data as {
-        profile: any;
-        company: { name: string; logo_url: string };
-        attendance: any[];
-        payslips: any[];
-        documents: any[];
+      const rpcData = rpcResponse.data as any;
+
+      return {
+        profile: rpcData.profile,
+        company: rpcData.company,
+        attendance: rpcData.attendance,
+        payslips: rpcData.payslips,
+        documents: rpcData.documents,
+        leave_requests: leaveRequestsResponse.data || [],
       };
     },
     enabled: !!employee?.id,

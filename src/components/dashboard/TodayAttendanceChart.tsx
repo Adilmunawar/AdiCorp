@@ -21,34 +21,61 @@ export default function TodayAttendanceChart() {
     try {
       setLoading(true);
       const today = format(new Date(), 'yyyy-MM-dd');
-      
-      const { data: attendanceData, error } = await supabase
-        .from('attendance')
-        .select(`status, employees!inner(company_id)`)
-        .eq('employees.company_id', userProfile?.company_id)
-        .eq('date', today)
-        .neq('status', 'not_set');
+      const [employeesRes, attendanceRes, leavesRes] = await Promise.all([
+        supabase
+          .from('employees')
+          .select('id')
+          .eq('company_id', userProfile?.company_id)
+          .eq('status', 'active'),
+        supabase
+          .from('attendance')
+          .select('employee_id, status, employees!inner(company_id)')
+          .eq('employees.company_id', userProfile?.company_id)
+          .eq('date', today),
+        supabase
+          .from('leave_requests')
+          .select('employee_id, start_date, end_date')
+          .eq('company_id', userProfile?.company_id)
+          .eq('status', 'approved')
+          .lte('start_date', today)
+          .gte('end_date', today)
+      ]);
 
-      if (error) throw error;
+      if (employeesRes.error) throw employeesRes.error;
 
       const counts = {
         present: 0,
+        short_leave: 0,
         leave: 0,
-        short_leave: 0
+        absent: 0
       };
 
-      attendanceData?.forEach(record => {
-        if (record.status === 'absent' || record.status === 'leave') {
-          counts.leave++;
-        } else if (record.status in counts) {
-          counts[record.status as keyof typeof counts]++;
+      const attendanceData = attendanceRes.data || [];
+      const leavesData = leavesRes.data || [];
+      const employees = employeesRes.data || [];
+
+      employees.forEach(emp => {
+        const record = attendanceData.find(a => a.employee_id === emp.id);
+        if (record?.status === 'present') {
+          counts.present++;
+        } else if (record?.status === 'short_leave') {
+          counts.short_leave++;
+        } else {
+          // Absent or no record - check if there's an approved leave request today
+          const hasLeave = leavesData.some(l => l.employee_id === emp.id);
+          if (hasLeave) {
+            counts.leave++;
+          } else {
+            counts.absent++;
+          }
         }
       });
 
       const formattedData = [
         { name: 'Present', value: counts.present, color: '#10b981' }, // emerald-500
         { name: 'Short Leave', value: counts.short_leave, color: '#3b82f6' }, // blue-500
-        { name: 'Leave', value: counts.leave, color: '#ef4444' }, // red-500
+        { name: 'Paid Leave', value: counts.leave, color: '#a855f7' }, // purple-500
+        { name: 'Absent', value: counts.absent, color: '#ef4444' }, // red-500
       ].filter(item => item.value > 0);
 
       // If no data for today, show an empty state placeholder

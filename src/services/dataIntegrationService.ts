@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
-import { calculateWorkingDaysInMonth, getEffectiveSalaryDivisor } from "@/utils/workingDays";
-import { format, startOfMonth, endOfMonth } from "date-fns";
+import { calculateWorkingDaysInMonth, getEffectiveSalaryDivisor, isWorkingDayForEmployee } from "@/utils/workingDays";
+import { format, startOfMonth, endOfMonth, eachDayOfInterval } from "date-fns";
 
 export interface EmployeeData {
   id: string;
@@ -151,7 +151,7 @@ class DataIntegrationService {
       const monthStart = format(startOfMonth(month), 'yyyy-MM-dd');
       const monthEnd = format(endOfMonth(month), 'yyyy-MM-dd');
 
-      const [employees, attendance, overtime] = await Promise.all([
+      const [employees, attendance, overtime, leaveRequests] = await Promise.all([
         this.getEmployees(companyId),
         this.getAttendanceForMonth(companyId, month),
         supabase
@@ -161,23 +161,57 @@ class DataIntegrationService {
           .eq("status", "approved")
           .gte("date", monthStart)
           .lte("date", monthEnd)
+          .then(res => res.data || []),
+        supabase
+          .from("leave_requests")
+          .select("employee_id, start_date, end_date")
+          .eq("company_id", companyId)
+          .eq("status", "approved")
+          .lte("start_date", monthEnd)
+          .gte("end_date", monthStart)
           .then(res => res.data || [])
       ]);
 
       const calculations: SalaryCalculation[] = employees.map(employee => {
         const employeeAttendance = attendance.filter(a => a.employee_id === employee.id);
-        const presentDays = employeeAttendance.filter(a => a.status === 'present').length;
-        const shortLeaveDays = employeeAttendance.filter(a => a.status === 'short_leave').length;
-        const actualWorkingDays = presentDays + (shortLeaveDays * 0.5);
+        const employeeLeaves = leaveRequests.filter(l => l.employee_id === employee.id);
         
-        // Per-employee divisor and expected working days
         // @ts-ignore - working_days_per_week exists but maybe not typed in EmployeeData interface yet
         const workingDaysPerWeek = employee.working_days_per_week || 6; 
+        
+        let presentDays = 0;
+        let shortLeaveDays = 0;
+        let paidLeaveDays = 0;
+        let absentDays = 0;
+        let workingDays = 0;
+
+        const daysInMonth = eachDayOfInterval({ start: startOfMonth(month), end: endOfMonth(month) });
+
+        daysInMonth.forEach(day => {
+          if (isWorkingDayForEmployee(day, workingDaysPerWeek)) {
+             workingDays++;
+             const dateStr = format(day, 'yyyy-MM-dd');
+             const record = employeeAttendance.find(a => a.date === dateStr);
+             
+             if (record?.status === 'present') {
+                 presentDays++;
+             } else if (record?.status === 'short_leave') {
+                 shortLeaveDays++;
+             } else {
+                 const isLeaveApproved = employeeLeaves.some(l => dateStr >= l.start_date && dateStr <= l.end_date);
+                 if (isLeaveApproved) {
+                     paidLeaveDays++;
+                 } else {
+                     absentDays++;
+                 }
+             }
+          }
+        });
+
+        const actualWorkingDays = presentDays + (shortLeaveDays * 0.5) + paidLeaveDays;
+        
         // @ts-ignore
         const effectiveDivisor = getEffectiveSalaryDivisor(employee.salary_divisor, workingDaysPerWeek);
-        const workingDays = calculateWorkingDaysInMonth(month, workingDaysPerWeek);
-        
-        const absentDays = workingDays - actualWorkingDays;
 
         const dailyRate = employee.wage_rate / effectiveDivisor;
         const basicSalary = dailyRate * actualWorkingDays;

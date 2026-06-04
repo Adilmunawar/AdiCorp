@@ -2,8 +2,9 @@ import React, { useState } from "react";
 import { useEmployeePortalData } from "@/hooks/useEmployeePortalData";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { format, parseISO, startOfToday, startOfMonth, endOfMonth } from "date-fns";
+import { format, parseISO, startOfToday, startOfMonth, endOfMonth, eachDayOfInterval } from "date-fns";
 import { DollarSign, FileText, ChevronDown, ChevronUp, Calendar, Clock, Calculator } from "lucide-react";
+import { isWorkingDayForEmployee } from "@/utils/workingDays";
 import { Button } from "@/components/ui/button";
 
 export default function PortalPayroll() {
@@ -21,6 +22,7 @@ export default function PortalPayroll() {
 
   const payslips = data?.payslips || [];
   const attendance = data?.attendance || [];
+  const leaveRequests = (data as any)?.leave_requests || [];
   const profile = data?.profile;
 
   const monthlyPayslips = React.useMemo(() => {
@@ -61,23 +63,45 @@ export default function PortalPayroll() {
     const start = startOfMonth(startOfToday());
     const end = endOfMonth(startOfToday());
     
-    const currentMonthAttendance = attendance.filter((a: any) => {
-      const date = parseISO(a.date);
-      return date >= start && date <= end;
+    const workingDaysPerWeek = profile.working_days_per_week || 6;
+    
+    let presentDays = 0;
+    let shortLeaveDays = 0;
+    let paidLeaveDays = 0;
+    let absentDays = 0;
+    let workingDaysCount = 0;
+
+    const daysInMonth = eachDayOfInterval({ start, end });
+
+    daysInMonth.forEach(day => {
+      if (isWorkingDayForEmployee(day, workingDaysPerWeek)) {
+         workingDaysCount++;
+         const dateStr = format(day, 'yyyy-MM-dd');
+         const record = attendance.find((a: any) => a.date === dateStr);
+         
+         if (record?.status === 'present') {
+             presentDays++;
+         } else if (record?.status === 'short_leave') {
+             shortLeaveDays++;
+         } else {
+             const isLeaveApproved = leaveRequests.some((l: any) => dateStr >= l.start_date && dateStr <= l.end_date);
+             if (isLeaveApproved) {
+                 paidLeaveDays++;
+             } else {
+                 absentDays++;
+             }
+         }
+      }
     });
 
-    const presentDays = currentMonthAttendance.filter((a: any) => a.status === 'present').length;
-    const absentDays = currentMonthAttendance.filter((a: any) => a.status === 'absent').length;
-    const shortLeaveDays = currentMonthAttendance.filter((a: any) => a.status === 'short_leave').length;
+    const actualWorkingDays = presentDays + (shortLeaveDays * 0.5) + paidLeaveDays;
     
-    // Convert wages to Number
     const basicSalary = Number(profile.wage_rate) || 0;
     const divisor = Number(profile.salary_divisor) || 26;
     const dailyRate = basicSalary / divisor;
     
-    const absentDeduction = absentDays * dailyRate;
-    const shortLeaveDeduction = shortLeaveDays * (dailyRate / 2); // usually half day
-    const totalDeductions = absentDeduction + shortLeaveDeduction;
+    // We already counted exact absents among working days
+    const totalDeductions = absentDays * dailyRate + (shortLeaveDays * (dailyRate / 2));
     
     const netSalary = basicSalary - totalDeductions;
 
@@ -90,14 +114,15 @@ export default function PortalPayroll() {
       total_deductions: totalDeductions,
       overtime_hours: 0,
       overtime_earnings: 0,
-      days_worked: presentDays,
+      days_worked: actualWorkingDays,
       present_days: presentDays,
       absent_days: absentDays,
       short_leave_days: shortLeaveDays,
+      paid_leave_days: paidLeaveDays,
       recordCount: 0,
       isEstimate: true
     };
-  }, [profile, hasCurrentMonthPayslip, attendance]);
+  }, [profile, hasCurrentMonthPayslip, attendance, leaveRequests]);
 
   const displayList = estimate ? [estimate, ...monthlyPayslips] : monthlyPayslips;
 
@@ -176,10 +201,11 @@ export default function PortalPayroll() {
                           <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center mb-2"><Clock className="w-3 h-3 text-muted-foreground" /></div>
                           <p className="text-[10px] text-muted-foreground font-extrabold uppercase tracking-widest">Attendance</p>
                           <p className="font-black text-base mt-1 tracking-tight">{Number(payslip.days_worked) || 0} <span className="text-xs text-muted-foreground font-semibold">Total Days</span></p>
-                          <div className="flex items-center gap-2 mt-2 pt-2 border-t border-border/50 text-[10px] font-bold text-muted-foreground">
+                          <div className="flex items-center gap-2 mt-2 pt-2 border-t border-border/50 text-[10px] font-bold text-muted-foreground flex-wrap">
                             <span className="text-emerald-600">{Number(payslip.present_days) || 0} P</span>
                             <span className="text-red-500">{Number(payslip.absent_days) || 0} A</span>
                             <span className="text-orange-500">{Number(payslip.short_leave_days) || 0} SL</span>
+                            <span className="text-blue-500">{Number(payslip.paid_leave_days) || 0} L</span>
                           </div>
                         </div>
                         <div className="bg-red-500/10 p-4 rounded-2xl border border-red-500/20 shadow-[inset_0_1px_2px_rgba(0,0,0,0.05)]">

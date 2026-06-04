@@ -18,7 +18,7 @@ import { useNavigate } from "react-router-dom";
 import { ATTENDANCE_STATUS_OPTIONS, AttendanceRecord, AttendanceStatusValue } from "@/components/attendance/types";
 
 const isAttendanceStatus = (value: string): value is AttendanceStatusValue => {
-  return ["present", "short_leave", "leave", "not_set"].includes(value);
+  return ["present", "short_leave", "absent"].includes(value);
 };
 
 export default function AttendanceTable() {
@@ -59,7 +59,7 @@ export default function AttendanceTable() {
         const existingRecord = attendanceMap.get(employee.id);
         const normalizedStatus = existingRecord?.status && isAttendanceStatus(existingRecord.status)
           ? existingRecord.status
-          : "not_set";
+          : "absent";
 
         return { id: existingRecord?.id, employeeId: employee.id, employeeName: employee.name, date: dateString, status: normalizedStatus };
       });
@@ -96,7 +96,7 @@ export default function AttendanceTable() {
     }
     try {
       setSaving(true);
-      const updates = attendanceData.filter(record => record.status !== 'not_set').map(record => ({ employee_id: record.employeeId, date: record.date, status: record.status }));
+      const updates = attendanceData.map(record => ({ employee_id: record.employeeId, date: record.date, status: record.status }));
       if (updates.length === 0) { toast({ title: "No attendance to save", description: "Please mark attendance for at least one employee.", variant: "destructive" }); return; }
       const { error } = await supabase.from('attendance').upsert(updates, { onConflict: 'employee_id,date', ignoreDuplicates: false });
       if (error) throw error;
@@ -110,8 +110,8 @@ export default function AttendanceTable() {
     switch(status) {
       case 'present': return <Badge variant="default">Present</Badge>;
       case 'short_leave': return <Badge variant="secondary">Short Leave</Badge>;
-      case 'leave': return <Badge variant="destructive">Leave</Badge>;
-      default: return <Badge className="bg-muted text-muted-foreground">Not Set</Badge>;
+      case 'absent': return <Badge variant="destructive">Absent</Badge>;
+      default: return null;
     }
   };
 
@@ -122,10 +122,9 @@ export default function AttendanceTable() {
   const summary = useMemo(() => {
     const present = attendanceData.filter((record) => record.status === "present").length;
     const shortLeave = attendanceData.filter((record) => record.status === "short_leave").length;
-    const leave = attendanceData.filter((record) => record.status === "leave").length;
-    const notSet = attendanceData.filter((record) => record.status === "not_set").length;
+    const absent = attendanceData.filter((record) => record.status === "absent").length;
 
-    return { present, shortLeave, leave, notSet };
+    return { present, shortLeave, absent };
   }, [attendanceData]);
 
   if (loading) {
@@ -189,7 +188,7 @@ export default function AttendanceTable() {
             <div className="bg-background border border-border/40 rounded-lg p-2 flex flex-col justify-center shadow-sm">
               <span className="text-[9px] uppercase font-bold text-muted-foreground">Coverage</span>
               <div className="flex items-end gap-1 mt-0.5">
-                <span className="text-sm font-bold">{employees.length > 0 ? Math.round(((employees.length - summary.notSet) / employees.length) * 100) : 0}%</span>
+                <span className="text-sm font-bold">{employees.length > 0 ? Math.round(((summary.present + summary.shortLeave) / employees.length) * 100) : 0}%</span>
               </div>
             </div>
             <div className="bg-background border border-green-500/20 rounded-lg p-2 flex flex-col justify-center shadow-sm relative overflow-hidden">
@@ -204,13 +203,8 @@ export default function AttendanceTable() {
             </div>
             <div className="bg-background border border-red-500/20 rounded-lg p-2 flex flex-col justify-center shadow-sm relative overflow-hidden">
               <div className="absolute top-0 right-0 w-8 h-8 bg-red-500/10 rounded-bl-full" />
-              <span className="text-[9px] uppercase font-bold text-muted-foreground">Leave</span>
-              <span className="text-sm font-bold text-red-600 mt-0.5">{summary.leave}</span>
-            </div>
-            <div className="bg-background border border-slate-500/20 rounded-lg p-2 flex flex-col justify-center shadow-sm relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-8 h-8 bg-slate-500/10 rounded-bl-full" />
-              <span className="text-[9px] uppercase font-bold text-muted-foreground">Not Set</span>
-              <span className="text-sm font-bold text-slate-600 mt-0.5">{summary.notSet}</span>
+              <span className="text-[9px] uppercase font-bold text-muted-foreground">Absent</span>
+              <span className="text-sm font-bold text-red-600 mt-0.5">{summary.absent}</span>
             </div>
           </div>
         </CardHeader>
@@ -233,8 +227,7 @@ export default function AttendanceTable() {
               <div className="h-4 w-[1px] bg-border/50 mx-0.5"></div>
               <Button size="sm" variant="ghost" className="h-6 text-[10px] rounded-md px-2 hover:bg-green-500/10 hover:text-green-600" onClick={() => applyStatusToAll("present")}>Present</Button>
               <Button size="sm" variant="ghost" className="h-6 text-[10px] rounded-md px-2 hover:bg-amber-500/10 hover:text-amber-600" onClick={() => applyStatusToAll("short_leave")}>Short Leave</Button>
-              <Button size="sm" variant="ghost" className="h-6 text-[10px] rounded-md px-2 hover:bg-red-500/10 hover:text-red-600" onClick={() => applyStatusToAll("leave")}>Leave</Button>
-              <Button size="sm" variant="ghost" className="h-6 text-[10px] rounded-md px-2 hover:bg-slate-500/10" onClick={() => applyStatusToAll("not_set")}>Reset</Button>
+              <Button size="sm" variant="ghost" className="h-6 text-[10px] rounded-md px-2 hover:bg-red-500/10 hover:text-red-600" onClick={() => applyStatusToAll("absent")}>Absent</Button>
             </div>
           )}
         </CardHeader>
@@ -274,13 +267,9 @@ export default function AttendanceTable() {
                               className={`px-2.5 py-1 text-[10px] font-bold rounded-md transition-all ${record.status === 'short_leave' ? 'bg-amber-500 text-white shadow-sm' : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'}`}
                             >Short</button>
                             <button 
-                              onClick={() => handleStatusChange(record.employeeId, 'leave')} 
-                              className={`px-2.5 py-1 text-[10px] font-bold rounded-md transition-all ${record.status === 'leave' ? 'bg-red-500 text-white shadow-sm' : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'}`}
-                            >Leave</button>
-                            <button 
-                              onClick={() => handleStatusChange(record.employeeId, 'not_set')} 
-                              className={`px-2.5 py-1 text-[10px] font-bold rounded-md transition-all ${record.status === 'not_set' ? 'bg-slate-500 text-white shadow-sm' : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'}`}
-                            >Unset</button>
+                              onClick={() => handleStatusChange(record.employeeId, 'absent')} 
+                              className={`px-2.5 py-1 text-[10px] font-bold rounded-md transition-all ${record.status === 'absent' ? 'bg-red-500 text-white shadow-sm' : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'}`}
+                            >Absent</button>
                           </div>
                         )}
                       </div>
