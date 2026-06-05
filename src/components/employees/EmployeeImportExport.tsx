@@ -149,9 +149,47 @@ export default function EmployeeImportExport({ onImportComplete, employees }: Em
         return;
       }
 
-      const exportData = allEmployees.map(emp => ({ name: emp.name, rank: emp.rank, wage_rate: emp.wage_rate, status: emp.status, created_at: new Date(emp.created_at).toLocaleDateString() }));
+      const exportData = allEmployees.map(emp => {
+        let workingDays = emp.working_days_per_week || 6;
+        let divisor = emp.salary_divisor || (workingDays === 5 ? 22 : 26);
+        
+        if (emp.weekend_saturday === true) {
+          workingDays = 5;
+          if (divisor === 26) divisor = 22;
+        } else if (emp.weekend_saturday === false) {
+          workingDays = 6;
+          if (divisor === 22) divisor = 26;
+        }
+
+        return { 
+          "Name": emp.name, 
+          "Rank": emp.rank, 
+          "Wage Rate": emp.wage_rate, 
+          "Status": emp.status,
+          "Email": emp.email || "",
+          "Phone": emp.phone || "",
+          "CNIC": emp.cnic || "",
+          "Date of Birth": emp.date_of_birth || "",
+          "Father Name": emp.father_name || "",
+          "Education": emp.education || "",
+          "Shift Type": emp.shift_type || "",
+          "Bank Name": emp.bank_name || "",
+          "Bank Account": emp.bank_account_number || "",
+          "Emergency Contact": emp.emergency_contact || "",
+          "Working Days": workingDays,
+          "Sat OFF": emp.weekend_saturday ? "Yes" : "No",
+          "Salary Divisor": divisor,
+          "Joined": new Date(emp.created_at).toLocaleDateString() 
+        };
+      });
+      
       const wb = XLSX.utils.book_new(); const ws = XLSX.utils.json_to_sheet(exportData);
-      ws['!cols'] = [{ width: 20 }, { width: 15 }, { width: 15 }, { width: 10 }, { width: 15 }];
+      ws['!cols'] = [
+        { width: 25 }, { width: 15 }, { width: 15 }, { width: 10 }, { width: 25 },
+        { width: 15 }, { width: 20 }, { width: 15 }, { width: 20 }, { width: 15 },
+        { width: 15 }, { width: 20 }, { width: 25 }, { width: 15 }, { width: 15 },
+        { width: 10 }, { width: 15 }, { width: 15 }
+      ];
       XLSX.utils.book_append_sheet(wb, ws, "Employees");
       const fileName = `employees_export_${new Date().toISOString().split('T')[0]}.xlsx`;
       XLSX.writeFile(wb, fileName);

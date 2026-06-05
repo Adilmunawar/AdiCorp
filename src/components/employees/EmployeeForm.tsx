@@ -141,15 +141,16 @@ export default function EmployeeForm({ employee, onSuccess, onCancel, isOpen, on
     
     let weekend_saturday: boolean | null = null;
     let salary_divisor: number | null = null;
-    if (data.saturday_schedule === "force_off") { weekend_saturday = true; salary_divisor = 22; }
-    if (data.saturday_schedule === "force_on") { weekend_saturday = false; salary_divisor = 26; }
+    let working_days_per_week: number | null = null;
+    if (data.saturday_schedule === "force_off") { weekend_saturday = true; salary_divisor = 22; working_days_per_week = 5; }
+    if (data.saturday_schedule === "force_on") { weekend_saturday = false; salary_divisor = 26; working_days_per_week = 6; }
 
     const payload = {
       name: data.name, email: data.email, phone: data.phone, cnic: data.cnic, 
       date_of_birth: data.date_of_birth || null, father_name: data.father_name, education: data.education, emergency_contact: data.emergency_contact,
       rank: data.rank, wage_rate: data.wage_rate, shift_type: data.shift_type ? data.shift_type.toLowerCase() : null, status: data.status,
       bank_name: data.bank_name, bank_account_number: data.bank_account_number,
-      weekend_saturday, weekend_sunday: true, salary_divisor
+      weekend_saturday, weekend_sunday: true, salary_divisor, working_days_per_week
     };
 
     try {
