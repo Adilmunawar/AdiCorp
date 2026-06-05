@@ -19,7 +19,7 @@ export default function PortalChatTab() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, email')
+        .select('id')
         .eq('company_id', employee?.company_id)
         .eq('is_admin', true)
         .limit(1)
@@ -32,39 +32,22 @@ export default function PortalChatTab() {
   });
 
   const { data: messages, isLoading: messagesLoading } = useQuery({
-    queryKey: ['portal-chat', user?.id],
+    queryKey: ['portal-chat', employee?.id],
     queryFn: async () => {
-      if (!user?.id || !adminProfile?.id) return [];
-      const { data, error } = await supabase
-        .from('messages')
-        .select('*')
-        .or(`and(sender_id.eq.${user.id},receiver_id.eq.${adminProfile.id}),and(sender_id.eq.${adminProfile.id},receiver_id.eq.${user.id})`)
-        .order('created_at', { ascending: true });
+      if (!employee?.id || !adminProfile?.id) return [];
+      const { data, error } = await supabase.rpc('employee_get_chat', {
+        p_emp_id: employee.id,
+        p_admin_id: adminProfile.id
+      });
       if (error) throw error;
-      return data;
+      return data as any[];
     },
-    enabled: !!user?.id && !!adminProfile?.id
+    enabled: !!employee?.id && !!adminProfile?.id,
+    refetchInterval: 3000
   });
 
-  // Realtime subscription
-  useEffect(() => {
-    if (!user?.id) return;
-
-    const channel = supabase.channel('portal_messages')
-      .on('postgres_changes', {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'messages',
-        filter: `receiver_id=eq.${user.id}`
-      }, () => {
-        queryClient.invalidateQueries({ queryKey: ['portal-chat'] });
-      })
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [user?.id, queryClient]);
+  // Remove realtime subscription as it requires Supabase Auth.
+  // We use refetchInterval in useQuery instead to poll for new messages safely.
 
   // Scroll to bottom
   useEffect(() => {
@@ -75,13 +58,13 @@ export default function PortalChatTab() {
 
   const sendMutation = useMutation({
     mutationFn: async () => {
-      if (!employee?.company_id || !user?.id || !adminProfile?.id || !messageText.trim()) return;
+      if (!employee?.company_id || !employee?.id || !adminProfile?.id || !messageText.trim()) return;
       
-      const { error } = await supabase.from('messages').insert({
-        company_id: employee.company_id,
-        sender_id: user.id,
-        receiver_id: adminProfile.id,
-        content: messageText.trim(),
+      const { error } = await supabase.rpc('employee_send_message', {
+        p_company_id: employee.company_id,
+        p_sender_id: employee.id,
+        p_receiver_id: adminProfile.id,
+        p_content: messageText.trim(),
       });
       if (error) throw error;
     },
@@ -127,7 +110,7 @@ export default function PortalChatTab() {
           </div>
         ) : (
           messages?.map(msg => {
-            const isMe = msg.sender_id === user?.id;
+            const isMe = msg.sender_id === employee?.id;
             return (
               <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
                 <div className={`relative max-w-[85%] px-3 py-1.5 shadow-sm ${

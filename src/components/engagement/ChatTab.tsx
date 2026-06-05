@@ -48,18 +48,18 @@ export default function ChatTab() {
       const { data, error } = await supabase
         .from('messages')
         .select('*')
-        .or(`and(sender_id.eq.${user.id},receiver_id.eq.${selectedUserId}),and(sender_id.eq.${selectedUserId},receiver_id.eq.${user.id})`)
+        .or(`and(sender_id.eq.${user.id},receiver_id.eq.${selectedEmployeeId}),and(sender_id.eq.${selectedEmployeeId},receiver_id.eq.${user.id})`)
         .order('created_at', { ascending: true });
       if (error) throw error;
       return data;
     },
-    enabled: !!selectedUserId && !!user?.id,
+    enabled: !!selectedEmployeeId && !!user?.id,
     staleTime: 0
   });
 
   // Realtime subscription
   useEffect(() => {
-    if (!selectedUserId || !user?.id) return;
+    if (!selectedEmployeeId || !user?.id) return;
 
     const channel = supabase.channel('messages_changes')
       .on('postgres_changes', {
@@ -76,7 +76,7 @@ export default function ChatTab() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [selectedUserId, user?.id, queryClient]);
+  }, [selectedEmployeeId, user?.id, queryClient]);
 
   // Scroll to bottom on new messages
   useEffect(() => {
@@ -87,11 +87,11 @@ export default function ChatTab() {
 
   const sendMutation = useMutation({
     mutationFn: async () => {
-      if (!profile?.company_id || !user?.id || !selectedUserId || !messageText.trim()) return;
+      if (!profile?.company_id || !user?.id || !selectedEmployeeId || !messageText.trim()) return;
       const { error } = await supabase.from('messages').insert({
         company_id: profile.company_id,
         sender_id: user.id,
-        receiver_id: selectedUserId,
+        receiver_id: selectedEmployeeId,
         content: messageText.trim(),
       });
       if (error) throw error;
@@ -137,7 +137,6 @@ export default function ChatTab() {
                   key={emp.id}
                   onClick={() => {
                     setSelectedEmployeeId(emp.id);
-                    setSelectedUserId(emp.user_id);
                   }}
                   className={`w-full flex items-center gap-3 p-3 rounded-lg text-left transition-colors ${
                     selectedEmployeeId === emp.id 
@@ -167,15 +166,6 @@ export default function ChatTab() {
       {/* Right Content - Chat Window */}
       <div className="flex-1 flex flex-col bg-[#efeae2] relative">
         {selectedEmployeeId ? (
-          !selectedUserId ? (
-            <div className="flex-1 flex flex-col items-center justify-center text-slate-400 bg-slate-50/50">
-              <User size={64} className="opacity-10 mb-4" />
-              <p className="text-lg font-medium text-slate-500">Account Not Activated</p>
-              <p className="text-sm max-w-sm text-center mt-2 text-slate-500">
-                This employee has not set up their portal account yet. They must log in at least once before they can send or receive messages.
-              </p>
-            </div>
-          ) : (
           <>
             <div className="p-3 border-b border-border/40 bg-[#f0f2f5] flex items-center gap-3 shadow-sm z-10 shrink-0">
               <div className="w-10 h-10 rounded-full bg-slate-300 text-white flex items-center justify-center overflow-hidden">
@@ -237,7 +227,6 @@ export default function ChatTab() {
               </form>
             </div>
           </>
-          )
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center text-slate-400">
             <User size={64} className="opacity-10 mb-4" />

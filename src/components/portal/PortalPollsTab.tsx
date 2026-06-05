@@ -15,31 +15,24 @@ export default function PortalPollsTab() {
   const { data: polls, isLoading } = useQuery({
     queryKey: ['portal-polls', employee?.company_id, employee?.id],
     queryFn: async () => {
-      // Fetch active polls
-      const { data: pollsData, error: pollsError } = await supabase
-        .from('polls')
-        .select('*')
-        .eq('company_id', employee?.company_id)
-        .order('created_at', { ascending: false });
+      // Fetch active polls via RPC to bypass RLS for employees
+      const { data: pollsData, error: pollsError } = await supabase.rpc('employee_get_polls', {
+        p_company_id: employee?.company_id
+      });
       
       if (pollsError) throw pollsError;
       if (!pollsData || pollsData.length === 0) return [];
 
-      const pollIds = pollsData.map(p => p.id);
-
-      const { data: optionsData } = await supabase.from('poll_options').select('*').in('poll_id', pollIds);
-      const { data: votesData } = await supabase.from('poll_votes').select('*').in('poll_id', pollIds);
-
-      return pollsData.map(poll => {
-        const pollOpts = optionsData?.filter(o => o.poll_id === poll.id) || [];
-        const pollVotes = votesData?.filter(v => v.poll_id === poll.id) || [];
+      return pollsData.map((poll: any) => {
+        const pollOpts = poll.options || [];
+        const pollVotes = poll.votes || [];
         const totalVotes = pollVotes.length;
-        const myVote = pollVotes.find(v => v.employee_id === employee?.id);
+        const myVote = pollVotes.find((v: any) => v.employee_id === employee?.id);
 
         return {
           ...poll,
-          options: pollOpts.map(opt => {
-            const votesForOption = pollVotes.filter(v => v.option_id === opt.id).length;
+          options: pollOpts.map((opt: any) => {
+            const votesForOption = pollVotes.filter((v: any) => v.option_id === opt.id).length;
             return {
               ...opt,
               voteCount: votesForOption,
@@ -58,10 +51,10 @@ export default function PortalPollsTab() {
   const voteMutation = useMutation({
     mutationFn: async ({ pollId, optionId }: { pollId: string, optionId: string }) => {
       if (!employee?.id) throw new Error("Not logged in");
-      const { error } = await supabase.from('poll_votes').insert({
-        poll_id: pollId,
-        option_id: optionId,
-        employee_id: employee.id
+      const { error } = await supabase.rpc('employee_cast_vote', {
+        p_poll_id: pollId,
+        p_option_id: optionId,
+        p_emp_id: employee.id
       });
       if (error) throw error;
     },

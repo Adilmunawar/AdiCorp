@@ -12,14 +12,12 @@ export default function PortalAnnouncementsTab() {
   const { data: announcements, isLoading } = useQuery({
     queryKey: ['portal-announcements', employee?.company_id],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('announcements')
-        .select('*')
-        .eq('company_id', employee?.company_id)
-        .order('created_at', { ascending: false });
+      const { data, error } = await supabase.rpc('employee_get_announcements', {
+        p_company_id: employee?.company_id
+      });
       
       if (error) throw error;
-      return data;
+      return data as any[];
     },
     enabled: !!employee?.company_id
   });

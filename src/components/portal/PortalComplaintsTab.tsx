@@ -25,14 +25,12 @@ export default function PortalComplaintsTab() {
   const { data: myComplaints, isLoading } = useQuery({
     queryKey: ['portal-complaints', employee?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('complaints')
-        .select('*')
-        .eq('employee_id', employee?.id)
-        .order('created_at', { ascending: false });
+      const { data, error } = await supabase.rpc('employee_get_complaints', {
+        p_emp_id: employee?.id
+      });
       
       if (error) throw error;
-      return data;
+      return data as any[];
     },
     enabled: !!employee?.id
   });
@@ -41,14 +39,12 @@ export default function PortalComplaintsTab() {
     mutationFn: async () => {
       if (!employee?.company_id) throw new Error("Missing company info");
       
-      const { error } = await supabase.from('complaints').insert({
-        company_id: employee.company_id,
-        // If anonymous, we explicitly set employee_id to null so it is 100% untraceable
-        employee_id: isAnonymous ? null : employee.id,
-        subject,
-        description,
-        is_anonymous: isAnonymous,
-        status: 'pending'
+      const { error } = await supabase.rpc('employee_submit_complaint', {
+        p_company_id: employee.company_id,
+        p_emp_id: employee.id,
+        p_subject: subject,
+        p_description: description,
+        p_is_anonymous: isAnonymous
       });
       if (error) throw error;
     },
