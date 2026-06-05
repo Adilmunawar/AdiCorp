@@ -10,23 +10,11 @@ export function useEmployeePortalData() {
     queryFn: async () => {
       if (!employee?.id) throw new Error("No employee session");
 
-      const [rpcResponse, leaveRequestsResponse, overtimeResponse] = await Promise.all([
-        supabase.rpc("get_employee_portal_data", { p_emp_id: employee.id }),
-        supabase.from("leave_requests").select("*").eq("employee_id", employee.id).eq("status", "approved"),
-        supabase.from("overtime_records").select("*").eq("employee_id", employee.id).order("date", { ascending: false })
-      ]);
+      const { data, error } = await supabase.rpc("get_employee_portal_data", { p_emp_id: employee.id });
 
-      if (rpcResponse.error) throw rpcResponse.error;
-      if (leaveRequestsResponse.error) throw leaveRequestsResponse.error;
-      if (overtimeResponse.error) throw overtimeResponse.error;
+      if (error) throw error;
       
-      const rpcData = rpcResponse.data as any;
-
-      const { data: eventsData } = await supabase
-        .from("events")
-        .select("*")
-        .eq("company_id", rpcData.profile.company_id)
-        .eq("affects_attendance", true);
+      const rpcData = data as any;
 
       return {
         profile: rpcData.profile,
@@ -34,9 +22,9 @@ export function useEmployeePortalData() {
         attendance: rpcData.attendance,
         payslips: rpcData.payslips,
         documents: rpcData.documents,
-        leave_requests: leaveRequestsResponse.data || [],
-        overtime_records: overtimeResponse.data || [],
-        events: eventsData || [],
+        leave_requests: rpcData.leave_requests || [],
+        overtime_records: rpcData.overtime_records || [],
+        events: rpcData.events || [],
       };
     },
     enabled: !!employee?.id,

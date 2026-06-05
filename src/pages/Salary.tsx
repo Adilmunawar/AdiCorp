@@ -3,7 +3,7 @@ import { useState } from "react";
 import Dashboard from "@/components/layout/Dashboard";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FileSpreadsheet, Download, RefreshCw, History, Save } from "lucide-react";
+import { FileSpreadsheet, Download, RefreshCw, History, Save, Loader2 } from "lucide-react";
 import { useSalaryData } from "@/hooks/useSalaryData";
 import { useSalaryDownloads } from "@/hooks/useSalaryDownloads";
 import SalaryStats from "@/components/salary/SalaryStats";
