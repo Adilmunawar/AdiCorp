@@ -12,7 +12,6 @@ export default function ChatTab() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<string | null>(null);
-  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [messageText, setMessageText] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -42,9 +41,9 @@ export default function ChatTab() {
 
   // Fetch messages for the selected user
   const { data: messages, isLoading: messagesLoading } = useQuery({
-    queryKey: ['chat-messages', selectedUserId],
+    queryKey: ['chat-messages', selectedEmployeeId],
     queryFn: async () => {
-      if (!selectedUserId || !user?.id) return [];
+      if (!selectedEmployeeId || !user?.id) return [];
       const { data, error } = await supabase
         .from('messages')
         .select('*')

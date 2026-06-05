@@ -41,7 +41,7 @@ export default function PortalComplaintsTab() {
       
       const { error } = await supabase.rpc('employee_submit_complaint', {
         p_company_id: employee.company_id,
-        p_emp_id: employee.id,
+        p_emp_id: isAnonymous ? null : employee.id,
         p_subject: subject,
         p_description: description,
         p_is_anonymous: isAnonymous

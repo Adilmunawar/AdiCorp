@@ -17,16 +17,12 @@ export default function PortalChatTab() {
   const { data: adminProfile, isLoading: adminLoading } = useQuery({
     queryKey: ['company-admin', employee?.company_id],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('company_id', employee?.company_id)
-        .eq('is_admin', true)
-        .limit(1)
-        .single();
+      const { data, error } = await supabase.rpc('employee_get_admin_id', {
+        p_company_id: employee?.company_id
+      });
       
       if (error) throw error;
-      return data;
+      return { id: data };
     },
     enabled: !!employee?.company_id
   });
