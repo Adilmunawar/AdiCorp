@@ -5,12 +5,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Check, X, Clock, CalendarDays, Loader2 } from "lucide-react";
+import { Check, X, Clock, CalendarDays, Loader2, Undo2, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMemo, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useActivityLogger } from "@/hooks/useActivityLogger";
+import { dataIntegrationService } from "@/services/dataIntegrationService";
+import { ReportDataService } from "@/services/reportDataService";
 
 export default function LeaveRequestsList() {
   const { userProfile } = useAuth();
@@ -56,8 +58,8 @@ export default function LeaveRequestsList() {
       
       if (status === "approved" && request) {
         const datesToInsert = [];
-        let currentDate = new Date(request.start_date);
-        const endDate = new Date(request.end_date);
+        let currentDate = new Date(request.start_date + "T00:00:00");
+        const endDate = new Date(request.end_date + "T00:00:00");
         
         const dateStrs = [];
         while (currentDate <= endDate) {
@@ -82,6 +84,23 @@ export default function LeaveRequestsList() {
             .from('attendance')
             .insert(datesToInsert);
         }
+      } else if (status === "rejected" && request) {
+        const dateStrs = [];
+        let currentDate = new Date(request.start_date + "T00:00:00");
+        const endDate = new Date(request.end_date + "T00:00:00");
+        while (currentDate <= endDate) {
+          dateStrs.push(format(currentDate, "yyyy-MM-dd"));
+          currentDate.setDate(currentDate.getDate() + 1);
+        }
+        
+        if (dateStrs.length > 0) {
+          await supabase
+            .from('attendance')
+            .update({ status: 'absent' })
+            .eq('employee_id', request.employee_id)
+            .eq('status', 'leave')
+            .in('date', dateStrs);
+        }
       }
       
       if (request) {
@@ -93,10 +112,117 @@ export default function LeaveRequestsList() {
         });
       }
 
+      dataIntegrationService.clearCacheForCompany(userProfile?.company_id || '');
+      ReportDataService.clearCache();
       toast({ title: `Leave request ${status}` });
       queryClient.invalidateQueries({ queryKey: ["leave-requests"] });
     } catch (error: any) {
       toast({ title: "Action failed", description: error.message, variant: "destructive" });
+    } finally {
+      setActingId(null);
+    }
+  };
+
+  const handleUndo = async (id: string) => {
+    if (!window.confirm("Are you sure you want to revert this request to pending? This will remove its associated attendance records.")) return;
+    
+    try {
+      setActingId(id);
+      const request = requests?.find((r: any) => r.id === id);
+      
+      const { error } = await supabase
+        .from("leave_requests")
+        .update({ status: "pending", reviewed_by: null, reviewed_at: null })
+        .eq("id", id);
+
+      if (error) throw error;
+      
+      if (request) {
+        const dateStrs = [];
+        let currentDate = new Date(request.start_date + "T00:00:00");
+        const endDate = new Date(request.end_date + "T00:00:00");
+        while (currentDate <= endDate) {
+          dateStrs.push(format(currentDate, "yyyy-MM-dd"));
+          currentDate.setDate(currentDate.getDate() + 1);
+        }
+        
+        if (dateStrs.length > 0) {
+          await supabase
+            .from('attendance')
+            .update({ status: 'absent' })
+            .eq('employee_id', request.employee_id)
+            .eq('status', 'leave')
+            .in('date', dateStrs);
+        }
+
+        await logActivity({
+          actionType: 'leave_updated',
+          description: `Leave request for ${request.employees?.name} reverted to pending`,
+          details: { employee: request.employees?.name, status: "pending" },
+          priority: 'medium'
+        });
+      }
+
+      dataIntegrationService.clearCacheForCompany(userProfile?.company_id || '');
+      ReportDataService.clearCache();
+      toast({ title: `Leave request reverted to pending` });
+      queryClient.invalidateQueries({ queryKey: ["leave-requests"] });
+    } catch (error: any) {
+      toast({ title: "Undo failed", description: error.message, variant: "destructive" });
+    } finally {
+      setActingId(null);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!window.confirm("Are you sure you want to permanently delete this leave request?")) return;
+    
+    try {
+      setActingId(id);
+      const request = requests?.find((r: any) => r.id === id);
+      
+      // If it was approved, clean up attendance records
+      if (request && request.status === "approved") {
+        const dateStrs = [];
+        let currentDate = new Date(request.start_date + "T00:00:00");
+        const endDate = new Date(request.end_date + "T00:00:00");
+        while (currentDate <= endDate) {
+          dateStrs.push(format(currentDate, "yyyy-MM-dd"));
+          currentDate.setDate(currentDate.getDate() + 1);
+        }
+        
+        if (dateStrs.length > 0) {
+          await supabase
+            .from('attendance')
+            .delete()
+            .eq('employee_id', request.employee_id)
+            .eq('status', 'leave')
+            .in('date', dateStrs);
+        }
+      }
+
+      const { error } = await supabase
+        .from("leave_requests")
+        .delete()
+        .eq("id", id);
+
+      if (error) throw error;
+      
+      if (request) {
+        await logActivity({
+          actionType: 'leave_deleted',
+          description: `Leave request for ${request.employees?.name} deleted`,
+          details: { employee: request.employees?.name, deleted: true },
+          priority: 'medium'
+        });
+      }
+
+      dataIntegrationService.clearCacheForCompany(userProfile?.company_id || '');
+      ReportDataService.clearCache();
+      toast({ title: `Leave request deleted` });
+      queryClient.invalidateQueries({ queryKey: ["leave-requests"] });
+    } catch (error: any) {
+      toast({ title: "Delete failed", description: error.message, variant: "destructive" });
     } finally {
       setActingId(null);
     }
@@ -178,7 +304,7 @@ export default function LeaveRequestsList() {
                   <div className="flex items-center gap-2 mt-1.5 text-[10px] text-muted-foreground font-medium">
                     <span className="flex items-center gap-1 bg-muted/30 px-1.5 py-0.5 rounded border border-border/50">
                       <CalendarDays className="w-3 h-3" />
-                      {format(new Date(req.start_date), "MMM dd")} - {format(new Date(req.end_date), "MMM dd, yyyy")}
+                      {format(new Date(req.start_date + "T00:00:00"), "MMM dd")} - {format(new Date(req.end_date + "T00:00:00"), "MMM dd, yyyy")}
                     </span>
                     <span className="flex items-center gap-1 bg-muted/30 px-1.5 py-0.5 rounded border border-border/50">
                       <Clock className="w-3 h-3" />
@@ -196,13 +322,24 @@ export default function LeaveRequestsList() {
                 }`}>
                   {req.status}
                 </Badge>
-                {isAdmin && req.status === "pending" && (
+                {isAdmin && (
                   <div className="flex gap-1.5">
-                    <Button size="sm" variant="outline" className="h-7 px-2.5 text-[10px] rounded-lg bg-green-500/5 hover:bg-green-500/15 border-green-500/20 text-green-600 shadow-sm" disabled={actingId === req.id} onClick={() => handleAction(req.id, "approved")}>
-                      {actingId === req.id ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <Check className="h-3.5 w-3.5 mr-1" />} Approve
-                    </Button>
-                    <Button size="sm" variant="outline" className="h-7 px-2.5 text-[10px] rounded-lg bg-red-500/5 hover:bg-red-500/15 border-red-500/20 text-red-600 shadow-sm" disabled={actingId === req.id} onClick={() => handleAction(req.id, "rejected")}>
-                      <X className="h-3.5 w-3.5 mr-1" /> Reject
+                    {req.status === "pending" ? (
+                      <>
+                        <Button size="sm" variant="outline" className="h-7 px-2.5 text-[10px] rounded-lg bg-green-500/5 hover:bg-green-500/15 border-green-500/20 text-green-600 shadow-sm" disabled={actingId === req.id} onClick={() => handleAction(req.id, "approved")}>
+                          {actingId === req.id ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <Check className="h-3.5 w-3.5 mr-1" />} Approve
+                        </Button>
+                        <Button size="sm" variant="outline" className="h-7 px-2.5 text-[10px] rounded-lg bg-red-500/5 hover:bg-red-500/15 border-red-500/20 text-red-600 shadow-sm" disabled={actingId === req.id} onClick={() => handleAction(req.id, "rejected")}>
+                          <X className="h-3.5 w-3.5 mr-1" /> Reject
+                        </Button>
+                      </>
+                    ) : (
+                      <Button size="sm" variant="outline" className="h-7 px-2.5 text-[10px] rounded-lg bg-amber-500/5 hover:bg-amber-500/15 border-amber-500/20 text-amber-600 shadow-sm" disabled={actingId === req.id} onClick={() => handleUndo(req.id)}>
+                        <Undo2 className="h-3.5 w-3.5 mr-1" /> Undo
+                      </Button>
+                    )}
+                    <Button size="sm" variant="outline" className="h-7 px-2.5 text-[10px] rounded-lg bg-muted/50 hover:bg-destructive/10 border-border/50 hover:border-destructive/30 hover:text-destructive shadow-sm" disabled={actingId === req.id} onClick={() => handleDelete(req.id)}>
+                      <Trash2 className="h-3.5 w-3.5" />
                     </Button>
                   </div>
                 )}

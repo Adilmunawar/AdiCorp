@@ -31,6 +31,7 @@ const LeaveManagement = lazy(() => import("./pages/LeaveManagement"));
 const OvertimePage = lazy(() => import("./pages/Overtime"));
 const OnboardingPage = lazy(() => import("./pages/Onboarding"));
 const DocumentTracking = lazy(() => import("./pages/DocumentTracking"));
+const Engagement = lazy(() => import("./pages/Engagement"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 // Portal Pages
@@ -38,6 +39,7 @@ const EmployeeLogin = lazy(() => import("./pages/portal/EmployeeLogin"));
 const SetupPassword = lazy(() => import("./pages/portal/SetupPassword"));
 const PortalProfile = lazy(() => import("./pages/portal/PortalProfile"));
 const PortalRecords = lazy(() => import("./pages/portal/PortalRecords"));
+const PortalEngagement = lazy(() => import("./pages/portal/PortalEngagement"));
 const PortalSettings = lazy(() => import("./pages/portal/PortalSettings"));
 
 const queryClient = new QueryClient();
@@ -116,6 +118,7 @@ function AnimatedRoutes() {
               <Route path="/leave-management" element={<PrivateRoute><LeaveManagement /></PrivateRoute>} />
               <Route path="/overtime" element={<PrivateRoute><OvertimePage /></PrivateRoute>} />
               <Route path="/document-tracking" element={<PrivateRoute><DocumentTracking /></PrivateRoute>} />
+              <Route path="/engagement" element={<PrivateRoute><Engagement /></PrivateRoute>} />
               <Route path="/onboarding" element={<PrivateRoute><OnboardingPage /></PrivateRoute>} />
               
               {/* Employee Portal Routes */}
@@ -124,6 +127,7 @@ function AnimatedRoutes() {
               <Route path="/portal" element={<EmployeePrivateRoute><EmployeePortalLayout /></EmployeePrivateRoute>}>
                 <Route path="profile" element={<PortalProfile />} />
                 <Route path="records" element={<PortalRecords />} />
+                <Route path="engagement" element={<PortalEngagement />} />
                 <Route path="settings" element={<PortalSettings />} />
               </Route>
 

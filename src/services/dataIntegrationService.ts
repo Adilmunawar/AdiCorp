@@ -196,7 +196,8 @@ class DataIntegrationService {
         const daysInMonth = eachDayOfInterval({ start: startOfMonth(month), end: endOfMonth(month) });
 
         daysInMonth.forEach(day => {
-          if (isWorkingDayForEmployee(day, workingDaysPerWeek)) {
+          // @ts-ignore
+          if (isWorkingDayForEmployee(day, workingDaysPerWeek, employee.joining_date)) {
              workingDays++;
              const dateStr = format(day, 'yyyy-MM-dd');
              const isEventHoliday = events.some(e => e.date === dateStr);
@@ -287,7 +288,8 @@ class DataIntegrationService {
       const totalWorkingDays = employees.reduce((sum, emp) => {
         // @ts-ignore
         const wd = emp.working_days_per_week || 6;
-        return sum + calculateWorkingDaysInMonth(month, wd);
+        // @ts-ignore
+        return sum + calculateWorkingDaysInMonth(month, wd, emp.joining_date);
       }, 0);
       const avgWorkingDays = totalEmployees > 0 ? Math.round(totalWorkingDays / totalEmployees) : 26;
 

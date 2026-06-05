@@ -21,6 +21,7 @@ interface ImportEmployee {
   phone?: string;
   cnic?: string;
   date_of_birth?: string;
+  joining_date?: string;
   father_name?: string;
   education?: string;
   shift_type?: string;
@@ -37,18 +38,77 @@ export default function EmployeeImportExport({ onImportComplete, employees }: Em
   const { userProfile } = useAuth();
   const { logActivity } = useActivityLogger();
 
+  const parseExcelDate = (val: any): string | undefined => {
+    if (val === undefined || val === null || val === '') return undefined;
+    
+    if (typeof val === 'number') {
+      const date = new Date(Math.round((val - 25569) * 86400 * 1000));
+      return date.toISOString().split('T')[0];
+    }
+    
+    if (typeof val === 'string') {
+      const trimmed = val.trim();
+      
+      const parsed = new Date(trimmed);
+      if (!isNaN(parsed.getTime())) {
+        return parsed.toISOString().split('T')[0];
+      }
+      
+      const parts = trimmed.split(/[-/]/);
+      if (parts.length === 3) {
+        // Check if it looks like DD/MM/YYYY
+        let p0 = parseInt(parts[0], 10);
+        let p1 = parseInt(parts[1], 10);
+        let p2 = parseInt(parts[2], 10);
+        
+        if (!isNaN(p0) && !isNaN(p1) && !isNaN(p2)) {
+          // If first part is > 12, it's probably DD/MM/YYYY
+          // Or if third part is > 31, it's definitely the year
+          let day, month, year;
+          if (p2 > 31) {
+             year = p2;
+             month = p1;
+             day = p0;
+          } else if (p0 > 31) {
+             year = p0;
+             month = p1;
+             day = p2;
+          } else {
+             // fallback to MM/DD/YY or DD/MM/YY
+             day = p0;
+             month = p1;
+             year = p2 < 100 ? p2 + 2000 : p2;
+          }
+          
+          if (month > 12 && day <= 12) {
+             const temp = month;
+             month = day;
+             day = temp;
+          }
+          
+          const manualDate = new Date(Date.UTC(year, month - 1, day));
+          if (!isNaN(manualDate.getTime())) {
+             return manualDate.toISOString().split('T')[0];
+          }
+        }
+      }
+    }
+    return undefined;
+  };
+
   const processJsonData = async (jsonData: ImportEmployee[], sourceName: string) => {
     if (!userProfile?.company_id) throw new Error("Company setup required");
     if (!jsonData.length) throw new Error("No data found");
     
-    const requiredFields = ['name'];
-    const missingFields = requiredFields.filter(field => !jsonData.every(row => row[field as keyof ImportEmployee] !== undefined));
-    if (missingFields.length > 0) throw new Error(`Missing strictly required fields: ${missingFields.join(', ')}`);
+    const requiredFields = ['name', 'joining_date', 'wage_rate'];
+    const missingFields = requiredFields.filter(field => !jsonData.every(row => row[field as keyof ImportEmployee] !== undefined && row[field as keyof ImportEmployee] !== ''));
+    if (missingFields.length > 0) throw new Error(`Missing or empty strictly required fields: ${missingFields.join(', ')}. Please ensure all rows have these columns.`);
     
-    const employeesToInsert = jsonData.map(emp => {
-      // Handle potential empty strings or invalid dates
-      let dob = emp.date_of_birth?.toString().trim();
-      if (dob && !dob.match(/^\d{4}-\d{2}-\d{2}$/)) dob = undefined; // simplistic check, if not YYYY-MM-DD, ignore for bulk import
+    const employeesToInsert = jsonData.map((emp, index) => {
+      let dob = parseExcelDate(emp.date_of_birth);
+      let joining = parseExcelDate(emp.joining_date);
+
+      if (!joining) throw new Error(`Invalid Joining Date for employee at row ${index + 2} (${emp.name})`);
 
       let weekend_saturday = false;
       if (emp.sat_off) {
@@ -61,11 +121,12 @@ export default function EmployeeImportExport({ onImportComplete, employees }: Em
         name: emp.name?.toString().trim() || "Unknown", 
         rank: emp.rank?.toString().trim() || "Employee", 
         wage_rate: emp.wage_rate ? parseFloat(emp.wage_rate.toString()) : 0, 
-        status: emp.status ? emp.status.toString().toLowerCase() : 'active',
+        status: emp.status ? (emp.status.toString().toLowerCase() === 'inactive' ? 'separated' : emp.status.toString().toLowerCase()) : 'active',
         email: emp.email?.toString().trim() || null,
         phone: emp.phone?.toString().trim() || null,
         cnic: emp.cnic?.toString().trim() || null,
         date_of_birth: dob || null,
+        joining_date: joining,
         father_name: emp.father_name?.toString().trim() || null,
         education: emp.education?.toString().trim() || null,
         shift_type: emp.shift_type ? emp.shift_type.toString().trim().toLowerCase() : null,
@@ -92,18 +153,19 @@ export default function EmployeeImportExport({ onImportComplete, employees }: Em
 
   const downloadTemplate = () => {
     const templateData = [{ 
-      name: "Adil Hussain", 
+      name: "[Enter Employee Name]", 
+      joining_date: "2024-01-01",
       rank: "Manager", 
       wage_rate: 50000, 
       status: "active",
-      email: "adil@example.com",
+      email: "email@example.com",
       phone: "03001234567",
       cnic: "35501-0600360-9",
       date_of_birth: "1990-01-01",
-      father_name: "Munawar Ali",
+      father_name: "Father Name",
       education: "Bachelors",
       shift_type: "Morning",
-      bank_name: "Chase",
+      bank_name: "Bank Name",
       bank_account_number: "PK12345678",
       emergency_contact: "03009876543",
       sat_off: "Yes"

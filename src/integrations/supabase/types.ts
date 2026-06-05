@@ -1,4 +1,4 @@
-export type Json =
+﻿export type Json =
   | string
   | number
   | boolean
@@ -55,6 +55,44 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      announcements: {
+        Row: {
+          company_id: string
+          content: string
+          created_at: string
+          created_by: string
+          id: string
+          is_active: boolean | null
+          title: string
+        }
+        Insert: {
+          company_id: string
+          content: string
+          created_at?: string
+          created_by: string
+          id?: string
+          is_active?: boolean | null
+          title: string
+        }
+        Update: {
+          company_id?: string
+          content?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          is_active?: boolean | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "announcements_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
             referencedColumns: ["id"]
           },
         ]
@@ -170,6 +208,54 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: true
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      complaints: {
+        Row: {
+          company_id: string
+          created_at: string
+          description: string
+          employee_id: string | null
+          id: string
+          is_anonymous: boolean | null
+          status: string | null
+          subject: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          description: string
+          employee_id?: string | null
+          id?: string
+          is_anonymous?: boolean | null
+          status?: string | null
+          subject: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          description?: string
+          employee_id?: string | null
+          id?: string
+          is_anonymous?: boolean | null
+          status?: string | null
+          subject?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "complaints_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "complaints_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
             referencedColumns: ["id"]
           },
         ]
@@ -612,6 +698,44 @@ export type Database = {
           },
         ]
       }
+      messages: {
+        Row: {
+          company_id: string
+          content: string
+          created_at: string
+          id: string
+          is_read: boolean | null
+          receiver_id: string
+          sender_id: string
+        }
+        Insert: {
+          company_id: string
+          content: string
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          receiver_id: string
+          sender_id: string
+        }
+        Update: {
+          company_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          is_read?: boolean | null
+          receiver_id?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       monthly_working_days: {
         Row: {
           company_id: string
@@ -857,6 +981,119 @@ export type Database = {
           },
         ]
       }
+      poll_options: {
+        Row: {
+          created_at: string
+          id: string
+          option_text: string
+          poll_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          option_text: string
+          poll_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          option_text?: string
+          poll_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "poll_options_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "polls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      poll_votes: {
+        Row: {
+          created_at: string
+          employee_id: string
+          id: string
+          option_id: string
+          poll_id: string
+        }
+        Insert: {
+          created_at?: string
+          employee_id: string
+          id?: string
+          option_id: string
+          poll_id: string
+        }
+        Update: {
+          created_at?: string
+          employee_id?: string
+          id?: string
+          option_id?: string
+          poll_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "poll_votes_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "poll_votes_option_id_fkey"
+            columns: ["option_id"]
+            isOneToOne: false
+            referencedRelation: "poll_options"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "poll_votes_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "polls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      polls: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string
+          expires_at: string | null
+          id: string
+          question: string
+          status: string | null
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by: string
+          expires_at?: string | null
+          id?: string
+          question: string
+          status?: string | null
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string
+          expires_at?: string | null
+          id?: string
+          question?: string
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "polls_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -1054,6 +1291,10 @@ export type Database = {
         Args: { p_changes: Json; p_emp_id: string }
         Returns: Json
       }
+      update_employee_avatar: {
+        Args: { p_avatar_url: string; p_emp_id: string }
+        Returns: Json
+      }
       update_employee_password: {
         Args: {
           p_emp_id: string
@@ -1215,3 +1456,4 @@ export const Constants = {
     },
   },
 } as const
+

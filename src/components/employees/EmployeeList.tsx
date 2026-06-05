@@ -47,10 +47,15 @@ export default function EmployeeList({ onAddEmployee, onEditEmployee }: Employee
         .from('employees')
         .select('*', { count: 'exact' })
         .eq('company_id', userProfile.company_id)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .order('id', { ascending: true });
 
       if (searchTerm) query = query.or(`name.ilike.%${searchTerm}%,rank.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%,phone.ilike.%${searchTerm}%`);
-      if (statusFilter !== "all") query = query.eq('status', statusFilter);
+      if (statusFilter !== "all") {
+        query = query.eq('status', statusFilter);
+      } else {
+        query = query.neq('status', 'separated');
+      }
       if (shiftFilter !== "all") query = query.eq('shift_type', shiftFilter);
 
       const from = (page - 1) * ITEMS_PER_PAGE;
@@ -63,27 +68,27 @@ export default function EmployeeList({ onAddEmployee, onEditEmployee }: Employee
     enabled: !!userProfile?.company_id,
     placeholderData: keepPreviousData,
   });
-  const { data: companyStats = { payroll: 0, active: 0, inactive: 0 } } = useQuery({
+  const { data: companyStats = { payroll: 0, active: 0, separated: 0 } } = useQuery({
     queryKey: ['company-stats', userProfile?.company_id],
     queryFn: async () => {
-      if (!userProfile?.company_id) return { payroll: 0, active: 0, inactive: 0 };
+      if (!userProfile?.company_id) return { payroll: 0, active: 0, separated: 0 };
       const { data, error } = await supabase
         .from('employees')
         .select('wage_rate, status')
         .eq('company_id', userProfile.company_id);
-      if (error) return { payroll: 0, active: 0, inactive: 0 };
+      if (error) return { payroll: 0, active: 0, separated: 0 };
       
       let payroll = 0;
       let active = 0;
-      let inactive = 0;
+      let separated = 0;
       
       data.forEach(emp => {
         payroll += Number(emp.wage_rate || 0);
         if (emp.status === 'active') active++;
-        else inactive++;
+        else separated++;
       });
       
-      return { payroll, active, inactive };
+      return { payroll, active, separated };
     },
     enabled: !!userProfile?.company_id
   });
@@ -101,15 +106,15 @@ export default function EmployeeList({ onAddEmployee, onEditEmployee }: Employee
   const totalCount = employeeData?.count || 0;
   const totalPages = Math.max(1, Math.ceil(totalCount / ITEMS_PER_PAGE));
 
-  const handleDeleteEmployee = async (employee: EmployeeRow) => {
-    if (!confirm(`Are you sure you want to delete ${employee.name}?`)) return;
+  const handleSeparateEmployee = async (employee: EmployeeRow) => {
+    if (!confirm(`Are you sure you want to mark ${employee.name} as separated? They will no longer appear in active employee lists but their history will be retained.`)) return;
     try {
-      const { error } = await supabase.from('employees').delete().eq('id', employee.id);
+      const { error } = await supabase.from('employees').update({ status: 'separated' }).eq('id', employee.id);
       if (error) throw error;
-      await logEmployeeActivity('delete', employee.name, { employee_id: employee.id, rank: employee.rank, wage_rate: employee.wage_rate, deleted_at: new Date().toISOString() });
+      await logEmployeeActivity('update', employee.name, { employee_id: employee.id, rank: employee.rank, status: 'separated', separated_at: new Date().toISOString() });
       queryClient.invalidateQueries({ queryKey: ['employees'] });
-      toast.success("Employee deleted successfully");
-    } catch (error: any) { console.error("Error deleting employee:", error); toast.error("Failed to delete employee"); }
+      toast.success("Employee marked as separated");
+    } catch (error: any) { console.error("Error separating employee:", error); toast.error("Failed to mark employee as separated"); }
   };
 
   const formatCurrency = (amount: number) => {
@@ -164,10 +169,10 @@ export default function EmployeeList({ onAddEmployee, onEditEmployee }: Employee
             </div>
             <div className="rounded-lg border border-border/50 bg-background/50 p-2.5 shadow-sm flex flex-col justify-center">
               <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Status Split</p>
-              <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mt-1">
-                <div className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-green-500" /><span className="text-[10px] font-bold leading-tight">{companyStats.active} Active</span></div>
-                <div className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/50" /><span className="text-[10px] font-bold text-muted-foreground leading-tight">{companyStats.inactive} Inactive</span></div>
-              </div>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mt-1">
+                  <div className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-green-500" /><span className="text-[10px] font-bold leading-tight">{companyStats.active} Active</span></div>
+                  <div className="flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/50" /><span className="text-[10px] font-bold text-muted-foreground leading-tight">{companyStats.separated} Separated</span></div>
+                </div>
             </div>
             <div className="col-span-2 lg:col-span-1 rounded-lg border border-border/50 bg-background/50 p-2.5 shadow-sm flex flex-col justify-center">
               <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">Total Payroll</p>
@@ -210,9 +215,9 @@ export default function EmployeeList({ onAddEmployee, onEditEmployee }: Employee
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all" className="text-xs">All Status</SelectItem>
+                <SelectItem value="all" className="text-xs">All Working</SelectItem>
                 <SelectItem value="active" className="text-xs">Active</SelectItem>
-                <SelectItem value="inactive" className="text-xs">Inactive</SelectItem>
+                <SelectItem value="separated" className="text-xs">Separated</SelectItem>
               </SelectContent>
             </Select>
             <Select value={shiftFilter} onValueChange={setShiftFilter}>
@@ -309,11 +314,6 @@ export default function EmployeeList({ onAddEmployee, onEditEmployee }: Employee
                             return <Badge variant="outline" className="text-[9px] px-1 py-0 text-muted-foreground"><Calendar className="h-2 w-2 mr-0.5"/> Default</Badge>;
                           }
                         })()}
-                        {employee.weekend_saturday !== null && (
-                          <span className="text-[9px] text-muted-foreground italic flex items-center mt-0.5">
-                            {employee.weekend_saturday ? "Sat OFF" : "Sat ON"}
-                          </span>
-                        )}
                       </div>
                     </TableCell>
                     {userProfile?.is_admin && (
@@ -327,7 +327,7 @@ export default function EmployeeList({ onAddEmployee, onEditEmployee }: Employee
                       </>
                     )}
                     <TableCell className="py-1">
-                      <Badge variant={employee.status === 'active' ? 'default' : 'secondary'} className="capitalize shadow-sm font-semibold text-[9px] px-1 py-0">
+                      <Badge variant={employee.status === 'active' ? 'default' : employee.status === 'separated' ? 'destructive' : 'secondary'} className="capitalize shadow-sm font-semibold text-[9px] px-1 py-0">
                         {employee.status}
                       </Badge>
                     </TableCell>
@@ -350,8 +350,8 @@ export default function EmployeeList({ onAddEmployee, onEditEmployee }: Employee
                             </DropdownMenuItem>
                           )}
                           {userProfile?.is_admin && (
-                            <DropdownMenuItem className="cursor-pointer font-medium py-1.5 rounded-md my-0.5 text-xs text-destructive hover:text-destructive hover:bg-destructive/10 focus:text-destructive focus:bg-destructive/10" onClick={() => handleDeleteEmployee(employee)}>
-                              <Trash2 className="mr-2 h-3.5 w-3.5" /> Remove
+                            <DropdownMenuItem className="cursor-pointer font-medium py-1.5 rounded-md my-0.5 text-xs text-amber-600 hover:text-amber-700 hover:bg-amber-500/10 focus:text-amber-700 focus:bg-amber-500/10" onClick={() => handleSeparateEmployee(employee)}>
+                              <Trash2 className="mr-2 h-3.5 w-3.5" /> Separate
                             </DropdownMenuItem>
                           )}
                         </DropdownMenuContent>

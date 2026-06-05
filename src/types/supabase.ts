@@ -27,4 +27,4 @@ export type ActivityLogUpdate = Database['public']['Tables']['activity_logs']['U
 
 // Define custom types
 export type AttendanceStatus = 'present' | 'short_leave' | 'leave';
-export type EmployeeStatus = 'active' | 'inactive';
+export type EmployeeStatus = 'active' | 'separated';

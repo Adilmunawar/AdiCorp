@@ -1,7 +1,7 @@
 import React from "react";
 import { Navigate, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useEmployeeAuth } from "@/context/EmployeeAuthContext";
-import { User, FileText, Settings as SettingsIcon } from "lucide-react";
+import { User, FileText, Settings as SettingsIcon, MessageCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function EmployeePrivateRoute({ children }: { children?: React.ReactNode }) {
@@ -26,6 +26,7 @@ export function EmployeePortalLayout() {
   const navItems = [
     { path: "/portal/profile", label: "Profile", icon: User },
     { path: "/portal/records", label: "Records", icon: FileText },
+    { path: "/portal/engagement", label: "Connect", icon: MessageCircle },
     { path: "/portal/settings", label: "Settings", icon: SettingsIcon },
   ];
 

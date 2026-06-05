@@ -8,6 +8,7 @@ interface RawReportData {
     name: string;
     rank: string;
     wage_rate: number;
+    joining_date?: string | null;
     salary_divisor?: number | null;
     working_days_per_week?: number | null;
     weekend_saturday?: boolean | null;
@@ -94,7 +95,7 @@ export class ReportDataService {
     // Per-employee divisor and expected working days
     const workingDaysPerWeek = employee.working_days_per_week || 6;
     const effectiveDivisor = getEffectiveSalaryDivisor(employee.salary_divisor, workingDaysPerWeek);
-    const expectedWorkingDays = calculateWorkingDaysInMonth(month, workingDaysPerWeek);
+    const expectedWorkingDays = calculateWorkingDaysInMonth(month, workingDaysPerWeek, employee.joining_date);
 
     const dailyRate = monthlySalary / effectiveDivisor;
     const actualWorkingDays = presentDays + leaveDays + pendingLeaveDays + (shortLeaveDays * 0.5);
@@ -170,7 +171,7 @@ export class ReportDataService {
       // Single optimized query for employees
       const { data: employees, error: employeesError } = await supabase
         .from("employees")
-        .select("id, name, rank, wage_rate, salary_divisor, working_days_per_week, weekend_saturday")
+        .select("id, name, rank, wage_rate, joining_date, salary_divisor, working_days_per_week, weekend_saturday")
         .eq("company_id", companyId)
         .eq("status", "active");
 

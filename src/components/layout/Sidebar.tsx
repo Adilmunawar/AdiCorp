@@ -2,7 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import { 
   Calendar, Users, BarChart, Settings, Clock, ChartPie,
   UserCog, LogOut, Home, Shield, FileText, ChevronLeft,
-  ChevronRight, Lock, CalendarDays, Timer, ChevronsLeft, ChevronsRight
+  ChevronRight, Lock, CalendarDays, Timer, ChevronsLeft, ChevronsRight, MessageCircle
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ADICORP_LOGO_PATH } from "@/lib/branding";
@@ -20,6 +20,7 @@ const navItems = [
   { name: "Attendance", icon: Clock, path: "/attendance", group: "main" },
   { name: "Leave Management", icon: CalendarDays, path: "/leave-management", group: "hr" },
   { name: "Documents", icon: FileText, path: "/document-tracking", group: "hr" },
+  { name: "Engagement", icon: MessageCircle, path: "/engagement", group: "hr" },
   { name: "Salary", icon: BarChart, path: "/salary", group: "finance" },
   { name: "Overtime", icon: Timer, path: "/overtime", group: "finance" },
   { name: "Reports", icon: ChartPie, path: "/reports", group: "finance" },

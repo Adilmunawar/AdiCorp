@@ -30,10 +30,11 @@ const employeeSchema = z.object({
   rank: z.string().min(1, "Rank is required"), 
   wage_rate: z.number().min(0, "Wage rate must be positive"),
   shift_type: z.enum(["Morning", "Evening", "Night"]).optional().or(z.literal("")),
-  status: z.enum(["active", "inactive"]).default("active"),
+  status: z.enum(["active", "separated"]).default("active"),
   bank_name: z.string().optional().or(z.literal("")),
   bank_account_number: z.string().optional().or(z.literal("")),
   saturday_schedule: z.enum(["follow_company", "force_off", "force_on"]).default("follow_company"),
+  joining_date: z.string().min(1, "Joining date is required"),
 });
 
 type EmployeeFormData = z.infer<typeof employeeSchema>;
@@ -75,7 +76,8 @@ export default function EmployeeForm({ employee, onSuccess, onCancel, isOpen, on
     defaultValues: { 
       name: "", email: "", phone: "", cnic: "", date_of_birth: "", father_name: "", education: "", emergency_contact: "",
       rank: "", wage_rate: 0, shift_type: "", status: "active",
-      bank_name: "", bank_account_number: "", saturday_schedule: "follow_company" 
+      bank_name: "", bank_account_number: "", saturday_schedule: "follow_company",
+      joining_date: new Date().toISOString().split('T')[0]
     },
   });
 
@@ -97,16 +99,18 @@ export default function EmployeeForm({ employee, onSuccess, onCancel, isOpen, on
         rank: currentEmployee.rank || "", 
         wage_rate: currentEmployee.wage_rate || 0, 
         shift_type: (currentEmployee.shift_type as any) || "",
-        status: currentEmployee.status === "inactive" ? "inactive" : "active",
+        status: currentEmployee.status === "separated" ? "separated" : "active",
         bank_name: currentEmployee.bank_name || "",
         bank_account_number: currentEmployee.bank_account_number || "",
-        saturday_schedule: schedule
+        saturday_schedule: schedule,
+        joining_date: currentEmployee.joining_date || new Date().toISOString().split('T')[0]
       });
     } else {
       form.reset({ 
         name: "", email: "", phone: "", cnic: "", date_of_birth: "", father_name: "", education: "", emergency_contact: "",
         rank: "", wage_rate: 0, shift_type: "", status: "active",
-        bank_name: "", bank_account_number: "", saturday_schedule: "follow_company" 
+        bank_name: "", bank_account_number: "", saturday_schedule: "follow_company",
+        joining_date: new Date().toISOString().split('T')[0]
       });
       setCnicFile(null); setDegreeFile(null); setContractFile(null);
     }
@@ -148,6 +152,7 @@ export default function EmployeeForm({ employee, onSuccess, onCancel, isOpen, on
       date_of_birth: data.date_of_birth || null, father_name: data.father_name, education: data.education, emergency_contact: data.emergency_contact,
       rank: data.rank, wage_rate: data.wage_rate, shift_type: data.shift_type ? data.shift_type.toLowerCase() : null, status: data.status,
       bank_name: data.bank_name, bank_account_number: data.bank_account_number,
+      joining_date: data.joining_date,
       weekend_saturday, weekend_sunday: true
     };
 
@@ -266,12 +271,15 @@ export default function EmployeeForm({ employee, onSuccess, onCancel, isOpen, on
                   <FormMessage />
                 </FormItem>
               )} />
+              <FormField control={form.control} name="joining_date" render={({ field }) => (
+                <FormItem className="space-y-1"><FormLabel className="text-[10px]">Joining Date *</FormLabel><FormControl><Input type="date" {...field} className="rounded-lg bg-muted/20 h-8 text-[11px]" /></FormControl><FormMessage /></FormItem>
+              )} />
               <FormField control={form.control} name="status" render={({ field }) => (
                 <FormItem className="space-y-1">
                   <FormLabel className="text-[10px]">Status</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl><SelectTrigger className="rounded-lg bg-muted/20 h-8 text-[11px]"><SelectValue placeholder="Select status" /></SelectTrigger></FormControl>
-                    <SelectContent><SelectItem value="active" className="text-[11px]">Active</SelectItem><SelectItem value="inactive" className="text-[11px]">Inactive</SelectItem></SelectContent>
+                    <SelectContent><SelectItem value="active" className="text-[11px]">Active</SelectItem><SelectItem value="separated" className="text-[11px]">Separated</SelectItem></SelectContent>
                   </Select>
                   <FormMessage />
                 </FormItem>

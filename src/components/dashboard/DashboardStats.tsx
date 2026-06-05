@@ -80,6 +80,7 @@ export default function DashboardStats() {
 
       const totalEmployees = employees?.length || 0;
       const activeEmployees = employees?.filter(emp => emp.status === 'active').length || 0;
+      const separatedEmployees = employees?.filter(emp => emp.status === 'separated').length || 0;
       
       const onLeaveEmployeeIds = new Set(todayLeaves?.map(lr => lr.employee_id) || []);
       let todayAttendanceCount = 0;
@@ -150,6 +151,7 @@ export default function DashboardStats() {
       return { 
         totalEmployees, 
         activeEmployees, 
+        separatedEmployees,
         todayAttendance: todayAttendanceCount, 
         yesterdayAttendance: yesterdayAttendanceCount,
         monthlyAttendance: reportData.stats.averageAttendance, 
@@ -191,7 +193,7 @@ export default function DashboardStats() {
   if (!stats) return null;
 
   const statCards = [
-    { title: "Total Employees", value: stats.totalEmployees, description: `${stats.activeEmployees} active`, icon: Users, accent: "from-teal-500/10 to-emerald-500/10", iconBg: "bg-teal-500/10", iconColor: "text-teal-600", trend: "neutral" as const, trendValue: "", progress: stats.activeEmployees, progressMax: stats.totalEmployees },
+    { title: "Total Employees", value: stats.totalEmployees, description: `${stats.activeEmployees} active, ${stats.separatedEmployees} separated`, icon: Users, accent: "from-teal-500/10 to-emerald-500/10", iconBg: "bg-teal-500/10", iconColor: "text-teal-600", trend: "neutral" as const, trendValue: "", progress: stats.activeEmployees, progressMax: stats.totalEmployees },
     { title: "Today's Attendance", value: stats.todayAttendance, description: `${stats.attendanceRate}% monthly rate`, icon: UserCheck, accent: "from-blue-500/10 to-cyan-500/10", iconBg: "bg-blue-500/10", iconColor: "text-blue-600", trend: stats.todayAttendance > stats.yesterdayAttendance ? "up" as const : stats.todayAttendance < stats.yesterdayAttendance ? "down" as const : "neutral" as const, trendValue: `${Math.abs(stats.todayAttendance - stats.yesterdayAttendance)}`, progress: stats.todayAttendance, progressMax: stats.activeEmployees || 1 },
     { title: "Calculated Wages", value: formatCurrency(stats.monthlyWageCalculated), description: "MTD Actual", icon: DollarSign, accent: "from-green-500/10 to-lime-500/10", iconBg: "bg-green-500/10", iconColor: "text-green-600", trend: "up" as const, trendValue: "On Track", progress: Math.min(Math.round((stats.monthlyWageCalculated / (stats.totalWageRate * 30 || 1)) * 100), 100), progressMax: 100 },
     { title: "Monthly Wage Budget", value: formatCurrency(stats.totalWageRate), description: "Max possible", icon: DollarSign, accent: "from-blue-500/10 to-indigo-500/10", iconBg: "bg-blue-500/10", iconColor: "text-blue-600", trend: "neutral" as const, trendValue: "", progress: 0, progressMax: 0 },
