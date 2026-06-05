@@ -1,4 +1,4 @@
-export type AttendanceStatusValue = "present" | "short_leave" | "absent";
+export type AttendanceStatusValue = "present" | "short_leave" | "absent" | "leave";
 
 export interface AttendanceRecord {
   id?: string;
@@ -12,4 +12,5 @@ export const ATTENDANCE_STATUS_OPTIONS: Array<{ value: AttendanceStatusValue; la
   { value: "present", label: "Present (Full Day)" },
   { value: "short_leave", label: "Short Leave (Half Day)" },
   { value: "absent", label: "Absent" },
+  { value: "leave", label: "Leave (Approved)" },
 ];

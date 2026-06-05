@@ -58,7 +58,7 @@ export default function PortalProfile() {
       {/* Ultra-Premium Centered Header Card */}
       <Card className="border-none shadow-xl shadow-primary/20 bg-gradient-to-br from-primary via-primary/90 to-primary/80 text-primary-foreground rounded-[2rem] overflow-hidden relative">
         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 mix-blend-overlay pointer-events-none" />
-        
+
         <CardContent className="p-4 sm:p-5 relative z-10 flex flex-col items-center text-center">
           <div className="mb-3">
             <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-md text-white flex items-center justify-center text-xl font-black shadow-lg border-2 border-white/20 overflow-hidden ring-4 ring-black/5 transition-transform hover:scale-105 duration-500">
@@ -69,7 +69,7 @@ export default function PortalProfile() {
               )}
             </div>
           </div>
-          
+
           <div className="flex items-center justify-center gap-2 mb-1.5 mt-0">
             <h2 className="text-lg font-black text-white drop-shadow-sm tracking-tight">{profile.name}</h2>
             <div className="w-1.5 h-1.5 rounded-full bg-white/30"></div>
@@ -77,7 +77,7 @@ export default function PortalProfile() {
               {profile.rank || "Employee"}
             </p>
           </div>
-          
+
           {data.company && (
             <div className="flex items-center gap-1.5 mt-1">
               {data.company.logo_url && (
@@ -126,7 +126,7 @@ export default function PortalProfile() {
         <div className="space-y-3">
           {data.events && data.events.length > 0 ? (
             data.events
-              .filter((e: any) => new Date(e.date) >= new Date(new Date().setHours(0,0,0,0)))
+              .filter((e: any) => new Date(e.date) >= new Date(new Date().setHours(0, 0, 0, 0)))
               .sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime())
               .slice(0, 3)
               .map((event: any) => (
@@ -143,7 +143,7 @@ export default function PortalProfile() {
                     </div>
                   </div>
                 </Card>
-            ))
+              ))
           ) : (
             <Card className="border-border/30 border-dashed shadow-none rounded-3xl bg-muted/20">
               <CardContent className="p-6 flex flex-col items-center justify-center text-center">
@@ -175,8 +175,8 @@ export default function PortalProfile() {
                 className="h-12 bg-muted/50 rounded-xl border-transparent focus:border-primary"
               />
             </div>
-            <Button 
-              onClick={handleSubmitUpdate} 
+            <Button
+              onClick={handleSubmitUpdate}
               disabled={isSubmitting || editValue === editingField?.value || !editValue}
               className="w-full h-11 rounded-xl shadow-md font-bold"
             >

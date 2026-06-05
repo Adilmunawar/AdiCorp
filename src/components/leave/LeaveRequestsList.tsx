@@ -42,12 +42,46 @@ export default function LeaveRequestsList() {
   const handleAction = async (id: string, status: "approved" | "rejected") => {
     try {
       setActingId(id);
+      
+      const request = requests?.find((r: any) => r.id === id);
+      
       const { error } = await supabase
         .from("leave_requests")
         .update({ status, reviewed_by: userProfile!.id, reviewed_at: new Date().toISOString() })
         .eq("id", id);
 
       if (error) throw error;
+      
+      if (status === "approved" && request) {
+        const datesToInsert = [];
+        let currentDate = new Date(request.start_date);
+        const endDate = new Date(request.end_date);
+        
+        const dateStrs = [];
+        while (currentDate <= endDate) {
+          const dateStr = format(currentDate, "yyyy-MM-dd");
+          dateStrs.push(dateStr);
+          datesToInsert.push({
+            employee_id: request.employee_id,
+            date: dateStr,
+            status: "leave"
+          });
+          currentDate.setDate(currentDate.getDate() + 1);
+        }
+        
+        if (datesToInsert.length > 0) {
+          await supabase
+            .from('attendance')
+            .delete()
+            .eq('employee_id', request.employee_id)
+            .in('date', dateStrs);
+            
+          await supabase
+            .from('attendance')
+            .insert(datesToInsert);
+        }
+      }
+
       toast({ title: `Leave request ${status}` });
       queryClient.invalidateQueries({ queryKey: ["leave-requests"] });
     } catch (error: any) {

@@ -19,7 +19,7 @@ import { useNavigate } from "react-router-dom";
 import { ATTENDANCE_STATUS_OPTIONS, AttendanceRecord, AttendanceStatusValue } from "@/components/attendance/types";
 
 const isAttendanceStatus = (value: string): value is AttendanceStatusValue => {
-  return ["present", "short_leave", "absent"].includes(value);
+  return ["present", "short_leave", "absent", "leave"].includes(value);
 };
 
 export default function AttendanceTable() {
@@ -57,14 +57,32 @@ export default function AttendanceTable() {
       const employeeIds = employees.map(emp => emp.id);
       const { data: attendanceRecords, error } = await supabase.from('attendance').select('*').eq('date', dateString).in('employee_id', employeeIds);
       if (error && error.code !== 'PGRST116') throw error;
+      
+      const { data: leaveRequests } = await supabase
+        .from('leave_requests')
+        .select('employee_id')
+        .eq('company_id', userProfile.company_id)
+        .eq('status', 'approved')
+        .lte('start_date', dateString)
+        .gte('end_date', dateString);
+      
+      const onLeaveEmployeeIds = new Set(leaveRequests?.map(lr => lr.employee_id) || []);
       const attendanceMap = new Map((attendanceRecords || []).map(record => [record.employee_id, record]));
+      
       const data = employees.map(employee => {
         const existingRecord = attendanceMap.get(employee.id);
-        const normalizedStatus = existingRecord?.status && isAttendanceStatus(existingRecord.status)
-          ? existingRecord.status
-          : "absent";
+        const isOnLeave = onLeaveEmployeeIds.has(employee.id);
+        
+        let normalizedStatus = "absent";
+        if (existingRecord?.status && isAttendanceStatus(existingRecord.status)) {
+          normalizedStatus = existingRecord.status;
+        }
+        
+        if (isOnLeave && (!existingRecord || normalizedStatus === 'absent')) {
+          normalizedStatus = "leave";
+        }
 
-        return { id: existingRecord?.id, employeeId: employee.id, employeeName: employee.name, date: dateString, status: normalizedStatus };
+        return { id: existingRecord?.id, employeeId: employee.id, employeeName: employee.name, date: dateString, status: normalizedStatus as AttendanceStatusValue };
       });
       setAttendanceData(data);
 
@@ -130,6 +148,7 @@ export default function AttendanceTable() {
       case 'present': return <Badge variant="default">Present</Badge>;
       case 'short_leave': return <Badge variant="secondary">Short Leave</Badge>;
       case 'absent': return <Badge variant="destructive">Absent</Badge>;
+      case 'leave': return <Badge variant="outline" className="bg-amber-100 text-amber-800 border-amber-300">Leave</Badge>;
       default: return null;
     }
   };
@@ -144,9 +163,10 @@ export default function AttendanceTable() {
         if (curr.status === "present") acc.present++;
         else if (curr.status === "short_leave") acc.shortLeave++;
         else if (curr.status === "absent") acc.absent++;
+        else if (curr.status === "leave") acc.leave++;
         return acc;
       },
-      { present: 0, absent: 0, shortLeave: 0 }
+      { present: 0, absent: 0, shortLeave: 0, leave: 0 }
     );
   }, [attendanceData]);
 
@@ -215,7 +235,7 @@ export default function AttendanceTable() {
             </div>
           </div>
           
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-2 pt-2 border-t border-border/30">
+          <div className="grid grid-cols-2 md:grid-cols-6 gap-2 pt-2 border-t border-border/30">
             <div className="bg-background border border-border/40 rounded-lg p-2 flex flex-col justify-center shadow-sm">
               <span className="text-[9px] uppercase font-bold text-muted-foreground">Coverage</span>
               <div className="flex items-end gap-1 mt-0.5">
@@ -231,6 +251,11 @@ export default function AttendanceTable() {
               <div className="absolute top-0 right-0 w-8 h-8 bg-amber-500/10 rounded-bl-full" />
               <span className="text-[9px] uppercase font-bold text-muted-foreground">Short Leave</span>
               <span className="text-sm font-bold text-amber-600 mt-0.5">{summary.shortLeave}</span>
+            </div>
+            <div className="bg-background border border-amber-300/40 rounded-lg p-2 flex flex-col justify-center shadow-sm relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-8 h-8 bg-amber-300/20 rounded-bl-full" />
+              <span className="text-[9px] uppercase font-bold text-muted-foreground">Leave</span>
+              <span className="text-sm font-bold text-amber-700 mt-0.5">{summary.leave}</span>
             </div>
             <div className="bg-background border border-red-500/20 rounded-lg p-2 flex flex-col justify-center shadow-sm relative overflow-hidden">
               <div className="absolute top-0 right-0 w-8 h-8 bg-red-500/10 rounded-bl-full" />
@@ -320,8 +345,12 @@ export default function AttendanceTable() {
                             >Present</button>
                             <button 
                               onClick={() => handleStatusChange(record.employeeId, 'short_leave')} 
-                              className={`px-2.5 py-1 text-[10px] font-bold rounded-md transition-all ${record.status === 'short_leave' ? 'bg-amber-500 text-white shadow-sm' : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'}`}
+                              className={`px-2.5 py-1 text-[10px] font-bold rounded-md transition-all ${record.status === 'short_leave' ? 'bg-orange-500 text-white shadow-sm' : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'}`}
                             >Short</button>
+                            <button 
+                              onClick={() => handleStatusChange(record.employeeId, 'leave')} 
+                              className={`px-2.5 py-1 text-[10px] font-bold rounded-md transition-all ${record.status === 'leave' ? 'bg-amber-400 text-amber-950 shadow-sm' : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'}`}
+                            >Leave</button>
                             <button 
                               onClick={() => handleStatusChange(record.employeeId, 'absent')} 
                               className={`px-2.5 py-1 text-[10px] font-bold rounded-md transition-all ${record.status === 'absent' ? 'bg-red-500 text-white shadow-sm' : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'}`}

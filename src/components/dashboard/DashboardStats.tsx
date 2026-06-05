@@ -68,9 +68,33 @@ export default function DashboardStats() {
 
       if (attendanceError) throw attendanceError;
 
+      const { data: todayLeaves, error: leavesError } = await supabase
+        .from('leave_requests')
+        .select('employee_id')
+        .eq('company_id', userProfile.company_id)
+        .eq('status', 'approved')
+        .lte('start_date', todayString)
+        .gte('end_date', todayString);
+
+      if (leavesError) throw leavesError;
+
       const totalEmployees = employees?.length || 0;
       const activeEmployees = employees?.filter(emp => emp.status === 'active').length || 0;
-      const todayAttendanceCount = todayAttendance?.filter(a => a.status === 'present' || a.status === 'late').length || 0;
+      
+      const onLeaveEmployeeIds = new Set(todayLeaves?.map(lr => lr.employee_id) || []);
+      let todayAttendanceCount = 0;
+      
+      employees?.forEach(emp => {
+        if (emp.status !== 'active') return;
+        const att = todayAttendance?.find(a => a.employee_id === emp.id);
+        if (att) {
+          if (att.status === 'present' || att.status === 'late' || att.status === 'leave') {
+            todayAttendanceCount++;
+          }
+        } else if (onLeaveEmployeeIds.has(emp.id)) {
+          todayAttendanceCount++;
+        }
+      });
 
       // Use ReportDataService for accurate, identical math as the Salary section
       const reportData = await ReportDataService.fetchReportData(userProfile.company_id, new Date());
