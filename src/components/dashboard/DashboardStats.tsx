@@ -113,10 +113,45 @@ export default function DashboardStats() {
       // Monthly Average Attendance Rate (Average days attended per employee / Days passed so far)
       const attendanceRate = Math.min(Math.round((reportData.stats.averageAttendance / uniqueDatesPassed) * 100), 100);
 
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayString = format(yesterday, 'yyyy-MM-dd');
+
+      const { data: yesterdayAttendance } = await supabase
+        .from('attendance')
+        .select(`id, employee_id, status, employees!inner(company_id)`)
+        .eq('employees.company_id', userProfile.company_id)
+        .eq('date', yesterdayString)
+        .neq('status', 'not_set');
+
+      const { data: yesterdayLeaves } = await supabase
+        .from('leave_requests')
+        .select('employee_id')
+        .eq('company_id', userProfile.company_id)
+        .eq('status', 'approved')
+        .lte('start_date', yesterdayString)
+        .gte('end_date', yesterdayString);
+        
+      const onLeaveYesterdayIds = new Set(yesterdayLeaves?.map(lr => lr.employee_id) || []);
+      let yesterdayAttendanceCount = 0;
+      
+      employees?.forEach(emp => {
+        if (emp.status !== 'active') return;
+        const att = yesterdayAttendance?.find(a => a.employee_id === emp.id);
+        if (att) {
+          if (att.status === 'present' || att.status === 'late' || att.status === 'leave') {
+            yesterdayAttendanceCount++;
+          }
+        } else if (onLeaveYesterdayIds.has(emp.id)) {
+          yesterdayAttendanceCount++;
+        }
+      });
+
       return { 
         totalEmployees, 
         activeEmployees, 
         todayAttendance: todayAttendanceCount, 
+        yesterdayAttendance: yesterdayAttendanceCount,
         monthlyAttendance: reportData.stats.averageAttendance, 
         totalWageRate: reportData.stats.totalBudgetSalary, 
         attendanceRate,
@@ -157,7 +192,7 @@ export default function DashboardStats() {
 
   const statCards = [
     { title: "Total Employees", value: stats.totalEmployees, description: `${stats.activeEmployees} active`, icon: Users, accent: "from-teal-500/10 to-emerald-500/10", iconBg: "bg-teal-500/10", iconColor: "text-teal-600", trend: "neutral" as const, trendValue: "", progress: stats.activeEmployees, progressMax: stats.totalEmployees },
-    { title: "Today's Attendance", value: stats.todayAttendance, description: `${stats.attendanceRate}% monthly rate`, icon: UserCheck, accent: "from-blue-500/10 to-cyan-500/10", iconBg: "bg-blue-500/10", iconColor: "text-blue-600", trend: stats.todayAttendance > 0 ? "up" as const : "neutral" as const, trendValue: `${stats.activeEmployees > 0 ? Math.round((stats.todayAttendance / stats.activeEmployees) * 100) : 0}%`, progress: stats.todayAttendance, progressMax: stats.activeEmployees || 1 },
+    { title: "Today's Attendance", value: stats.todayAttendance, description: `${stats.attendanceRate}% monthly rate`, icon: UserCheck, accent: "from-blue-500/10 to-cyan-500/10", iconBg: "bg-blue-500/10", iconColor: "text-blue-600", trend: stats.todayAttendance > stats.yesterdayAttendance ? "up" as const : stats.todayAttendance < stats.yesterdayAttendance ? "down" as const : "neutral" as const, trendValue: `${Math.abs(stats.todayAttendance - stats.yesterdayAttendance)}`, progress: stats.todayAttendance, progressMax: stats.activeEmployees || 1 },
     { title: "Calculated Wages", value: formatCurrency(stats.monthlyWageCalculated), description: "MTD Actual", icon: DollarSign, accent: "from-green-500/10 to-lime-500/10", iconBg: "bg-green-500/10", iconColor: "text-green-600", trend: "up" as const, trendValue: "On Track", progress: Math.min(Math.round((stats.monthlyWageCalculated / (stats.totalWageRate * 30 || 1)) * 100), 100), progressMax: 100 },
     { title: "Monthly Wage Budget", value: formatCurrency(stats.totalWageRate), description: "Max possible", icon: DollarSign, accent: "from-blue-500/10 to-indigo-500/10", iconBg: "bg-blue-500/10", iconColor: "text-blue-600", trend: "neutral" as const, trendValue: "", progress: 0, progressMax: 0 },
     { title: "Current Date", value: format(new Date(), "MMM dd"), description: format(new Date(), "yyyy"), icon: Clock, accent: "from-orange-500/10 to-amber-500/10", iconBg: "bg-orange-500/10", iconColor: "text-orange-600", trend: "neutral" as const, trendValue: format(new Date(), "EEEE"), progress: 0, progressMax: 0 },

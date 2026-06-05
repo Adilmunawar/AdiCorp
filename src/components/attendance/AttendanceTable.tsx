@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/components/ui/use-toast";
-import { Loader2, Save, Calendar as CalendarIcon, ChevronLeft, ChevronRight, CalendarDays, Search } from "lucide-react";
+import { Loader2, Save, Calendar as CalendarIcon, ChevronLeft, ChevronRight, CalendarDays, Search, Lock } from "lucide-react";
 import { EmployeeRow } from "@/types/supabase";
 import { useNavigate } from "react-router-dom";
 import { ATTENDANCE_STATUS_OPTIONS, AttendanceRecord, AttendanceStatusValue } from "@/components/attendance/types";
@@ -82,7 +82,14 @@ export default function AttendanceTable() {
           normalizedStatus = "leave";
         }
 
-        return { id: existingRecord?.id, employeeId: employee.id, employeeName: employee.name, date: dateString, status: normalizedStatus as AttendanceStatusValue };
+        return { 
+          id: existingRecord?.id, 
+          employeeId: employee.id, 
+          employeeName: employee.name, 
+          date: dateString, 
+          status: normalizedStatus as AttendanceStatusValue,
+          isLocked: isOnLeave
+        };
       });
       setAttendanceData(data);
 
@@ -116,10 +123,10 @@ export default function AttendanceTable() {
 
   const handleDateChange = (newDate: Date) => setDate(newDate);
   const handleStatusChange = (employeeId: string, status: AttendanceStatusValue) => {
-    setAttendanceData(prev => prev.map(item => item.employeeId === employeeId ? { ...item, status } : item));
+    setAttendanceData(prev => prev.map(item => item.employeeId === employeeId && !item.isLocked ? { ...item, status } : item));
   };
   const applyStatusToAll = (status: AttendanceStatusValue) => {
-    setAttendanceData((prev) => prev.map((item) => ({ ...item, status })));
+    setAttendanceData((prev) => prev.map((item) => !item.isLocked ? { ...item, status } : item));
   };
 
   const saveAttendance = async () => {
@@ -336,6 +343,13 @@ export default function AttendanceTable() {
                             <span className="px-3 py-1 text-[10px] font-bold text-muted-foreground">
                               {activeEvent ? "Event Active" : "Disabled (Off-Day)"}
                             </span>
+                          </div>
+                        ) : record.isLocked ? (
+                          <div className="flex items-center gap-0.5 border border-amber-500/30 rounded-lg p-0.5 bg-amber-500/5 shadow-sm w-fit opacity-80 cursor-not-allowed" title="Locked (Approved Leave) - Go to Leave Management to modify">
+                            <button disabled className="px-2.5 py-1 text-[10px] font-bold rounded-md text-muted-foreground opacity-50 cursor-not-allowed">Present</button>
+                            <button disabled className="px-2.5 py-1 text-[10px] font-bold rounded-md text-muted-foreground opacity-50 cursor-not-allowed">Short</button>
+                            <button disabled className="px-1.5 py-1 text-[10px] font-bold rounded-md bg-amber-400 text-amber-950 shadow-sm flex items-center gap-1 cursor-not-allowed"><Lock className="w-2.5 h-2.5" />Leave</button>
+                            <button disabled className="px-2.5 py-1 text-[10px] font-bold rounded-md text-muted-foreground opacity-50 cursor-not-allowed">Absent</button>
                           </div>
                         ) : (
                           <div className="flex items-center gap-0.5 border border-border/60 rounded-lg p-0.5 bg-muted/10 shadow-sm w-fit">

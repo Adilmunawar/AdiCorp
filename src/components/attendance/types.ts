@@ -6,6 +6,7 @@ export interface AttendanceRecord {
   employeeName: string;
   date: string;
   status: AttendanceStatusValue;
+  isLocked?: boolean;
 }
 
 export const ATTENDANCE_STATUS_OPTIONS: Array<{ value: AttendanceStatusValue; label: string }> = [
