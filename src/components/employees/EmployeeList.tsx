@@ -297,13 +297,18 @@ export default function EmployeeList({ onAddEmployee, onEditEmployee }: Employee
                     </TableCell>
                     <TableCell className="py-1">
                       <div className="flex flex-col gap-0.5 items-start">
-                        {employee.salary_divisor === 26 ? (
-                          <Badge variant="secondary" className="text-[9px] px-1 py-0 bg-blue-500/10 text-blue-600 hover:bg-blue-500/20"><Calendar className="h-2 w-2 mr-0.5"/> 6 Days</Badge>
-                        ) : employee.salary_divisor === 22 ? (
-                          <Badge variant="secondary" className="text-[9px] px-1 py-0 bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20"><Calendar className="h-2 w-2 mr-0.5"/> 5 Days</Badge>
-                        ) : (
-                          <Badge variant="outline" className="text-[9px] px-1 py-0 text-muted-foreground"><Calendar className="h-2 w-2 mr-0.5"/> Default</Badge>
-                        )}
+                        {(() => {
+                          const is5Days = employee.weekend_saturday === true || (employee.weekend_saturday === null && employee.salary_divisor === 22);
+                          const is6Days = employee.weekend_saturday === false || (employee.weekend_saturday === null && employee.salary_divisor === 26);
+                          
+                          if (is5Days) {
+                            return <Badge variant="secondary" className="text-[9px] px-1 py-0 bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20"><Calendar className="h-2 w-2 mr-0.5"/> 5 Days</Badge>;
+                          } else if (is6Days) {
+                            return <Badge variant="secondary" className="text-[9px] px-1 py-0 bg-blue-500/10 text-blue-600 hover:bg-blue-500/20"><Calendar className="h-2 w-2 mr-0.5"/> 6 Days</Badge>;
+                          } else {
+                            return <Badge variant="outline" className="text-[9px] px-1 py-0 text-muted-foreground"><Calendar className="h-2 w-2 mr-0.5"/> Default</Badge>;
+                          }
+                        })()}
                         {employee.weekend_saturday !== null && (
                           <span className="text-[9px] text-muted-foreground italic flex items-center mt-0.5">
                             {employee.weekend_saturday ? "Sat OFF" : "Sat ON"}

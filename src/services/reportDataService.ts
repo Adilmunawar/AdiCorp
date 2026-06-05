@@ -10,6 +10,7 @@ interface RawReportData {
     wage_rate: number;
     salary_divisor?: number | null;
     working_days_per_week?: number | null;
+    weekend_saturday?: boolean | null;
   }>;
   attendance: Array<{
     employee_id: string;
@@ -91,8 +92,18 @@ export class ReportDataService {
     const monthlySalary = Number(employee.wage_rate) || 0;
     
     // Per-employee divisor and expected working days
-    const workingDaysPerWeek = employee.working_days_per_week || 6; // Default to 6-day week if not set
-    const effectiveDivisor = getEffectiveSalaryDivisor(employee.salary_divisor, workingDaysPerWeek);
+    let workingDaysPerWeek = employee.working_days_per_week || 6;
+    let explicitDivisor = employee.salary_divisor;
+    
+    if (employee.weekend_saturday === true) {
+      workingDaysPerWeek = 5;
+      if (explicitDivisor === 26) explicitDivisor = 22;
+    } else if (employee.weekend_saturday === false) {
+      workingDaysPerWeek = 6;
+      if (explicitDivisor === 22) explicitDivisor = 26;
+    }
+
+    const effectiveDivisor = getEffectiveSalaryDivisor(explicitDivisor, workingDaysPerWeek);
     const expectedWorkingDays = calculateWorkingDaysInMonth(month, workingDaysPerWeek);
 
     const dailyRate = monthlySalary / effectiveDivisor;
@@ -169,7 +180,7 @@ export class ReportDataService {
       // Single optimized query for employees
       const { data: employees, error: employeesError } = await supabase
         .from("employees")
-        .select("id, name, rank, wage_rate, salary_divisor, working_days_per_week")
+        .select("id, name, rank, wage_rate, salary_divisor, working_days_per_week, weekend_saturday")
         .eq("company_id", companyId)
         .eq("status", "active");
 

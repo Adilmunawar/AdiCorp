@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { useToast } from "@/components/ui/use-toast";
+import { useActivityLogger } from "@/hooks/useActivityLogger";
 import { Loader2, Save, Calendar as CalendarIcon, ChevronLeft, ChevronRight, CalendarDays, Search, Lock } from "lucide-react";
 import { EmployeeRow } from "@/types/supabase";
 import { useNavigate } from "react-router-dom";
@@ -23,8 +24,8 @@ const isAttendanceStatus = (value: string): value is AttendanceStatusValue => {
 };
 
 export default function AttendanceTable() {
-  const [date, setDate] = useState<Date>(new Date());
   const [employees, setEmployees] = useState<EmployeeRow[]>([]);
+  const [date, setDate] = useState<Date>(new Date());
   const [attendanceData, setAttendanceData] = useState<AttendanceRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -32,6 +33,7 @@ export default function AttendanceTable() {
   const [activeEvent, setActiveEvent] = useState<any>(null);
   const { userProfile } = useAuth();
   const { toast } = useToast();
+  const { logActivity } = useActivityLogger();
   const navigate = useNavigate();
 
   const fetchEmployees = async () => {
@@ -144,6 +146,14 @@ export default function AttendanceTable() {
       if (updates.length === 0) { toast({ title: "No attendance to save", description: "Please mark attendance for at least one employee.", variant: "destructive" }); return; }
       const { error } = await supabase.from('attendance').upsert(updates, { onConflict: 'employee_id,date', ignoreDuplicates: false });
       if (error) throw error;
+      
+      await logActivity({
+        actionType: 'attendance_save',
+        description: `Saved attendance for ${updates.length} employees on ${format(date, 'MMM dd, yyyy')}`,
+        details: { count: updates.length, date: format(date, 'yyyy-MM-dd') },
+        priority: 'low'
+      });
+      
       toast({ title: "Attendance saved", description: `Saved attendance for ${updates.length} employees.` });
       await fetchAttendance(date);
     } catch (error) { toast({ title: "Error saving attendance", description: "Please try again.", variant: "destructive" }); }

@@ -10,11 +10,13 @@ import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMemo, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { useActivityLogger } from "@/hooks/useActivityLogger";
 
 export default function LeaveRequestsList() {
   const { userProfile } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { logActivity } = useActivityLogger();
   const isAdmin = userProfile?.is_admin;
   const [statusFilter, setStatusFilter] = useState("all");
   const [actingId, setActingId] = useState<string | null>(null);
@@ -80,6 +82,15 @@ export default function LeaveRequestsList() {
             .from('attendance')
             .insert(datesToInsert);
         }
+      }
+      
+      if (request) {
+        await logActivity({
+          actionType: status === 'approved' ? 'leave_approved' : 'leave_rejected',
+          description: `Leave request ${status} for ${request.employees?.name}`,
+          details: { employee: request.employees?.name, status, dates: `${request.start_date} to ${request.end_date}` },
+          priority: status === 'approved' ? 'low' : 'medium'
+        });
       }
 
       toast({ title: `Leave request ${status}` });

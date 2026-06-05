@@ -2,9 +2,26 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
-import { Activity, Clock, LogIn, UserPlus, FileText } from "lucide-react";
+import { Activity, Clock, LogIn, UserPlus, FileText, CheckCircle, Upload, Download, Edit, Trash2, Settings, Calendar, Shield, RefreshCw, AlertCircle } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
+
+const actionIcons: Record<string, any> = {
+  'employee_import': Upload, 'employee_export': Download, 'employee_create': UserPlus,
+  'employee_update': Edit, 'employee_delete': Trash2, 'settings_update': Settings,
+  'working_days_update': Calendar, 'event_create': Shield, 'event_update': Shield,
+  'event_delete': Shield, 'attendance_bulk_update': RefreshCw, 'attendance_save': CheckCircle,
+  'company_setup': Settings, 'system_backup': Download, 'password_change': AlertCircle, 'leave_approved': CheckCircle, 'leave_rejected': AlertCircle, 'default': Activity,
+};
+
+const actionColors: Record<string, string> = {
+  'employee_import': 'text-green-500 bg-green-500/10', 'employee_export': 'text-blue-500 bg-blue-500/10', 'employee_create': 'text-emerald-500 bg-emerald-500/10',
+  'employee_update': 'text-yellow-500 bg-yellow-500/10', 'employee_delete': 'text-red-500 bg-red-500/10', 'settings_update': 'text-purple-500 bg-purple-500/10',
+  'working_days_update': 'text-orange-500 bg-orange-500/10', 'event_create': 'text-cyan-500 bg-cyan-500/10', 'event_update': 'text-indigo-500 bg-indigo-500/10',
+  'event_delete': 'text-pink-500 bg-pink-500/10', 'attendance_bulk_update': 'text-teal-500 bg-teal-500/10', 'attendance_save': 'text-emerald-600 bg-emerald-600/10',
+  'company_setup': 'text-violet-500 bg-violet-500/10', 'system_backup': 'text-gray-500 bg-gray-500/10', 'password_change': 'text-red-600 bg-red-600/10', 
+  'leave_approved': 'text-green-600 bg-green-600/10', 'leave_rejected': 'text-red-600 bg-red-600/10', 'default': 'text-slate-500 bg-slate-500/10',
+};
 
 export default function ActivityFeed() {
   const { userProfile } = useAuth();
@@ -14,45 +31,36 @@ export default function ActivityFeed() {
     queryFn: async () => {
       if (!userProfile?.company_id) return [];
       
-      // We will mock this or fetch recent attendance and employees as "activity" since there isn't a dedicated activity table
-      const { data: employees } = await supabase
-        .from('employees')
-        .select('id, name, created_at')
+      const { data: logs, error } = await supabase
+        .from('activity_logs')
+        .select(`id, action_type, description, details, created_at, profiles (first_name, last_name)`)
         .eq('company_id', userProfile.company_id)
         .order('created_at', { ascending: false })
-        .limit(3);
-
-      const { data: attendance } = await supabase
-        .from('attendance')
-        .select(`id, status, created_at, employees (name)`)
-        .eq('employees.company_id', userProfile.company_id)
-        .order('created_at', { ascending: false })
-        .limit(4);
-
-      const items = [
-        ...(employees?.map(e => ({
-          id: `emp-${e.id}`,
-          type: 'new_employee',
-          title: 'New Employee Added',
-          description: `${e.name} joined the company`,
-          time: new Date(e.created_at || new Date()),
-          icon: UserPlus,
-          color: 'text-blue-500',
-          bg: 'bg-blue-500/10'
-        })) || []),
-        ...(attendance?.map(a => ({
-          id: `att-${a.id}`,
-          type: 'attendance',
-          title: `Attendance Marked: ${a.status}`,
-          description: `${a.employees?.name || 'Employee'} marked as ${a.status}`,
-          time: new Date(a.created_at || new Date()),
-          icon: Clock,
-          color: 'text-emerald-500',
-          bg: 'bg-emerald-500/10'
-        })) || [])
-      ];
-
-      return items.sort((a, b) => b.time.getTime() - a.time.getTime()).slice(0, 5);
+        .limit(6);
+        
+      if (error) throw error;
+      
+      return logs?.map(log => {
+        const Icon = actionIcons[log.action_type] || actionIcons.default;
+        const colorClasses = actionColors[log.action_type] || actionColors.default;
+        const [textColor, bgColor] = colorClasses.split(' ');
+        
+        let title = log.action_type.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+        if (log.action_type === 'attendance_save') title = "Attendance Marked";
+        else if (log.action_type === 'leave_approved') title = "Leave Approved";
+        else if (log.action_type === 'leave_rejected') title = "Leave Rejected";
+        else if (log.action_type === 'employee_create') title = "New Employee Added";
+        
+        return {
+          id: log.id,
+          title,
+          description: log.description,
+          time: new Date(log.created_at || new Date()),
+          icon: Icon,
+          color: textColor,
+          bg: bgColor
+        };
+      }) || [];
     },
     enabled: !!userProfile?.company_id,
   });
