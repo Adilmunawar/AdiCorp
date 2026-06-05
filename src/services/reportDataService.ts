@@ -92,18 +92,8 @@ export class ReportDataService {
     const monthlySalary = Number(employee.wage_rate) || 0;
     
     // Per-employee divisor and expected working days
-    let workingDaysPerWeek = employee.working_days_per_week || 6;
-    let explicitDivisor = employee.salary_divisor;
-    
-    if (employee.weekend_saturday === true) {
-      workingDaysPerWeek = 5;
-      if (explicitDivisor === 26) explicitDivisor = 22;
-    } else if (employee.weekend_saturday === false) {
-      workingDaysPerWeek = 6;
-      if (explicitDivisor === 22) explicitDivisor = 26;
-    }
-
-    const effectiveDivisor = getEffectiveSalaryDivisor(explicitDivisor, workingDaysPerWeek);
+    const workingDaysPerWeek = employee.working_days_per_week || 6;
+    const effectiveDivisor = getEffectiveSalaryDivisor(employee.salary_divisor, workingDaysPerWeek);
     const expectedWorkingDays = calculateWorkingDaysInMonth(month, workingDaysPerWeek);
 
     const dailyRate = monthlySalary / effectiveDivisor;

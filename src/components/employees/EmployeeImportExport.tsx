@@ -27,6 +27,7 @@ interface ImportEmployee {
   bank_name?: string;
   bank_account_number?: string;
   emergency_contact?: string;
+  sat_off?: string | boolean;
 }
 
 export default function EmployeeImportExport({ onImportComplete, employees }: EmployeeImportExportProps) {
@@ -49,6 +50,12 @@ export default function EmployeeImportExport({ onImportComplete, employees }: Em
       let dob = emp.date_of_birth?.toString().trim();
       if (dob && !dob.match(/^\d{4}-\d{2}-\d{2}$/)) dob = undefined; // simplistic check, if not YYYY-MM-DD, ignore for bulk import
 
+      let weekend_saturday = false;
+      if (emp.sat_off) {
+        const val = emp.sat_off.toString().trim().toLowerCase();
+        if (val === 'yes' || val === 'true' || val === '1') weekend_saturday = true;
+      }
+
       return { 
         company_id: userProfile.company_id,
         name: emp.name?.toString().trim() || "Unknown", 
@@ -64,7 +71,8 @@ export default function EmployeeImportExport({ onImportComplete, employees }: Em
         shift_type: emp.shift_type ? emp.shift_type.toString().trim().toLowerCase() : null,
         bank_name: emp.bank_name?.toString().trim() || null,
         bank_account_number: emp.bank_account_number?.toString().trim() || null,
-        emergency_contact: emp.emergency_contact?.toString().trim() || null
+        emergency_contact: emp.emergency_contact?.toString().trim() || null,
+        weekend_saturday
       };
     });
     
@@ -97,14 +105,15 @@ export default function EmployeeImportExport({ onImportComplete, employees }: Em
       shift_type: "Morning",
       bank_name: "Chase",
       bank_account_number: "PK12345678",
-      emergency_contact: "03009876543"
+      emergency_contact: "03009876543",
+      sat_off: "Yes"
     }];
     const wb = XLSX.utils.book_new(); const ws = XLSX.utils.json_to_sheet(templateData);
     // Auto-fit columns roughly
     ws['!cols'] = [
       { width: 20 }, { width: 15 }, { width: 15 }, { width: 10 }, { width: 25 },
       { width: 15 }, { width: 20 }, { width: 15 }, { width: 20 }, { width: 15 },
-      { width: 15 }, { width: 20 }, { width: 25 }, { width: 20 }
+      { width: 15 }, { width: 20 }, { width: 25 }, { width: 20 }, { width: 10 }
     ];
     XLSX.utils.book_append_sheet(wb, ws, "Employee Template"); XLSX.writeFile(wb, "employee_import_template.xlsx");
     toast.success("Template downloaded", { description: "Use this template to import your employees" });
@@ -150,17 +159,6 @@ export default function EmployeeImportExport({ onImportComplete, employees }: Em
       }
 
       const exportData = allEmployees.map(emp => {
-        let workingDays = emp.working_days_per_week || 6;
-        let divisor = emp.salary_divisor || (workingDays === 5 ? 22 : 26);
-        
-        if (emp.weekend_saturday === true) {
-          workingDays = 5;
-          if (divisor === 26) divisor = 22;
-        } else if (emp.weekend_saturday === false) {
-          workingDays = 6;
-          if (divisor === 22) divisor = 26;
-        }
-
         return { 
           "Name": emp.name, 
           "Rank": emp.rank, 
@@ -176,9 +174,9 @@ export default function EmployeeImportExport({ onImportComplete, employees }: Em
           "Bank Name": emp.bank_name || "",
           "Bank Account": emp.bank_account_number || "",
           "Emergency Contact": emp.emergency_contact || "",
-          "Working Days": workingDays,
+          "Working Days": emp.working_days_per_week || 6,
           "Sat OFF": emp.weekend_saturday ? "Yes" : "No",
-          "Salary Divisor": divisor,
+          "Salary Divisor": emp.salary_divisor || "",
           "Joined": new Date(emp.created_at).toLocaleDateString() 
         };
       });
