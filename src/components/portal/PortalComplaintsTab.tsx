@@ -125,14 +125,14 @@ export default function PortalComplaintsTab() {
           {myComplaints.map(comp => (
             <Card key={comp.id} className="border-0 shadow-sm bg-white">
               <CardContent className="p-4">
-                <div className="flex justify-between items-start mb-2">
-                  <h4 className="font-semibold text-sm">{comp.subject}</h4>
-                  <Badge variant="outline" className={
+                <div className="flex justify-between items-start mb-2 gap-3">
+                  <h4 className="font-semibold text-sm leading-tight">{comp.subject}</h4>
+                  <Badge variant="outline" className={`whitespace-nowrap ${
                     comp.status === 'resolved' ? 'border-green-200 text-green-700 bg-green-50' :
                     comp.status === 'investigating' ? 'border-blue-200 text-blue-700 bg-blue-50' :
-                    'border-amber-200 text-amber-700 bg-amber-50'
-                  }>
-                    {comp.status}
+                    'border-amber-200 text-amber-700 bg-amber-50 animate-pulse'
+                  }`}>
+                    {comp.status === 'pending' ? 'In Queue' : comp.status}
                   </Badge>
                 </div>
                 <p className="text-xs text-slate-500 mb-2 line-clamp-2">{comp.description}</p>

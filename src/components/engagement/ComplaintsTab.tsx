@@ -55,14 +55,18 @@ export default function ComplaintsTab() {
     return <div className="flex justify-center p-8"><Loader2 className="animate-spin text-primary" /></div>;
   }
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'pending': return <Badge variant="secondary" className="bg-amber-100 text-amber-800"><Clock size={12} className="mr-1"/> Pending</Badge>;
-      case 'investigating': return <Badge variant="secondary" className="bg-blue-100 text-blue-800"><Search size={12} className="mr-1"/> Investigating</Badge>;
-      case 'resolved': return <Badge variant="secondary" className="bg-green-100 text-green-800"><CheckCircle2 size={12} className="mr-1"/> Resolved</Badge>;
-      default: return null;
-    }
-  };
+    const getStatusBadge = (status: string) => {
+      switch (status) {
+        case 'pending': return (
+          <Badge variant="secondary" className="bg-amber-100 text-amber-800 border border-amber-200 shadow-sm animate-pulse">
+            <Clock size={12} className="mr-1"/> New / Pending
+          </Badge>
+        );
+        case 'investigating': return <Badge variant="secondary" className="bg-blue-100 text-blue-800 border border-blue-200"><Search size={12} className="mr-1"/> Investigating</Badge>;
+        case 'resolved': return <Badge variant="secondary" className="bg-green-100 text-green-800 border border-green-200"><CheckCircle2 size={12} className="mr-1"/> Resolved</Badge>;
+        default: return null;
+      }
+    };
 
   return (
     <div className="space-y-6">

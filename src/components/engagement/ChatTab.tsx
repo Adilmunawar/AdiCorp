@@ -39,6 +39,41 @@ export default function ChatTab() {
     enabled: !!profile?.company_id
   });
 
+  // Fetch unread messages for admin
+  const { data: unreadMessages } = useQuery({
+    queryKey: ['admin-unread-messages', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const { data, error } = await supabase
+        .from('messages')
+        .select('sender_id')
+        .eq('receiver_id', user.id)
+        .eq('is_read', false);
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user?.id,
+    refetchInterval: 3000
+  });
+
+  // Mark as read effect
+  useEffect(() => {
+    if (selectedEmployeeId && user?.id) {
+      const hasUnreadFromSelected = unreadMessages?.some(m => m.sender_id === selectedEmployeeId);
+      if (hasUnreadFromSelected) {
+        supabase.from('messages')
+          .update({ is_read: true })
+          .eq('receiver_id', user.id)
+          .eq('sender_id', selectedEmployeeId)
+          .eq('is_read', false)
+          .then(() => {
+            queryClient.invalidateQueries({ queryKey: ['admin-unread-messages'] });
+            queryClient.invalidateQueries({ queryKey: ['chat-messages', selectedEmployeeId] });
+          });
+      }
+    }
+  }, [selectedEmployeeId, user?.id, unreadMessages, queryClient]);
+
   // Fetch messages for the selected user
   const { data: messages, isLoading: messagesLoading } = useQuery({
     queryKey: ['chat-messages', selectedEmployeeId],
@@ -131,32 +166,42 @@ export default function ChatTab() {
             <div className="flex justify-center p-4"><Loader2 className="animate-spin text-slate-400" /></div>
           ) : (
             <div className="p-2 space-y-1">
-              {filteredEmployees.map(emp => (
-                <button
-                  key={emp.id}
-                  onClick={() => {
-                    setSelectedEmployeeId(emp.id);
-                  }}
-                  className={`w-full flex items-center gap-3 p-3 rounded-lg text-left transition-colors ${
-                    selectedEmployeeId === emp.id 
-                      ? 'bg-blue-50 text-blue-700' 
-                      : 'hover:bg-slate-100 text-slate-700'
-                  }`}
-                >
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
-                    selectedEmployeeId === emp.id ? 'bg-blue-200 text-blue-700' : 'bg-slate-200 text-slate-500'
-                  }`}>
-                    <User size={18} />
-                  </div>
-                  <div className="overflow-hidden">
-                    <h4 className="font-medium text-sm truncate">{emp.name}</h4>
-                    <p className={`text-xs truncate ${selectedEmployeeId === emp.id ? 'text-blue-500' : 'text-slate-500'}`}>
-                      {emp.rank}
-                    </p>
-                  </div>
-                  {/* Unread indicator could go here if we fetch unread counts */}
-                </button>
-              ))}
+              {filteredEmployees.map(emp => {
+                const unreadCount = unreadMessages?.filter(m => m.sender_id === emp.id).length || 0;
+                
+                return (
+                  <button
+                    key={emp.id}
+                    onClick={() => {
+                      setSelectedEmployeeId(emp.id);
+                    }}
+                    className={`w-full flex items-center justify-between p-3 rounded-lg text-left transition-colors ${
+                      selectedEmployeeId === emp.id 
+                        ? 'bg-blue-50 border border-blue-100 shadow-sm' 
+                        : 'hover:bg-slate-100 border border-transparent'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3 overflow-hidden">
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
+                        selectedEmployeeId === emp.id ? 'bg-blue-500 text-white' : 'bg-slate-200 text-slate-600'
+                      }`}>
+                        <User size={18} />
+                      </div>
+                      <div className="overflow-hidden">
+                        <h4 className="font-medium text-sm truncate">{emp.name}</h4>
+                        <p className={`text-xs truncate ${selectedEmployeeId === emp.id ? 'text-blue-500' : 'text-slate-500'}`}>
+                          {emp.rank}
+                        </p>
+                      </div>
+                    </div>
+                    {unreadCount > 0 && (
+                      <div className="bg-[#00a884] text-white text-[10px] font-bold h-5 min-w-[20px] px-1.5 flex items-center justify-center rounded-full shrink-0">
+                        {unreadCount}
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
             </div>
           )}
         </ScrollArea>
@@ -196,15 +241,22 @@ export default function ChatTab() {
                   const isMe = msg.sender_id === user?.id;
                   return (
                     <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
-                      <div className={`relative max-w-[75%] px-3 py-1.5 shadow-sm ${
+                      <div className={`relative max-w-[80%] px-3 py-1.5 shadow-sm ${
                         isMe 
                           ? 'bg-[#d9fdd3] text-[#111b21] rounded-2xl rounded-tr-sm' 
                           : 'bg-white text-[#111b21] rounded-2xl rounded-tl-sm'
                       }`}>
-                        <p className="text-[14.5px] leading-snug whitespace-pre-wrap pr-12 pb-1.5">{msg.content}</p>
-                        <span className="text-[10px] text-slate-500 absolute bottom-1.5 right-2">
-                          {format(new Date(msg.created_at), 'HH:mm')}
-                        </span>
+                        <p className="text-[14.5px] leading-snug whitespace-pre-wrap pr-16 pb-2">{msg.content}</p>
+                        <div className="absolute bottom-1 right-2 flex items-center gap-1">
+                          <span className="text-[10px] text-slate-500 leading-none">
+                            {format(new Date(msg.created_at), 'HH:mm')}
+                          </span>
+                          {isMe && (
+                            <span className={`text-[14px] leading-none ${msg.is_read ? 'text-[#53bdeb]' : 'text-slate-400'}`}>
+                              ✓✓
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
                   );

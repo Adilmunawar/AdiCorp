@@ -45,12 +45,26 @@ export default function PortalChatTab() {
   // Remove realtime subscription as it requires Supabase Auth.
   // We use refetchInterval in useQuery instead to poll for new messages safely.
 
-  // Scroll to bottom
+  // Mark messages as read and scroll to bottom
   useEffect(() => {
+    if (messages && messages.length > 0 && adminProfile?.id && employee?.id) {
+      // Mark as read via RPC
+      const hasUnreadFromAdmin = messages.some((m: any) => m.sender_id === adminProfile.id && !m.is_read);
+      if (hasUnreadFromAdmin) {
+        supabase.rpc('employee_mark_chat_read', {
+          p_emp_id: employee.id,
+          p_sender_id: adminProfile.id
+        }).then(() => {
+          queryClient.invalidateQueries({ queryKey: ['portal-unread-counts'] });
+          queryClient.invalidateQueries({ queryKey: ['portal-chat'] });
+        });
+      }
+    }
+
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages]);
+  }, [messages, adminProfile?.id, employee?.id, queryClient]);
 
   const sendMutation = useMutation({
     mutationFn: async () => {
@@ -114,10 +128,17 @@ export default function PortalChatTab() {
                     ? 'bg-[#d9fdd3] text-[#111b21] rounded-2xl rounded-tr-sm' 
                     : 'bg-white text-[#111b21] rounded-2xl rounded-tl-sm'
                 }`}>
-                  <p className="text-[14.5px] leading-snug whitespace-pre-wrap pr-12 pb-1.5">{msg.content}</p>
-                  <span className="text-[10px] text-slate-500 absolute bottom-1.5 right-2">
-                    {format(new Date(msg.created_at), 'HH:mm')}
-                  </span>
+                  <p className="text-[14.5px] leading-snug whitespace-pre-wrap pr-16 pb-2">{msg.content}</p>
+                  <div className="absolute bottom-1 right-2 flex items-center gap-1">
+                    <span className="text-[10px] text-slate-500 leading-none">
+                      {format(new Date(msg.created_at), 'HH:mm')}
+                    </span>
+                    {isMe && (
+                      <span className={`text-[14px] leading-none ${msg.is_read ? 'text-[#53bdeb]' : 'text-slate-400'}`}>
+                        ✓✓
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
             );
