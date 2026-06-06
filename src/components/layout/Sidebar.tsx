@@ -98,6 +98,22 @@ export default function Sidebar({ collapsed, mobileOpen, onToggleCollapse }: Sid
     enabled: !!user,
   });
 
+  const { data: unreadMessagesCount } = useQuery({
+    queryKey: ['sidebar-engagement-unread', user?.id],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from('messages')
+        .select('*', { count: 'exact', head: true })
+        .eq('receiver_id', user?.id)
+        .eq('is_read', false);
+        
+      if (error) return 0;
+      return count || 0;
+    },
+    enabled: !!user?.id,
+    refetchInterval: 5000 // Poll every 5s for the sidebar badge
+  });
+
   const NavItem = ({ item }: { item: typeof navItems[0] }) => {
     const isActive = item.path === "/dashboard"
       ? location.pathname === item.path
@@ -129,6 +145,11 @@ export default function Sidebar({ collapsed, mobileOpen, onToggleCollapse }: Sid
         {!compact && item.name === "Employee Updates" && (pendingUpdatesCount ?? 0) > 0 && (
           <span className="ml-auto bg-blue-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center shadow-sm animate-pulse">
             {pendingUpdatesCount}
+          </span>
+        )}
+        {!compact && item.name === "Engagement" && (unreadMessagesCount ?? 0) > 0 && (
+          <span className="ml-auto bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full min-w-[20px] text-center shadow-sm animate-pulse">
+            {unreadMessagesCount}
           </span>
         )}
       </Link>
