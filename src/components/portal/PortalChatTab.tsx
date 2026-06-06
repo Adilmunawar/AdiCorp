@@ -114,7 +114,7 @@ export default function PortalChatTab() {
         ref={scrollRef}
         className="flex-1 overflow-y-auto p-4 space-y-3"
       >
-        {messagesLoading ? (
+        {messagesLoading && !messages?.length ? (
           <div className="flex justify-center p-8"><Loader2 className="animate-spin text-[#00a884]" /></div>
         ) : messages?.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-slate-500 space-y-2 bg-white/50 mx-4 rounded-2xl p-6 backdrop-blur-sm">
@@ -134,20 +134,6 @@ export default function PortalChatTab() {
                     ? `bg-primary text-primary-foreground rounded-2xl ${isFirstInGroup ? 'rounded-tr-sm' : ''}` 
                     : `bg-white text-slate-800 rounded-2xl border border-slate-100 ${isFirstInGroup ? 'rounded-tl-sm' : ''}`
                 }`}>
-                  {/* Message Tail SVG */}
-                  {isFirstInGroup && isMe && (
-                    <svg viewBox="0 0 8 13" width="8" height="13" className="absolute top-0 -right-[7px] text-primary">
-                      <path opacity=".13" fill="#0000000" d="M1.533 3.118L8 12.114V1.913a1.914 1.914 0 0 0-1.913-1.913H.123c-1.393 0-2.035 1.745-.98 2.668l2.39 2.45z"></path>
-                      <path fill="currentColor" d="M1.533 2.568L8 11.564V1.363a1.364 1.364 0 0 0-1.363-1.363H.123c-1.393 0-2.035 1.745-.98 2.668l2.39 2.45z"></path>
-                    </svg>
-                  )}
-                  {isFirstInGroup && !isMe && (
-                    <svg viewBox="0 0 8 13" width="8" height="13" className="absolute top-0 -left-[7px] text-white transform -scale-x-100">
-                      <path opacity=".13" fill="#0000000" d="M1.533 3.118L8 12.114V1.913a1.914 1.914 0 0 0-1.913-1.913H.123c-1.393 0-2.035 1.745-.98 2.668l2.39 2.45z"></path>
-                      <path fill="currentColor" d="M1.533 2.568L8 11.564V1.363a1.364 1.364 0 0 0-1.363-1.363H.123c-1.393 0-2.035 1.745-.98 2.668l2.39 2.45z"></path>
-                    </svg>
-                  )}
-                  
                   <p className="text-[14.5px] leading-snug whitespace-pre-wrap pr-16 pb-2 break-words">{msg.content}</p>
                   <div className="absolute bottom-1 right-2 flex items-center gap-1">
                     <span className={`text-[10px] leading-none select-none ${isMe ? 'text-primary-foreground/80' : 'text-slate-500'}`}>

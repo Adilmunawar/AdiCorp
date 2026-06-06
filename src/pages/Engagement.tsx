@@ -56,16 +56,10 @@ export default function Engagement() {
   return (
     <Dashboard title="Engagement">
       <PageTransition>
-        <div className="space-y-6 p-4 lg:p-6 bg-background min-h-screen">
-          <div className="pb-4 border-b border-border/40">
-            <h1 className="text-2xl font-black text-foreground tracking-tight">Engagement & Communication</h1>
-            <p className="text-xs text-muted-foreground mt-1 font-medium">
-              Connect with employees, handle issues, and gather feedback.
-            </p>
-          </div>
+        <div className="space-y-4 p-4 lg:p-6 bg-background h-[calc(100vh-80px)] flex flex-col overflow-hidden">
 
-        <Tabs defaultValue="chat" className="w-full">
-          <TabsList className="grid grid-cols-4 w-full max-w-2xl mb-8 bg-slate-100/50 p-1.5 rounded-xl border border-border/50 shadow-sm backdrop-blur-sm">
+        <Tabs defaultValue="chat" className="w-full flex-1 flex flex-col min-h-0">
+          <TabsList className="grid grid-cols-4 w-full max-w-2xl mb-4 bg-slate-100/50 p-1.5 rounded-xl border border-border/50 shadow-sm backdrop-blur-sm shrink-0">
             <TabsTrigger value="chat" className="relative flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-sm rounded-lg py-2 transition-all">
               <MessageCircle size={16} />
               <span className="hidden sm:inline font-semibold">Direct Chat</span>
@@ -94,22 +88,19 @@ export default function Engagement() {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="chat" className="focus-visible:outline-none">
-            <ChatTab />
-          </TabsContent>
-
-          <TabsContent value="complaints" className="focus-visible:outline-none">
-            <ComplaintsTab />
-          </TabsContent>
-
-          <TabsContent value="polls" className="focus-visible:outline-none">
-            <PollsTab />
-          </TabsContent>
-
-          <TabsContent value="announcements" className="focus-visible:outline-none">
-            <AnnouncementsTab />
-          </TabsContent>
-        </Tabs>
+            <TabsContent value="chat" className="mt-0 flex-1 min-h-0 focus-visible:ring-0 focus-visible:outline-none">
+              <ChatTab />
+            </TabsContent>
+            <TabsContent value="complaints" className="mt-0 flex-1 min-h-0 overflow-y-auto focus-visible:ring-0 focus-visible:outline-none">
+              <ComplaintsTab />
+            </TabsContent>
+            <TabsContent value="polls" className="mt-0 flex-1 min-h-0 overflow-y-auto focus-visible:ring-0 focus-visible:outline-none">
+              <PollsTab />
+            </TabsContent>
+            <TabsContent value="announcements" className="mt-0 flex-1 min-h-0 overflow-y-auto focus-visible:ring-0 focus-visible:outline-none">
+              <AnnouncementsTab />
+            </TabsContent>
+          </Tabs>
         </div>
       </PageTransition>
     </Dashboard>
