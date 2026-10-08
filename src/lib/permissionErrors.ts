@@ -57,14 +57,16 @@ export const parsePermissionError = (
 
   if (!isRlsOrPermissionError) return null;
 
-  const needsCompanySetup =
+  // Staff pages only open once the company exists (RequireStaff), so a refusal on a company table
+  // means the role may not do this, not that setup is missing.
+  const companyData =
     (table ? COMPANY_SETUP_TABLES.has(table) : false) ||
     full.includes("company_id") ||
     full.includes("company setup");
 
-  const description = needsCompanySetup
-    ? "You don't have access yet. Next steps: 1) Complete company setup in Settings. 2) If already done, ask an admin to grant the required permissions."
-    : "You don't have permission for this action. Next steps: ask your admin to grant access, then try again.";
+  const description = companyData
+    ? "Your role can't make this change. If you need it, ask the workspace owner."
+    : "You don't have permission for this action. If you need it, ask the workspace owner.";
 
   return {
     title: "Action blocked by permissions",

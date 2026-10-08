@@ -1,19 +1,29 @@
-import * as React from "react"
+import * as React from "react";
 
-const MOBILE_BREAKPOINT = 768
+const MOBILE_BREAKPOINT = 768;
 
-export function useIsMobile() {
-  const [isMobile, setIsMobile] = React.useState<boolean | undefined>(undefined)
+function query(maxWidth: number) {
+  return `(max-width: ${maxWidth - 1}px)`;
+}
+
+/** True below `breakpoint` px. Reads matchMedia synchronously so the first render already has the right layout. */
+export function useMediaBelow(breakpoint: number) {
+  const [below, setBelow] = React.useState<boolean>(() =>
+    typeof window !== "undefined" ? window.matchMedia(query(breakpoint)).matches : false,
+  );
 
   React.useEffect(() => {
-    const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`)
-    const onChange = () => {
-      setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
-    }
-    mql.addEventListener("change", onChange)
-    setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
-    return () => mql.removeEventListener("change", onChange)
-  }, [])
+    const mql = window.matchMedia(query(breakpoint));
+    const onChange = () => setBelow(mql.matches);
+    onChange();
+    mql.addEventListener("change", onChange);
+    return () => mql.removeEventListener("change", onChange);
+  }, [breakpoint]);
 
-  return !!isMobile
+  return below;
+}
+
+/** True on phones (below 768px). */
+export function useIsMobile() {
+  return useMediaBelow(MOBILE_BREAKPOINT);
 }

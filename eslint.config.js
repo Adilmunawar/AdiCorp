@@ -24,6 +24,12 @@ export default tseslint.config(
         { allowConstantExport: true },
       ],
       "@typescript-eslint/no-unused-vars": "off",
+      // typescript-eslint 8.11 reads the base rule's defaults, which ESLint 9.3x no longer
+      // supplies; spelling the options out keeps the rule working on both versions.
+      "@typescript-eslint/no-unused-expressions": [
+        "error",
+        { allowShortCircuit: true, allowTernary: true, allowTaggedTemplates: false, enforceForJSX: false },
+      ],
     },
   }
 );

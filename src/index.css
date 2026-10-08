@@ -1,5 +1,6 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap');
+@import "./styles/palette.css";
 
 @tailwind base;
 @tailwind components;
@@ -7,35 +8,39 @@
 
 @layer base {
   :root {
+    /* Core tokens, tuned to the palette in ./styles/palette.css (dark set lives there too). */
     --background: 0 0% 100%;
-    --foreground: 200 15% 15%;
-    
+    --foreground: 222.4 29.8% 11.2%; /* neutral-900 ink, 17.6:1 */
+
     --card: 0 0% 100%;
-    --card-foreground: 200 15% 15%;
-    
+    --card-foreground: 222.4 29.8% 11.2%;
+
     --popover: 0 0% 100%;
-    --popover-foreground: 200 15% 15%;
-    
-    --primary: 216 93% 37%;
+    --popover-foreground: 222.4 29.8% 11.2%;
+
+    --primary: 216 93% 37%; /* AdiCorp blue #074DB7 = brand-700 */
     --primary-foreground: 0 0% 100%;
-    
+
     --secondary: 216 20% 95%;
     --secondary-foreground: 216 40% 30%;
-    
-    --muted: 216 10% 96%;
-    --muted-foreground: 216 10% 45%;
-    
+
+    --muted: 220 30% 96.1%; /* neutral-100 */
+    --muted-foreground: 216.5 10.2% 44.1%; /* neutral-500, AA on white and on muted */
+
     --accent: 216 25% 93%;
     --accent-foreground: 216 40% 30%;
-    
-    --destructive: 0 65% 50%;
+
+    --destructive: 358.5 68.9% 44.1%; /* = --danger */
     --destructive-foreground: 0 0% 100%;
-    
-    --border: 200 10% 90%;
-    --input: 200 10% 90%;
+
+    --border: 218.2 24.4% 91.2%; /* neutral-200 */
+    --input: 218.2 24.4% 91.2%;
     --ring: 216 93% 37%;
-    
+
     --radius: 0.5rem;
+
+    /* Status tones (--success/-soft/-foreground, warning, danger, info, highlight),
+       the chart palette (--chart-1..8) and the gradients are defined in ./styles/palette.css. */
   }
 }
 
@@ -45,10 +50,19 @@
     -webkit-tap-highlight-color: transparent !important;
   }
   
-  *:focus, *:active, *:focus-visible {
-    outline: none !important;
+  /* Mouse and touch focus shows no ring; keyboard focus keeps an accessible outline (see :focus-visible below). */
+  *:focus:not(:focus-visible) {
+    outline: none;
   }
   
+  /* The product ships a light theme: keep native controls (date pickers, scrollbars) light even when the OS is dark. */
+  :root {
+    color-scheme: light;
+  }
+  :root.dark {
+    color-scheme: dark;
+  }
+
   html, body, #root {
     @apply h-full font-sans bg-background text-foreground;
     -webkit-font-smoothing: antialiased;
@@ -65,6 +79,10 @@
 }
 
 @layer components {
+  /* Compact uppercase micro-label used across the product (components layer so text-* utilities override its colour). */
+  .micro-label {
+    @apply text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground;
+  }
   .glass-card {
     @apply border border-border bg-card rounded-lg shadow-sm;
   }
@@ -194,6 +212,40 @@
   }
 }
 
+@layer utilities {
+  /* Hide scrollbars while keeping the element scrollable. */
+  .hide-scrollbar,
+  .scrollbar-hide,
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .hide-scrollbar::-webkit-scrollbar,
+  .scrollbar-hide::-webkit-scrollbar,
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+
+  /* Thin scrollbar that only shows while the pointer is over the scroller (sidebar, menus). */
+  .scrollbar-subtle {
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+  }
+  .scrollbar-subtle:hover,
+  .scrollbar-subtle:focus-within {
+    scrollbar-color: hsl(var(--border)) transparent;
+  }
+
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
 /* Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
@@ -216,9 +268,10 @@
   @apply bg-primary/15 text-foreground;
 }
 
-/* Focus */
-*:focus-visible {
-  @apply outline-primary outline-2 outline-offset-2 rounded;
+/* Focus: visible for keyboard users only */
+:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
 }
 
 html {

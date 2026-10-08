@@ -59,9 +59,17 @@ export function useBiometric() {
   useEffect(() => {
     detectCapabilities();
     // Check stored state
-    setIsRegistered(localStorage.getItem('biometric_registered') === 'true');
-    setIsLockEnabled(localStorage.getItem('biometric_lock_enabled') === 'true');
-    setIsLocked(localStorage.getItem('biometric_lock_enabled') === 'true' && sessionStorage.getItem('biometric_unlocked') !== 'true');
+    try {
+      const registered = localStorage.getItem('biometric_registered') === 'true' && !!localStorage.getItem('biometric_credential_id');
+      const lockEnabled = localStorage.getItem('biometric_lock_enabled') === 'true';
+      setIsRegistered(registered);
+      setIsLockEnabled(lockEnabled);
+      // Lock only when there is a credential to unlock with: a stale "lock on" flag without one
+      // (left by an older version, or cleared credentials) would otherwise trap the app forever.
+      setIsLocked(lockEnabled && registered && sessionStorage.getItem('biometric_unlocked') !== 'true');
+    } catch {
+      /* storage unavailable: no lock */
+    }
   }, []);
 
   const detectCapabilities = async () => {
@@ -133,7 +141,7 @@ export function useBiometric() {
 
       if (credential) {
         // Store credential ID for future verification
-        const credentialId = btoa(String.fromCharCode(...new Uint8Array((credential as any).rawId)));
+        const credentialId = btoa(String.fromCharCode(...new Uint8Array(credential.rawId)));
         localStorage.setItem('biometric_credential_id', credentialId);
         localStorage.setItem('biometric_registered', 'true');
         setIsRegistered(true);

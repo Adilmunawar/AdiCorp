@@ -151,6 +151,7 @@ export default function AuthForm() {
                     <Input
                       id="firstName"
                       type="text"
+                      autoComplete="given-name"
                       placeholder="Adil"
                       value={firstName}
                       onChange={(e) => setFirstName(e.target.value)}
@@ -168,6 +169,7 @@ export default function AuthForm() {
                     <Input
                       id="lastName"
                       type="text"
+                      autoComplete="family-name"
                       placeholder="Munawar"
                       value={lastName}
                       onChange={(e) => setLastName(e.target.value)}
@@ -188,6 +190,7 @@ export default function AuthForm() {
                 <Input
                   id="email"
                   type="email"
+                  autoComplete="email"
                   placeholder="you@company.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -206,6 +209,8 @@ export default function AuthForm() {
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
+                  autoComplete={mode === "signin" ? "current-password" : "new-password"}
+                  minLength={mode === "signup" ? 8 : undefined}
                   placeholder={mode === "signin" ? "Enter your password" : "Min. 8 characters"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -215,9 +220,11 @@ export default function AuthForm() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  aria-pressed={showPassword}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  {showPassword ? <EyeOff className="h-4 w-4" aria-hidden /> : <Eye className="h-4 w-4" aria-hidden />}
                 </button>
               </div>
             </div>

@@ -22,3 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Environment and local credentials (never commit)
+.env
+.env.*
+!.env.example
+DEV-ACCOUNTS*

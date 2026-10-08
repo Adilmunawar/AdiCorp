@@ -19,7 +19,75 @@ export default {
 			}
 		},
 		extend: {
+			screens: {
+				// Height-based variants the shells use to fit short laptop screens without scrolling.
+				short: { raw: '(min-width: 768px) and (max-height: 900px)' },
+				tight: { raw: '(min-width: 768px) and (max-height: 720px)' },
+			},
 			colors: {
+				// Palette tokens live in src/styles/palette.css; usage notes in src/styles/PALETTE.md.
+				brand: {
+					50: 'hsl(var(--brand-50))',
+					100: 'hsl(var(--brand-100))',
+					200: 'hsl(var(--brand-200))',
+					300: 'hsl(var(--brand-300))',
+					400: 'hsl(var(--brand-400))',
+					500: 'hsl(var(--brand-500))',
+					600: 'hsl(var(--brand-600))',
+					700: 'hsl(var(--brand-700))',
+					800: 'hsl(var(--brand-800))',
+					900: 'hsl(var(--brand-900))',
+					950: 'hsl(var(--brand-950))'
+				},
+				neutral: {
+					0: 'hsl(var(--neutral-0))',
+					50: 'hsl(var(--neutral-50))',
+					100: 'hsl(var(--neutral-100))',
+					200: 'hsl(var(--neutral-200))',
+					300: 'hsl(var(--neutral-300))',
+					400: 'hsl(var(--neutral-400))',
+					500: 'hsl(var(--neutral-500))',
+					600: 'hsl(var(--neutral-600))',
+					700: 'hsl(var(--neutral-700))',
+					800: 'hsl(var(--neutral-800))',
+					900: 'hsl(var(--neutral-900))',
+					950: 'hsl(var(--neutral-950))'
+				},
+				success: {
+					DEFAULT: 'hsl(var(--success))',
+					soft: 'hsl(var(--success-soft))',
+					foreground: 'hsl(var(--success-foreground))'
+				},
+				warning: {
+					DEFAULT: 'hsl(var(--warning))',
+					soft: 'hsl(var(--warning-soft))',
+					foreground: 'hsl(var(--warning-foreground))'
+				},
+				danger: {
+					DEFAULT: 'hsl(var(--danger))',
+					soft: 'hsl(var(--danger-soft))',
+					foreground: 'hsl(var(--danger-foreground))'
+				},
+				info: {
+					DEFAULT: 'hsl(var(--info))',
+					soft: 'hsl(var(--info-soft))',
+					foreground: 'hsl(var(--info-foreground))'
+				},
+				highlight: {
+					DEFAULT: 'hsl(var(--highlight))',
+					soft: 'hsl(var(--highlight-soft))',
+					foreground: 'hsl(var(--highlight-foreground))'
+				},
+				chart: {
+					1: 'hsl(var(--chart-1))',
+					2: 'hsl(var(--chart-2))',
+					3: 'hsl(var(--chart-3))',
+					4: 'hsl(var(--chart-4))',
+					5: 'hsl(var(--chart-5))',
+					6: 'hsl(var(--chart-6))',
+					7: 'hsl(var(--chart-7))',
+					8: 'hsl(var(--chart-8))'
+				},
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
 				ring: 'hsl(var(--ring))',
@@ -65,6 +133,10 @@ export default {
 					800: '#115e59',
 					900: '#134e4a',
 				}
+			},
+			backgroundImage: {
+				'gradient-brand': 'var(--gradient-brand)',
+				'gradient-surface': 'var(--gradient-surface)',
 			},
 			borderRadius: {
 				lg: 'var(--radius)',

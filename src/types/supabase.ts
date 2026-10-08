@@ -25,6 +25,18 @@ export type ActivityLogRow = Database['public']['Tables']['activity_logs']['Row'
 export type ActivityLogInsert = Database['public']['Tables']['activity_logs']['Insert'];
 export type ActivityLogUpdate = Database['public']['Tables']['activity_logs']['Update'];
 
-// Define custom types
-export type AttendanceStatus = 'present' | 'short_leave' | 'leave';
-export type EmployeeStatus = 'active' | 'separated';
+// Define custom types (kept in step with the CHECK constraints on attendance.status and employees.status)
+export type AttendanceStatus =
+  | 'present'
+  | 'absent'
+  | 'leave'
+  | 'short_leave'
+  | 'half_day'
+  | 'late'
+  | 'holiday'
+  | 'weekend';
+export type EmployeeStatus = 'active' | 'inactive' | 'on_leave' | 'separated' | 'terminated';
+
+export type NotificationRow = Database['public']['Tables']['notifications']['Row'];
+export type DepartmentRow = Database['public']['Tables']['departments']['Row'];
+export type SalaryHistoryRow = Database['public']['Tables']['salary_history']['Row'];

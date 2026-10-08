@@ -15,7 +15,13 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const formSchema = z.object({
-  name: z.string().min(1, { message: "Company name is required" }),
+  // Same limits as create_company_for_current_user (2 to 120 characters after trimming).
+  name: z
+    .string()
+    .trim()
+    .min(1, { message: "Company name is required" })
+    .min(2, { message: "Company name must be at least 2 characters" })
+    .max(120, { message: "Company name must be 120 characters or fewer" }),
   phone: z.string().optional(),
   website: z.string().refine((val) => {
     if (!val) return true;
@@ -43,8 +49,16 @@ export default function CompanySetupForm({ onComplete, isEmbedded = false }: Com
 
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0]; setLogoFile(file);
+      const file = e.target.files[0];
+      if (!["image/png", "image/jpeg", "image/webp"].includes(file.type) || file.size > 2 * 1024 * 1024) {
+        sonnerToast.error("Use a PNG, JPG or WebP logo up to 2 MB");
+        e.target.value = "";
+        return;
+      }
+      setLogoFile(file);
       const reader = new FileReader(); reader.onload = () => setLogoPreview(reader.result as string); reader.readAsDataURL(file);
+      // The file is kept in state; clearing the input lets the same file be picked again after "Remove".
+      e.target.value = "";
     }
   };
   
@@ -54,33 +68,32 @@ export default function CompanySetupForm({ onComplete, isEmbedded = false }: Com
       setIsLoading(true);
       let logoUrl = null;
       if (logoFile) {
-        const fileExt = logoFile.name.split('.').pop();
+        const fileExt = logoFile.type === "image/png" ? "png" : logoFile.type === "image/webp" ? "webp" : "jpg";
         const filePath = `${user.id}-${Date.now()}.${fileExt}`;
-        const { error: uploadError } = await supabase.storage.from('logos').upload(filePath, logoFile);
+        const { error: uploadError } = await supabase.storage.from('logos').upload(filePath, logoFile, { contentType: logoFile.type });
         if (uploadError) throw uploadError;
         const { data: { publicUrl } } = supabase.storage.from('logos').getPublicUrl(filePath);
         logoUrl = publicUrl;
       }
       const formattedWebsite = values.website ? (values.website.startsWith('http') ? values.website : `https://${values.website}`) : null;
       
-      const { data: companyData, error: companyError } = await supabase.from('companies').insert({ 
-        name: values.name, 
-        phone: values.phone || null, 
-        website: formattedWebsite, 
-        address: values.address || null, 
-        company_size: values.company_size || null, 
-        company_type: values.company_type || null, 
-        logo: logoUrl 
-      }).select('*').single();
+      // The server creates the company and makes the caller its owner in one transaction.
+      const { error: companyError } = await supabase.rpc('create_company_for_current_user', {
+        p_name: values.name,
+        p_phone: values.phone || undefined,
+        p_website: formattedWebsite || undefined,
+        p_address: values.address || undefined,
+        p_company_size: values.company_size || undefined,
+        p_company_type: values.company_type || undefined,
+        p_logo: logoUrl || undefined,
+      });
       if (companyError) throw companyError;
-      const { error: profileError } = await supabase.from('profiles').update({ company_id: companyData.id, is_admin: true }).eq('id', user.id);
-      if (profileError) throw profileError;
       await refreshProfile();
       sonnerToast.success("Company setup complete", { description: "Your company has been successfully configured." });
       if (onComplete) onComplete();
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error setting up company:", error);
-      toast({ title: "Failed to setup company", description: error.message || "Please try again.", variant: "destructive" });
+      toast({ title: "Failed to setup company", description: (error as { message?: string } | null)?.message || "Please try again.", variant: "destructive" });
     } finally { setIsLoading(false); }
   };
 
@@ -211,9 +224,9 @@ export default function CompanySetupForm({ onComplete, isEmbedded = false }: Com
                     <Upload className="mr-2 h-4 w-4" />
                     Upload Image
                   </label>
-                  <input id="logo-upload" type="file" accept="image/*" onChange={handleLogoChange} className="hidden" />
+                  <input id="logo-upload" type="file" accept="image/png,image/jpeg,image/webp" onChange={handleLogoChange} className="hidden" />
                   <p className="text-[11px] text-muted-foreground mt-1.5">
-                    Recommended: PNG, JPG, or SVG. Max 2MB.
+                    PNG, JPG or WebP. Max 2 MB.
                   </p>
                 </div>
               </div>

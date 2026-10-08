@@ -10,25 +10,25 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "rounded-2xl bg-primary text-primary-foreground shadow-[0_1px_2px_hsl(var(--primary)/0.24),0_10px_20px_-10px_hsl(var(--primary)/0.42)] hover:-translate-y-0.5 hover:brightness-105 hover:shadow-[0_2px_6px_hsl(var(--primary)/0.28),0_18px_32px_-14px_hsl(var(--primary)/0.5)]",
+          "rounded-xl bg-primary text-primary-foreground shadow-[0_1px_2px_hsl(var(--primary)/0.24),0_10px_20px_-10px_hsl(var(--primary)/0.42)] hover:-translate-y-0.5 hover:brightness-105 hover:shadow-[0_2px_6px_hsl(var(--primary)/0.28),0_18px_32px_-14px_hsl(var(--primary)/0.5)]",
         destructive:
-          "rounded-2xl bg-destructive text-destructive-foreground shadow-[0_1px_2px_hsl(var(--destructive)/0.28),0_8px_20px_-10px_hsl(var(--destructive)/0.34)] hover:-translate-y-0.5 hover:brightness-105 hover:shadow-[0_2px_6px_hsl(var(--destructive)/0.3),0_16px_28px_-14px_hsl(var(--destructive)/0.4)]",
+          "rounded-xl bg-destructive text-destructive-foreground shadow-[0_1px_2px_hsl(var(--destructive)/0.28),0_8px_20px_-10px_hsl(var(--destructive)/0.34)] hover:-translate-y-0.5 hover:brightness-105 hover:shadow-[0_2px_6px_hsl(var(--destructive)/0.3),0_16px_28px_-14px_hsl(var(--destructive)/0.4)]",
         outline:
-          "rounded-2xl border border-input/80 bg-background shadow-[inset_0_1px_0_hsl(var(--background)),0_1px_2px_hsl(var(--foreground)/0.04)] hover:-translate-y-0.5 hover:border-primary/30 hover:bg-accent hover:text-accent-foreground hover:shadow-[0_2px_8px_hsl(var(--foreground)/0.08)]",
+          "rounded-xl border border-input/80 bg-background shadow-[inset_0_1px_0_hsl(var(--background)),0_1px_2px_hsl(var(--foreground)/0.04)] hover:-translate-y-0.5 hover:border-primary/30 hover:bg-accent hover:text-accent-foreground hover:shadow-[0_2px_8px_hsl(var(--foreground)/0.08)]",
         secondary:
-          "rounded-2xl bg-secondary text-secondary-foreground shadow-[0_1px_2px_hsl(var(--foreground)/0.05)] hover:-translate-y-0.5 hover:bg-secondary/85 hover:shadow-[0_2px_8px_hsl(var(--foreground)/0.08)]",
-        ghost: "rounded-2xl hover:bg-accent hover:text-accent-foreground",
+          "rounded-xl bg-secondary text-secondary-foreground shadow-[0_1px_2px_hsl(var(--foreground)/0.05)] hover:-translate-y-0.5 hover:bg-secondary/85 hover:shadow-[0_2px_8px_hsl(var(--foreground)/0.08)]",
+        ghost: "rounded-xl hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
         premium:
-          "rounded-2xl bg-primary text-primary-foreground shadow-[0_1px_3px_hsl(var(--primary)/0.3),0_8px_24px_-8px_hsl(var(--primary)/0.36)] hover:-translate-y-0.5 hover:brightness-105 hover:shadow-[0_2px_8px_hsl(var(--primary)/0.35),0_20px_38px_-14px_hsl(var(--primary)/0.42)]",
+          "rounded-xl bg-primary text-primary-foreground shadow-[0_1px_3px_hsl(var(--primary)/0.3),0_8px_24px_-8px_hsl(var(--primary)/0.36)] hover:-translate-y-0.5 hover:brightness-105 hover:shadow-[0_2px_8px_hsl(var(--primary)/0.35),0_20px_38px_-14px_hsl(var(--primary)/0.42)]",
         soft:
-          "rounded-2xl bg-primary/10 text-primary shadow-[0_1px_2px_hsl(var(--primary)/0.08)] hover:-translate-y-0.5 hover:bg-primary/15 hover:shadow-[0_6px_16px_-10px_hsl(var(--primary)/0.26)]",
+          "rounded-xl bg-primary/10 text-primary shadow-[0_1px_2px_hsl(var(--primary)/0.08)] hover:-translate-y-0.5 hover:bg-primary/15 hover:shadow-[0_6px_16px_-10px_hsl(var(--primary)/0.26)]",
       },
       size: {
-        default: "h-11 px-5 py-2.5",
-        sm: "h-9 rounded-xl px-3.5 text-xs",
-        lg: "h-12 rounded-2xl px-8 text-sm",
-        icon: "h-11 w-11 rounded-2xl",
+        default: "h-10 px-4 py-2",
+        sm: "h-10 rounded-xl px-3.5 text-xs sm:h-9",
+        lg: "h-11 rounded-xl px-6 text-sm",
+        icon: "h-10 w-10 rounded-xl",
       },
     },
     defaultVariants: {

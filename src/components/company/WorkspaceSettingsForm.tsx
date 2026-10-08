@@ -11,55 +11,76 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 const formSchema = z.object({
   currency: z.string().min(1, { message: "Base currency is required" }),
 });
 type FormValues = z.infer<typeof formSchema>;
 
-interface WorkspaceSettingsFormProps { 
+const CURRENCIES = ["PKR", "USD", "EUR", "GBP"] as const;
+
+/** The browser's IANA timezone (e.g. "Asia/Karachi"), or null when it cannot tell. */
+function browserTimezone(): string | null {
+  try {
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    return tz && tz !== "UTC" && tz !== "Etc/UTC" ? tz : null;
+  } catch {
+    return null;
+  }
+}
+
+interface WorkspaceSettingsFormProps {
   onComplete?: () => void;
   isEmbedded?: boolean;
 }
 
 export default function WorkspaceSettingsForm({ onComplete, isEmbedded = false }: WorkspaceSettingsFormProps) {
   const { toast } = useToast();
-  const { userProfile } = useAuth();
+  const { company, companyId, refreshProfile } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
-  
-  const form = useForm<FormValues>({ 
-    resolver: zodResolver(formSchema), 
-    defaultValues: { 
-      currency: "PKR", 
-    } 
+  // A new company starts on UTC; until someone picks a zone, follow this browser so "today" is the local day.
+  const suggestedTimezone = !company?.timezone || company.timezone === "UTC" ? browserTimezone() : null;
+  const current = (company?.currency ?? "").toUpperCase();
+
+  const form = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      currency: (CURRENCIES as readonly string[]).includes(current) ? current : "PKR",
+    }
   });
 
   const handleSubmit = async (values: FormValues) => {
+    if (isLoading) return;
     try {
-      if (!userProfile?.company_id) {
-        toast({ title: "Error", description: "Company ID not found. Please restart onboarding.", variant: "destructive" }); 
+      if (!companyId) {
+        toast({ title: "Error", description: "Company ID not found. Please restart onboarding.", variant: "destructive" });
         return;
       }
-      
+
       setIsLoading(true);
 
-      // Update companies table with currency
-      const { error: companyError } = await supabase
+      const patch: { currency: string; timezone?: string } = { currency: values.currency };
+      if (suggestedTimezone) patch.timezone = suggestedTimezone;
+
+      // Row-level security turns a refused update into "0 rows", not an error: ask for the row back to tell.
+      const { data, error: companyError } = await supabase
         .from('companies')
-        .update({ currency: values.currency })
-        .eq('id', userProfile.company_id);
-        
+        .update(patch)
+        .eq('id', companyId)
+        .select('id');
+
       if (companyError) throw companyError;
+      if (!data || data.length === 0) throw new Error("Only the workspace owner can change these settings.");
+      await refreshProfile();
 
       sonnerToast.success("Workspace settings saved", { description: "Your core preferences have been stored." });
-      
+
       if (onComplete) onComplete();
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error saving workspace settings:", error);
-      toast({ title: "Failed to save settings", description: error.message || "Please try again.", variant: "destructive" });
-    } finally { 
-      setIsLoading(false); 
+      toast({ title: "Failed to save settings", description: (error as { message?: string } | null)?.message || "Please try again.", variant: "destructive" });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -78,11 +99,11 @@ export default function WorkspaceSettingsForm({ onComplete, isEmbedded = false }
           Configure default behavior for your HR ecosystem.
         </CardDescription>
       </CardHeader>
-      
+
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleSubmit)} className="relative z-10 flex flex-col h-full">
           <CardContent className={`space-y-6 flex-1 ${isEmbedded ? 'px-0 pt-2 pb-4' : 'pt-6'}`}>
-            
+
             <div className="grid grid-cols-1 gap-4 sm:gap-5">
               <FormField control={form.control} name="currency" render={({ field }) => (
                 <FormItem>
@@ -103,14 +124,19 @@ export default function WorkspaceSettingsForm({ onComplete, isEmbedded = false }
                   <FormMessage />
                 </FormItem>
               )} />
+              {(suggestedTimezone || company?.timezone) && (
+                <p className="text-xs leading-5 text-muted-foreground">
+                  Dates and attendance follow the <span className="font-semibold text-foreground">{suggestedTimezone ?? company?.timezone}</span> timezone. You can change it later in Settings.
+                </p>
+              )}
             </div>
 
           </CardContent>
-          
+
           <CardFooter className={`${isEmbedded ? 'px-0 pt-2 pb-0' : 'pt-6 pb-8 px-8 border-t border-border/50 bg-muted/5'}`}>
-            <Button 
-              type="submit" 
-              disabled={isLoading} 
+            <Button
+              type="submit"
+              disabled={isLoading}
               className="w-full relative overflow-hidden h-14 rounded-xl text-lg font-bold shadow-[0_8px_30px_rgb(var(--primary)_/_0.2)] hover:shadow-[0_8px_30px_rgb(var(--primary)_/_0.3)] transition-all group"
             >
               {isLoading ? (
