@@ -85,7 +85,7 @@ export async function createBrandedPdf({ title, subtitle, company, orientation =
   doc.setTextColor(255, 255, 255);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(14);
-  doc.text(company?.name || "AdiCorp HR", textX, 32);
+  doc.text(company?.name || "", textX, 32);
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8.5);
   doc.text(`Generated ${format(new Date(), "d MMM yyyy, HH:mm")}`, textX, 46);
@@ -107,7 +107,7 @@ export async function createBrandedPdf({ title, subtitle, company, orientation =
 }
 
 /** Page numbers and footer line on every page. Call last. */
-export function addPdfFooter(doc: jsPDF, label = "AdiCorp HR") {
+export function addPdfFooter(doc: jsPDF, label = "") {
   const pages = doc.getNumberOfPages();
   const width = doc.internal.pageSize.getWidth();
   const height = doc.internal.pageSize.getHeight();
@@ -160,7 +160,7 @@ export async function exportTablePdf({ columns, rows, filename, foot, numericCol
     footStyles: { fillColor: [235, 241, 251], textColor: INK, fontStyle: "bold" },
     columnStyles,
   });
-  addPdfFooter(doc, header.company?.name ? `${header.company.name} · AdiCorp HR` : "AdiCorp HR");
+  addPdfFooter(doc, header.company?.name ?? "");
   doc.save(filename.toLowerCase().endsWith(".pdf") ? filename : `${filename}.pdf`);
 }
 

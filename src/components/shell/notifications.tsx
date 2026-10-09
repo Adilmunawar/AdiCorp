@@ -113,7 +113,8 @@ export function useMarkNotificationsRead() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (ids?: string[]) => {
-      let q = supabase.from("notifications").update({ read_at: new Date().toISOString() }).eq("user_id", userId!).is("read_at", null);
+      if (!userId) throw new Error("Not signed in");
+      let q = supabase.from("notifications").update({ read_at: new Date().toISOString() }).eq("user_id", userId).is("read_at", null);
       if (ids && ids.length) q = q.in("id", ids);
       const { error } = await q;
       if (error) throw error;

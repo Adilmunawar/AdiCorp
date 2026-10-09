@@ -120,6 +120,26 @@ export function EmployeeAuthProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener(PORTAL_LOGOUT_EVENT, onLogout);
   }, [queryClient]);
 
+  // The token has a fixed end: end the session then (and when the tab comes back after sleeping).
+  useEffect(() => {
+    const until = session?.expires_at ? new Date(session.expires_at).getTime() - Date.now() : null;
+    if (until === null || Number.isNaN(until)) return;
+    const end = () => window.dispatchEvent(new Event(PORTAL_LOGOUT_EVENT));
+    if (until <= 0) {
+      end();
+      return;
+    }
+    const timer = window.setTimeout(end, Math.min(until, 2_147_000_000));
+    const onVisible = () => {
+      if (document.visibilityState === "visible" && new Date(session!.expires_at!).getTime() <= Date.now()) end();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      window.clearTimeout(timer);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, [session]);
+
   // Another tab signed in, signed out or switched employee: follow it, so this tab never shows
   // one employee's name over another employee's data.
   useEffect(() => {

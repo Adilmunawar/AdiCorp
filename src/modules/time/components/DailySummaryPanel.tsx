@@ -4,7 +4,7 @@ import { addDays, format, parseISO } from "date-fns";
 import { AlarmClockOff, CalendarCheck2, ChevronLeft, ChevronRight, Clock, DoorOpen, Loader2, LogOut, Plane, UserCheck, UserX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { DataTable, EmptyState, SectionCard, StatGridSkeleton, type DataColumn } from "@/components/kit";
+import { ConfirmButton, DataTable, EmptyState, SectionCard, StatGridSkeleton, type DataColumn } from "@/components/kit";
 import { cn } from "@/lib/utils";
 import { useDailySummary, useMarkAllPresent, useTimeSettings } from "../api";
 import { clock, companyToday, formatMinutes, shiftLabel } from "../lib";
@@ -214,17 +214,21 @@ export function DailySummaryPanel({ canEdit }: { canEdit: boolean }) {
           <div className="flex flex-wrap items-center gap-2">
             <DepartmentSelect value={department} onChange={setDepartment} />
             {canEdit && data && !data.is_future && (
-              <Button
+              <ConfirmButton
                 size="sm"
                 variant="outline"
+                destructive={false}
                 className="h-9 rounded-xl"
                 disabled={markAll.isPending}
+                title={department ? "Mark this department present?" : "Mark everyone present?"}
+                description={`Everyone ${department ? "in this department " : ""}without a mark for ${format(parseISO(date), "EEEE d MMMM")} is marked present${stats?.notIn ? ` (${stats.notIn} ${stats.notIn === 1 ? "person" : "people"} not in yet)` : ""}. Days before today count towards pay, so check the register first.`}
+                confirmLabel="Mark present"
                 // With a department picked, only the people shown are marked.
-                onClick={() => markAll.mutate({ date, employeeIds: department ? people.map((p) => p.id) : undefined })}
+                onConfirm={() => markAll.mutateAsync({ date, employeeIds: department ? people.map((p) => p.id) : undefined })}
               >
                 {markAll.isPending ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <DoorOpen className="h-4 w-4" aria-hidden />}
                 {department ? "Mark this department present" : "Mark everyone present"}
-              </Button>
+              </ConfirmButton>
             )}
           </div>
         </div>

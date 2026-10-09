@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode, useRef } from "react";
 import type { Session, User } from "@supabase/supabase-js";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -122,13 +122,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [sessionLoading, setSessionLoading] = useState(true);
   const user = session?.user ?? null;
 
+  const hadSessionRef = useRef(false);
+  const signingOutRef = useRef(false);
+
   useEffect(() => {
     let active = true;
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, next) => {
       if (!active) return;
+      if (next) hadSessionRef.current = true;
       setSession(next ?? null);
       setSessionLoading(false);
       if (event === "SIGNED_OUT") {
+        // The refresh token was rejected (expired, revoked elsewhere): say so, since the person did not click Sign out.
+        if (hadSessionRef.current && !signingOutRef.current) toast.error("Your session has ended. Please sign in again.", { id: "staff-session-ended" });
         queryClient.clear();
         setCompanyTimeZone(null);
         try {
@@ -139,11 +145,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     });
 
-    supabase.auth.getSession().then(({ data }) => {
-      if (!active) return;
-      setSession(data.session ?? null);
-      setSessionLoading(false);
-    });
+    supabase.auth
+      .getSession()
+      .then(({ data }) => {
+        if (!active) return;
+        setSession(data.session ?? null);
+        setSessionLoading(false);
+      })
+      .catch(() => {
+        if (!active) return;
+        setSession(null);
+        setSessionLoading(false);
+      });
 
     return () => {
       active = false;
@@ -194,6 +207,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signOut = useCallback(async () => {
+    signingOutRef.current = true;
     // Stop this browser receiving the signed-out person's push notifications (best effort, waits 2.5 s at most).
     await unbindPushFromThisBrowser();
     // This device only (GoTrue's default "global" would also end every other device's session, e.g. a

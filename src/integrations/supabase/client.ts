@@ -11,9 +11,29 @@ export const SUPABASE_URL: string = import.meta.env.VITE_SUPABASE_URL || FALLBAC
 /** Publishable (anon) key, read from the Vite env with the current project as fallback. */
 export const SUPABASE_PUBLISHABLE_KEY: string = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || FALLBACK_PUBLISHABLE_KEY;
 
+/** localStorage, or an in-memory stand-in when the browser blocks site storage (the session then lasts for the tab). */
+function sessionStore(): Storage {
+  try {
+    localStorage.getItem("adicorp.probe");
+    return localStorage;
+  } catch {
+    const m = new Map<string, string>();
+    return {
+      get length() {
+        return m.size;
+      },
+      clear: () => m.clear(),
+      key: (i: number) => [...m.keys()][i] ?? null,
+      getItem: (k: string) => m.get(k) ?? null,
+      setItem: (k: string, v: string) => void m.set(k, v),
+      removeItem: (k: string) => void m.delete(k),
+    };
+  }
+}
+
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: {
-    storage: localStorage,
+    storage: sessionStore(),
     persistSession: true,
     autoRefreshToken: true,
   },

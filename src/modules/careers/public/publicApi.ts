@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL, db } from "@/integrations/supabase/client";
-import { careersMock, mockPublicCareers, mockPublicJob } from "../lib/devMock"; // MOCK-TEMP
 import type { PublicCareers, PublicCompany, PublicJobDetail } from "../lib/model";
 
 export const publicCareersKeys = {
@@ -14,7 +13,6 @@ export function usePublicCareers(slug: string | undefined) {
     enabled: Boolean(slug),
     staleTime: 60_000,
     queryFn: async (): Promise<PublicCareers | null> => {
-      if (careersMock()) return mockPublicCareers(); // MOCK-TEMP
       const { data, error } = await db.rpc("careers_public_company", { p_slug: slug });
       if (error) throw error;
       return (data as PublicCareers | null) ?? null;
@@ -28,7 +26,6 @@ export function usePublicJob(slug: string | undefined, jobSlug: string | undefin
     enabled: Boolean(slug && jobSlug),
     staleTime: 60_000,
     queryFn: async (): Promise<{ company: PublicCompany; job: PublicJobDetail } | null> => {
-      if (careersMock()) return mockPublicJob(jobSlug ?? ""); // MOCK-TEMP
       const { data, error } = await db.rpc("careers_public_job", { p_company_slug: slug, p_job_slug: jobSlug });
       if (error) throw error;
       return (data as { company: PublicCompany; job: PublicJobDetail } | null) ?? null;

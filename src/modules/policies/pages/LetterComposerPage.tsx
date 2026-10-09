@@ -84,11 +84,6 @@ export default function LetterComposerPage() {
     if (info.reply !== "none" && !replyBy && defaultReplyBy.data) setReplyBy(defaultReplyBy.data);
   }, [kind, defaultReplyBy.data]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Pick the suggested disciplinary step when an employee with history is chosen (unless HR chose a kind).
-  useEffect(() => {
-    if (!kindTouched.current && suggestion && history.some((h) => isDisciplinary(h.kind) && !h.withdrawn_at)) setKind(suggestion);
-  }, [employeeId, suggestion]); // eslint-disable-line react-hooks/exhaustive-deps
-
   const template = useMemo(
     () =>
       employee

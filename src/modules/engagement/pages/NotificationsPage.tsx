@@ -73,7 +73,8 @@ function useNotificationCenter() {
 
   const markRead = useMutation({
     mutationFn: async (ids: string[] | null) => {
-      let q = db.from("notifications").update({ read_at: new Date().toISOString() }).eq("user_id", userId!).is("read_at", null);
+      if (!userId) throw new Error("Not signed in");
+      let q = db.from("notifications").update({ read_at: new Date().toISOString() }).eq("user_id", userId).is("read_at", null);
       if (ids) q = q.in("id", ids);
       const { error } = await q;
       if (error) throw error;

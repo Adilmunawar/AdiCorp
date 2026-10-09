@@ -15,7 +15,6 @@ import {
   type JobWithCounts,
   type Workplace,
 } from "./model";
-import { careersMock, mockApplications, mockJobs, mockNotes } from "./devMock"; // MOCK-TEMP
 
 /* ------------------------------------------------------------------ keys */
 
@@ -45,7 +44,6 @@ export function useJobs() {
     queryKey: careersKeys.jobs(companyId),
     enabled: Boolean(companyId && isHR),
     queryFn: async (): Promise<JobWithCounts[]> => {
-      if (careersMock()) return mockJobs; // MOCK-TEMP
       const { data, error } = await db
         .from("job_postings")
         .select("*, department:departments(name), applications:job_applications(status)")
@@ -73,7 +71,6 @@ export function useJob(id: string | undefined) {
     queryKey: careersKeys.job(companyId, id ?? "new"),
     enabled: Boolean(companyId && isHR && id),
     queryFn: async (): Promise<JobPosting | null> => {
-      if (careersMock()) return mockJobs.find((j) => j.id === id) ?? null; // MOCK-TEMP
       // A mistyped /hiring/jobs/:id is "not found", not a failed load (Postgres rejects a non-uuid id).
       if (!UUID_RE.test(id ?? "")) return null;
       const { data, error } = await db.from("job_postings").select("*").eq("id", id).eq("company_id", companyId).maybeSingle();
@@ -89,7 +86,6 @@ export function useApplications() {
     queryKey: careersKeys.applications(companyId),
     enabled: Boolean(companyId && isHR),
     queryFn: async (): Promise<Application[]> => {
-      if (careersMock()) return mockApplications; // MOCK-TEMP
       const { data, error } = await db
         .from("job_applications")
         .select(APPLICATION_COLUMNS)
@@ -108,7 +104,6 @@ export function useApplicationNotes(applicationId: string | null) {
     queryKey: careersKeys.notes(companyId, applicationId ?? "none"),
     enabled: Boolean(companyId && isHR && applicationId),
     queryFn: async (): Promise<ApplicationNote[]> => {
-      if (careersMock()) return mockNotes(applicationId ?? ""); // MOCK-TEMP
       const { data, error } = await db
         .from("job_application_notes")
         .select("id, application_id, author_id, author_name, kind, body, created_at")
@@ -165,7 +160,6 @@ export function useCompanySlug() {
     queryKey: careersKeys.slug(companyId),
     enabled: Boolean(companyId),
     queryFn: async (): Promise<string | null> => {
-      if (careersMock()) return "nexus-orbits"; // MOCK-TEMP
       const { data, error } = await db.from("companies").select("slug").eq("id", companyId).maybeSingle();
       if (error) throw error;
       return ((data as { slug?: string | null } | null)?.slug as string | null) ?? null;
@@ -297,7 +291,6 @@ export function useSetApplicationStatus() {
   const invalidate = useInvalidate();
   return useMutation({
     mutationFn: async ({ ids, status, note }: { ids: string[]; status: ApplicationStatus; note?: string; silent?: boolean }) => {
-      if (careersMock()) return ids.length; // MOCK-TEMP
       const { data, error } = await db.rpc("careers_set_application_status", { p_ids: ids, p_status: status, p_note: note ?? null });
       if (error) throw error;
       return (data as number) ?? 0;

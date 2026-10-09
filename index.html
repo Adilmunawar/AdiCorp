@@ -27,7 +27,7 @@
     <!--
       Static splash shown before the JS bundle runs. It mirrors the full-screen
       BrandLoader (src/components/common/BrandLoader.tsx + src/styles/loader.css)
-      closely and shares its phase clock, so React takes over without a jump.
+      closely, so React takes over without a visible jump. (No inline script: the CSP in vercel.json allows only self-hosted scripts.)
       Colours are the palette hexes from src/styles/palette.css.
     -->
     <style>
@@ -49,7 +49,7 @@
   </head>
 
   <body>
-    <div id="root"><div id="adl-splash" class="sp-root" role="status" aria-live="polite" aria-busy="true"><div class="sp-stack"><img class="sp-logo" src="/AdilMunawar-Uploads/AdiCorp%20-%20Logo.png" alt="" width="64" height="64" decoding="async" draggable="false" /><p class="sp-name">AdiCorp <span>HR</span></p><div class="sp-bar"><span></span></div><p class="sp-msg">Loading your workspace</p></div></div><script>(function(){var t=window.performance&&performance.now?performance.now():0;var el=document.getElementById("adl-splash");if(el)el.style.setProperty("--adl-delay",-Math.round(t%2400)+"ms");})();</script></div>
+    <div id="root"><div id="adl-splash" class="sp-root" role="status" aria-live="polite" aria-busy="true"><div class="sp-stack"><img class="sp-logo" src="/AdilMunawar-Uploads/AdiCorp%20-%20Logo.png" alt="" width="64" height="64" decoding="async" draggable="false" /><p class="sp-name">AdiCorp <span>HR</span></p><div class="sp-bar"><span></span></div><p class="sp-msg">Loading your workspace</p></div></div></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

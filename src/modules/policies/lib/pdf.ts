@@ -59,7 +59,7 @@ async function letterhead(company: LetterheadCompany) {
   doc.setTextColor(...BRAND_RGB);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(16);
-  doc.text(company.name || "AdiCorp HR", textX, 60);
+  doc.text(company.name || "", textX, 60);
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8.5);
   doc.setTextColor(...MUTED);
@@ -254,7 +254,7 @@ export async function exportPolicyPdf(p: PolicyPdfInput) {
     w.rule();
     w.plain(`SHA-256 fingerprint of this text: ${p.sha256}`, { size: 7.5, color: MUTED });
   }
-  footer(doc, `${p.company.name || "AdiCorp HR"}  ·  ${p.title}, version ${p.version}`);
+  footer(doc, `${p.company.name || ""}  ·  ${p.title}, version ${p.version}`);
   doc.save(`${safeName(p.title)}_v${p.version}.pdf`);
 }
 
@@ -316,7 +316,7 @@ export async function exportSignedCopyPdf(s: SignedCopyInput) {
     "The SHA-256 fingerprint identifies the exact text that was shown when this was signed. Any change to the text produces a different fingerprint.",
     { size: 7.5, color: MUTED },
   );
-  footer(doc, `${s.company.name || "AdiCorp HR"}  ·  Signed copy of ${s.title}, version ${s.version}`);
+  footer(doc, `${s.company.name || ""}  ·  Signed copy of ${s.title}, version ${s.version}`);
   doc.save(`${safeName(s.title)}_v${s.version}_signed_${safeName(s.employeeName || "employee")}.pdf`);
 }
 
@@ -397,6 +397,6 @@ export async function exportLetterPdf(l: LetterPdfInput) {
     w.plain(l.reply, { size: 9.5 });
   }
 
-  footer(doc, `${l.company.name || "AdiCorp HR"}  ·  ${l.ref}  ·  Computer-generated letter`);
+  footer(doc, `${l.company.name || ""}  ·  ${l.ref}  ·  Computer-generated letter`);
   doc.save(`${safeName(l.ref)}.pdf`);
 }

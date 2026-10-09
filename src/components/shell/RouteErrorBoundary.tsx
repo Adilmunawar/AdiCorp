@@ -10,7 +10,8 @@ function isChunkError(error: unknown): boolean {
     e?.name === "ChunkLoadError" ||
     msg.includes("Failed to fetch dynamically imported module") ||
     msg.includes("Importing a module script failed") ||
-    msg.includes("error loading dynamically imported module")
+    msg.includes("error loading dynamically imported module") ||
+    msg.includes("Unable to preload CSS")
   );
 }
 

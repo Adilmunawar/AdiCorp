@@ -124,7 +124,7 @@ export async function payslipPdf(slip: SlipData, person: SlipPerson, company: Sl
       /* the watermark is decoration only */
     }
   }
-  addPdfFooter(doc, company.name || "AdiCorp HR");
+  addPdfFooter(doc, company.name || "");
 
   const file = `payslip-${safeName(person.code || person.name)}-${slip.month.slice(0, 7)}${slip.status === "draft" ? "-draft" : ""}.pdf`;
   if (mode === "print") {

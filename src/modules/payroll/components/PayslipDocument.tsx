@@ -1,6 +1,5 @@
 import { Building2 } from "lucide-react";
 import { formatMoney, formatMonth } from "@/components/kit";
-import { ADICORP_LOGO_PATH } from "@/lib/branding";
 import { cn } from "@/lib/utils";
 import { computeTotals } from "../lib/calc";
 import type { PayMethod, PayslipLine, PayslipStatus } from "../lib/types";
@@ -201,7 +200,7 @@ export function PayslipDocument({ slip, person, company, className }: { slip: Sl
   const cur = (company.currency || "PKR").toUpperCase();
   const { earnings, deductions } = slipLines(slip, cur);
   const { gross, deductions: ded, net } = slipTotals(slip);
-  const logo = company.logo || ADICORP_LOGO_PATH;
+  const logo = company.logo || null;
   const contact = [company.address, company.phone, company.website?.replace(/^https?:\/\//i, "")].filter(Boolean) as string[];
   const attendance = attendanceText(slip);
   const daysPaid = slip.paid_days != null && slip.month_days ? `${slip.paid_days} of ${slip.month_days}` : slip.legacy && slip.days_worked ? `${slip.days_worked} worked` : null;

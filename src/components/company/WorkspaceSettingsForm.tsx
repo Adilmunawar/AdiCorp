@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, Settings2, ArrowRight } from "lucide-react";
+import { Loader2, ArrowRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/context/AuthContext";
@@ -9,24 +9,46 @@ import { toast as sonnerToast } from "sonner";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { CURRENCIES, timezoneOptions } from "@/modules/platform/components/form";
 
 const formSchema = z.object({
-  currency: z.string().min(1, { message: "Base currency is required" }),
+  currency: z.string().regex(/^[A-Z]{3}$/, { message: "Choose a currency" }),
+  timezone: z.string().min(1, { message: "Choose a timezone" }),
 });
 type FormValues = z.infer<typeof formSchema>;
 
-const CURRENCIES = ["PKR", "USD", "EUR", "GBP"] as const;
-
-/** The browser's IANA timezone (e.g. "Asia/Karachi"), or null when it cannot tell. */
+/** The browser's IANA timezone (e.g. "Europe/London"), or null when it cannot tell. */
 function browserTimezone(): string | null {
   try {
     const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    return tz && tz !== "UTC" && tz !== "Etc/UTC" ? tz : null;
+    return tz && tz !== "Etc/UTC" ? tz : null;
   } catch {
     return null;
   }
+}
+
+/* A sensible first guess at the currency from where the browser is; the owner can pick any other. */
+const CURRENCY_BY_REGION: Record<string, string> = {
+  PK: "PKR", US: "USD", GB: "GBP", AE: "AED", SA: "SAR", QA: "QAR", KW: "KWD", BH: "BHD", OM: "OMR", IN: "INR", BD: "BDT",
+  LK: "LKR", TR: "TRY", EG: "EGP", NG: "NGN", KE: "KES", ZA: "ZAR", CA: "CAD", AU: "AUD", NZ: "NZD", SG: "SGD", MY: "MYR",
+  ID: "IDR", PH: "PHP", CN: "CNY", JP: "JPY", CH: "CHF", SE: "SEK", NO: "NOK", DK: "DKK", PL: "PLN", BR: "BRL", MX: "MXN",
+  DE: "EUR", FR: "EUR", NL: "EUR", BE: "EUR", ES: "EUR", IT: "EUR", PT: "EUR", AT: "EUR", IE: "EUR", FI: "EUR",
+};
+const CURRENCY_BY_TZ: Record<string, string> = { "Asia/Karachi": "PKR", "Asia/Dubai": "AED", "Asia/Riyadh": "SAR", "Asia/Qatar": "QAR", "Asia/Kolkata": "INR", "Asia/Dhaka": "BDT", "Europe/London": "GBP" };
+
+function guessCurrency(tz: string | null): string {
+  try {
+    const region = new Intl.Locale(navigator.language).maximize().region;
+    if (region && CURRENCY_BY_REGION[region]) return CURRENCY_BY_REGION[region];
+  } catch {
+    /* older browser */
+  }
+  if (tz && CURRENCY_BY_TZ[tz]) return CURRENCY_BY_TZ[tz];
+  if (tz?.startsWith("America/")) return "USD";
+  if (tz?.startsWith("Europe/")) return "EUR";
+  return "USD";
 }
 
 interface WorkspaceSettingsFormProps {
@@ -34,126 +56,131 @@ interface WorkspaceSettingsFormProps {
   isEmbedded?: boolean;
 }
 
+/** Onboarding step 2: the company's currency and timezone. Both can be changed later in Settings. */
 export default function WorkspaceSettingsForm({ onComplete, isEmbedded = false }: WorkspaceSettingsFormProps) {
   const { toast } = useToast();
   const { company, companyId, refreshProfile } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
-  // A new company starts on UTC; until someone picks a zone, follow this browser so "today" is the local day.
-  const suggestedTimezone = !company?.timezone || company.timezone === "UTC" ? browserTimezone() : null;
-  const current = (company?.currency ?? "").toUpperCase();
+  const zones = useMemo(() => timezoneOptions(), []);
+  const browserTz = useMemo(() => browserTimezone(), []);
+  const savedTz = company?.timezone && company.timezone !== "UTC" ? company.timezone : null;
+  const savedCurrency = (company?.currency ?? "").toUpperCase();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      currency: (CURRENCIES as readonly string[]).includes(current) ? current : "PKR",
-    }
+      currency: CURRENCIES.some((c) => c.code === savedCurrency) ? savedCurrency : guessCurrency(browserTz),
+      timezone: savedTz ?? (browserTz && zones.includes(browserTz) ? browserTz : "UTC"),
+    },
   });
 
   const handleSubmit = async (values: FormValues) => {
     if (isLoading) return;
     try {
       if (!companyId) {
-        toast({ title: "Error", description: "Company ID not found. Please restart onboarding.", variant: "destructive" });
+        toast({ title: "Something went wrong", description: "We could not find your company. Please reload and try again.", variant: "destructive" });
         return;
       }
-
       setIsLoading(true);
-
-      const patch: { currency: string; timezone?: string } = { currency: values.currency };
-      if (suggestedTimezone) patch.timezone = suggestedTimezone;
-
       // Row-level security turns a refused update into "0 rows", not an error: ask for the row back to tell.
-      const { data, error: companyError } = await supabase
-        .from('companies')
-        .update(patch)
-        .eq('id', companyId)
-        .select('id');
-
-      if (companyError) throw companyError;
+      const { data, error } = await supabase
+        .from("companies")
+        .update({ currency: values.currency, timezone: values.timezone })
+        .eq("id", companyId)
+        .select("id");
+      if (error) throw error;
       if (!data || data.length === 0) throw new Error("Only the workspace owner can change these settings.");
       await refreshProfile();
-
-      sonnerToast.success("Workspace settings saved", { description: "Your core preferences have been stored." });
-
-      if (onComplete) onComplete();
+      sonnerToast.success("Settings saved");
+      onComplete?.();
     } catch (error) {
-      console.error("Error saving workspace settings:", error);
-      toast({ title: "Failed to save settings", description: (error as { message?: string } | null)?.message || "Please try again.", variant: "destructive" });
+      toast({ title: "Could not save the settings", description: (error as { message?: string } | null)?.message || "Please try again.", variant: "destructive" });
     } finally {
       setIsLoading(false);
     }
   };
 
-  const formContent = (
-    <>
-      <CardHeader className={`${isEmbedded ? 'px-0 pt-0 pb-6' : 'pb-6 border-b border-border/50 bg-muted/10'} relative z-10`}>
-        <CardTitle className="flex items-center text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
-          {!isEmbedded && (
-            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mr-3 border border-primary/20">
-              <Settings2 className="h-5 w-5 text-primary" />
-            </div>
-          )}
-          Workspace Settings
-        </CardTitle>
-        <CardDescription className="text-base sm:text-lg mt-2 text-muted-foreground">
-          Configure default behavior for your HR ecosystem.
+  return (
+    <div className="flex h-full w-full flex-col animate-in slide-in-from-right-8 duration-500 motion-reduce:animate-none">
+      <CardHeader className={isEmbedded ? "px-0 pb-6 pt-0" : "border-b border-border/50 pb-6"}>
+        <CardTitle className="font-display text-2xl font-semibold tracking-tight text-foreground">Currency and timezone</CardTitle>
+        <CardDescription className="mt-1.5 text-[14px] leading-6 text-muted-foreground">
+          Pay is shown in this currency, and attendance follows this timezone.
         </CardDescription>
       </CardHeader>
 
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(handleSubmit)} className="relative z-10 flex flex-col h-full">
-          <CardContent className={`space-y-6 flex-1 ${isEmbedded ? 'px-0 pt-2 pb-4' : 'pt-6'}`}>
-
-            <div className="grid grid-cols-1 gap-4 sm:gap-5">
-              <FormField control={form.control} name="currency" render={({ field }) => (
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="flex h-full flex-col">
+          <CardContent className={`flex-1 space-y-5 ${isEmbedded ? "px-0 pb-4 pt-2" : "pt-6"}`}>
+            <FormField
+              control={form.control}
+              name="currency"
+              render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-sm font-semibold text-foreground">Base Currency</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormLabel>Currency</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
-                      <SelectTrigger className="h-10 sm:h-11 bg-background/50 border-border/60 hover:border-border focus:ring-primary/20 rounded-xl shadow-sm">
-                        <SelectValue placeholder="Select currency" />
+                      <SelectTrigger className="h-11">
+                        <SelectValue placeholder="Choose a currency" />
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent>
-                      <SelectItem value="PKR">Pakistani Rupee (PKR)</SelectItem>
-                      <SelectItem value="USD">US Dollar (USD)</SelectItem>
-                      <SelectItem value="EUR">Euro (EUR)</SelectItem>
-                      <SelectItem value="GBP">British Pound (GBP)</SelectItem>
+                    <SelectContent className="max-h-72">
+                      {CURRENCIES.map((c) => (
+                        <SelectItem key={c.code} value={c.code}>
+                          {c.name} ({c.code})
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
+                  <FormDescription>Used on salaries, payslips and expenses.</FormDescription>
                   <FormMessage />
                 </FormItem>
-              )} />
-              {(suggestedTimezone || company?.timezone) && (
-                <p className="text-xs leading-5 text-muted-foreground">
-                  Dates and attendance follow the <span className="font-semibold text-foreground">{suggestedTimezone ?? company?.timezone}</span> timezone. You can change it later in Settings.
-                </p>
               )}
-            </div>
-
+            />
+            <FormField
+              control={form.control}
+              name="timezone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Timezone</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger className="h-11">
+                        <SelectValue placeholder="Choose a timezone" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent className="max-h-72">
+                      {zones.map((z) => (
+                        <SelectItem key={z} value={z}>
+                          {z.replace(/_/g, " ")}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormDescription>
+                    {browserTz && field.value === browserTz ? "Matches this computer's clock." : "Decides which day a punch or a leave request falls on."}
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </CardContent>
 
-          <CardFooter className={`${isEmbedded ? 'px-0 pt-2 pb-0' : 'pt-6 pb-8 px-8 border-t border-border/50 bg-muted/5'}`}>
-            <Button
-              type="submit"
-              disabled={isLoading}
-              className="w-full relative overflow-hidden h-14 rounded-xl text-lg font-bold shadow-[0_8px_30px_rgb(var(--primary)_/_0.2)] hover:shadow-[0_8px_30px_rgb(var(--primary)_/_0.3)] transition-all group"
-            >
+          <CardFooter className={isEmbedded ? "px-0 pb-0 pt-2" : "border-t border-border/50 px-8 pb-8 pt-6"}>
+            <Button type="submit" size="lg" disabled={isLoading} className="w-full">
               {isLoading ? (
-                <><Loader2 className="mr-2 h-5 w-5 animate-spin" /> Saving Settings...</>
+                <>
+                  <Loader2 className="animate-spin" aria-hidden /> Saving…
+                </>
               ) : (
-                <span className="relative z-10 flex items-center justify-center w-full">
-                  Continue to Next Step
-                  <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                </span>
+                <>
+                  Continue <ArrowRight aria-hidden />
+                </>
               )}
-              <div className="absolute inset-0 -translate-x-full group-hover:animate-[loader-progress-slide_1.5s_ease-in-out_infinite] bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none" />
             </Button>
           </CardFooter>
         </form>
       </Form>
-    </>
+    </div>
   );
-
-  return <div className="h-full flex flex-col w-full animate-in slide-in-from-right-8 duration-500">{formContent}</div>;
 }

@@ -1,6 +1,21 @@
 import { useEffect, useMemo, useState } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
-import { ArrowRight, Building2, CheckCircle2, LayoutDashboard, Settings2, ShieldCheck } from "lucide-react";
+import { Link, Navigate, useNavigate } from "react-router-dom";
+import {
+  ArrowRight,
+  Building2,
+  CalendarDays,
+  CheckCircle2,
+  ChevronLeft,
+  Globe2,
+  ListChecks,
+  Plane,
+  Receipt,
+  ShieldCheck,
+  Upload,
+  UserPlus,
+  Users,
+  type LucideIcon,
+} from "lucide-react";
 import CompanySetupForm from "@/components/company/CompanySetupForm";
 import WorkspaceSettingsForm from "@/components/company/WorkspaceSettingsForm";
 import { useAuth } from "@/context/AuthContext";
@@ -11,31 +26,34 @@ import { cn } from "@/lib/utils";
 import { homeForRole } from "@/modules/registry";
 
 const STEPS = [
-  {
-    title: "Company profile",
-    description: "Name, industry and contact details.",
-    icon: Building2,
-  },
-  {
-    title: "Workspace settings",
-    description: "Currency and timezone.",
-    icon: Settings2,
-  },
-  {
-    title: "Open your dashboard",
-    description: "Start adding people and running HR.",
-    icon: LayoutDashboard,
-  },
+  { title: "Your company", description: "Name, industry and contact details.", icon: Building2 },
+  { title: "Currency and timezone", description: "How pay and attendance are shown.", icon: Globe2 },
+  { title: "First things to do", description: "Add people and set your rules.", icon: ListChecks },
+];
+
+interface NextStep {
+  icon: LucideIcon;
+  title: string;
+  text: string;
+  to: string;
+}
+
+const NEXT_STEPS: NextStep[] = [
+  { icon: UserPlus, title: "Add your first employee", text: "Or import everyone at once from a spreadsheet.", to: "/employees/new" },
+  { icon: Upload, title: "Import from a spreadsheet", text: "Names, codes, departments and joining dates in one go.", to: "/employees/import" },
+  { icon: Users, title: "Invite HR and Finance", text: "HR runs people and time; Finance runs pay. Neither sees the other's area.", to: "/users" },
+  { icon: Plane, title: "Check the leave types", text: "Annual, sick, casual and unpaid are set up. Change the days to match your policy.", to: "/leave?tab=types" },
+  { icon: CalendarDays, title: "Set the working week and holidays", text: "Weekends, hours per day and public holidays drive attendance and pay.", to: "/settings?tab=workweek" },
+  { icon: Receipt, title: "Set up payroll rules", text: "Salary structure and tax table before the first payroll run.", to: "/payroll/rules" },
 ];
 
 export default function OnboardingPage() {
   const navigate = useNavigate();
-  const { user, loading, companyId, role } = useAuth();
+  const { user, loading, companyId, company, role } = useAuth();
 
-  // Start on step 2 if company is already created, otherwise step 1
-  const [currentStep, setCurrentStep] = useState(() => {
-    return companyId ? 1 : 0;
-  });
+  // The company's existence decides the first step; the owner then moves forward with Continue.
+  const [advanced, setAdvanced] = useState(0);
+  const currentStep = companyId ? Math.max(1, Math.min(advanced, STEPS.length - 1)) : 0;
 
   const destination = useMemo(() => {
     try {
@@ -50,14 +68,8 @@ export default function OnboardingPage() {
   }, []);
 
   useEffect(() => {
-    if (!loading && !user) {
-      navigate("/auth", { replace: true });
-    }
+    if (!loading && !user) navigate("/auth", { replace: true });
   }, [loading, user, navigate]);
-
-  const handleStepComplete = () => {
-    setCurrentStep((prev) => Math.min(prev + 1, STEPS.length - 1));
-  };
 
   const handleLaunch = () => {
     try {
@@ -68,56 +80,75 @@ export default function OnboardingPage() {
     navigate(destination, { replace: true });
   };
 
-  if (loading) {
-    return <BrandLoader fullScreen message="Preparing your workspace..." subtitle="Setting up onboarding" />;
-  }
+  if (loading) return <BrandLoader fullScreen message="Preparing your workspace" />;
 
-  // HR and Finance join an existing workspace; only its owner sets it up. A member without a role
-  // gets the shell's "access is being set up" screen rather than a settings form they cannot save.
-  if (companyId && role !== "owner") {
-    return <Navigate to={homeForRole(role)} replace />;
-  }
+  // HR and Finance join an existing workspace; only its owner sets it up.
+  if (companyId && role !== "owner") return <Navigate to={homeForRole(role)} replace />;
 
   const renderCurrentForm = () => {
     switch (currentStep) {
       case 0:
-        return <CompanySetupForm isEmbedded={true} onComplete={handleStepComplete} />;
+        return <CompanySetupForm isEmbedded onComplete={() => setAdvanced(1)} />;
       case 1:
-        return <WorkspaceSettingsForm isEmbedded={true} onComplete={handleStepComplete} />;
-      case 2:
+        return <WorkspaceSettingsForm isEmbedded onComplete={() => setAdvanced(2)} />;
+      default:
         return (
-          <div className="flex h-full flex-col items-center justify-center px-2 py-10 text-center animate-in fade-in duration-300 motion-reduce:animate-none">
-            <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-success-soft text-success ring-1 ring-inset ring-success/15">
-              <CheckCircle2 className="h-7 w-7" aria-hidden />
+          <div className="flex h-full flex-col animate-in fade-in duration-300 motion-reduce:animate-none">
+            <div className="flex items-center gap-3">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-success-soft text-success ring-1 ring-inset ring-success/15">
+                <CheckCircle2 className="h-5 w-5" aria-hidden />
+              </span>
+              <div>
+                <h2 className="font-display text-2xl font-semibold tracking-tight text-foreground">{company?.name ?? "Your workspace"} is ready</h2>
+                <p className="text-[13.5px] leading-5 text-muted-foreground">A few things make the first week easy. You can do them in any order.</p>
+              </div>
             </div>
-            <p className="micro-label !text-primary">Setup complete</p>
-            <h2 className="mt-1 font-display text-2xl font-semibold tracking-tight text-foreground">Your workspace is ready</h2>
-            <p className="mt-2 max-w-sm text-[13px] leading-5 text-muted-foreground">
-              Your company profile and workspace settings are saved. You can change them any time from Settings.
-            </p>
-            <Button onClick={handleLaunch} size="lg" className="mt-8 w-full max-w-xs">
-              Open dashboard
-              <ArrowRight aria-hidden />
-            </Button>
+
+            <ol className="mt-6 grid gap-2.5 sm:grid-cols-2">
+              {NEXT_STEPS.map((s) => (
+                <li key={s.to}>
+                  <Link
+                    to={s.to}
+                    className="group flex h-full items-start gap-3 rounded-2xl border border-border bg-card p-3.5 transition-[border-color,box-shadow] hover:border-primary/30 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-primary ring-1 ring-inset ring-brand-100 dark:bg-primary/10 dark:ring-primary/20">
+                      <s.icon className="h-4 w-4" aria-hidden />
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block text-[13.5px] font-semibold text-foreground group-hover:text-primary">{s.title}</span>
+                      <span className="mt-0.5 block text-xs leading-5 text-muted-foreground">{s.text}</span>
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ol>
+
+            <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <Button variant="ghost" size="sm" onClick={() => setAdvanced(1)}>
+                <ChevronLeft aria-hidden /> Back
+              </Button>
+              <Button onClick={handleLaunch} size="lg">
+                Open the dashboard <ArrowRight aria-hidden />
+              </Button>
+            </div>
           </div>
         );
-      default:
-        return null;
     }
   };
 
   return (
     <div className="flex min-h-[100dvh] items-start justify-center bg-muted/30 px-4 py-6 sm:items-center sm:p-6 lg:p-10">
-      <div className="flex w-full max-w-[1040px] flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm lg:flex-row">
-        {/* Steps */}
+      <div className="flex w-full max-w-[1040px] flex-col overflow-hidden rounded-[22px] border border-border bg-card shadow-sm lg:flex-row">
         <aside className="flex shrink-0 flex-col border-b border-border bg-muted/30 p-5 sm:p-8 lg:w-[340px] lg:border-b-0 lg:border-r">
           <div className="flex items-center gap-3">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-foreground/5 bg-card shadow-sm">
-              <img src={ADICORP_LOGO_PATH} alt="" className="h-full w-full object-contain p-1" />
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[11px_11px_4px_11px] bg-card shadow-[0_6px_16px_-4px_hsl(var(--brand-700)/0.35)] ring-1 ring-brand-100 dark:ring-border">
+              <img src={ADICORP_LOGO_PATH} alt="" className="h-6 w-6 object-contain" />
             </span>
             <div className="min-w-0 leading-none">
-              <p className="font-display text-[15px] font-semibold tracking-tight text-foreground">AdiCorp HR</p>
-              <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-primary">Workspace setup</p>
+              <p className="font-display text-[15px] font-extrabold tracking-[-0.02em] text-foreground">
+                AdiCorp <span className="text-primary">HR</span>
+              </p>
+              <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">Workspace setup</p>
             </div>
           </div>
 
@@ -167,7 +198,6 @@ export default function OnboardingPage() {
           </div>
         </aside>
 
-        {/* Form */}
         <main className="min-w-0 flex-1 p-5 sm:p-8 lg:p-10">{renderCurrentForm()}</main>
       </div>
     </div>
