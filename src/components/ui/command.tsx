@@ -140,6 +140,10 @@ const CommandShortcut = ({
 }
 CommandShortcut.displayName = "CommandShortcut"
 
+/** Plain "contains" match for pickers: the typed text must appear in the item value as typed (ignoring case). */
+export const containsFilter = (value: string, search: string): number =>
+  value.toLowerCase().includes(search.trim().toLowerCase()) ? 1 : 0;
+
 export {
   Command,
   CommandDialog,

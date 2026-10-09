@@ -122,6 +122,8 @@ export function AdminShell() {
   useEffect(() => {
     if (!isMobile || drawerOpen) setBadgesWanted(true);
   }, [isMobile, drawerOpen]);
+  // A page that shows the counts itself (the dashboard's "Needs attention") asks for them straight away.
+  const requestBadges = useCallback(() => setBadgesWanted(true), []);
 
   useEffect(() => {
     setDrawerOpen(false);
@@ -156,7 +158,7 @@ export function AdminShell() {
 
   return (
     <SearchProvider>
-      <NavBadgesProvider items={navItems} enabled={badgesWanted}>
+      <NavBadgesProvider items={navItems} enabled={badgesWanted} onRequest={requestBadges}>
         <a
           href="#main-content"
           className="sr-only z-[60] rounded-lg bg-primary px-3 py-2 text-xs font-bold text-primary-foreground focus:not-sr-only focus:fixed focus:left-3 focus:top-3"

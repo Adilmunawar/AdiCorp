@@ -281,7 +281,7 @@ function DeclineForm({ x }: { x: ExpenseRow }) {
   return (
     <div className="grid gap-3">
       <div>
-        <FieldLabel htmlFor={`${id}-why`} hint={x.source === "request" ? "the employee and HR see it" : "the employee sees it"}>
+        <FieldLabel htmlFor={`${id}-why`} hint={x.source === "request" ? "the employee and HR see it" : x.employee_id ? "the employee sees it" : "kept on record"}>
           Reason
         </FieldLabel>
         <Textarea id={`${id}-why`} rows={2} maxLength={L.note} value={note} onChange={(e) => setNote(e.target.value)} className="min-h-[64px]" placeholder="e.g. No training budget left this year." />

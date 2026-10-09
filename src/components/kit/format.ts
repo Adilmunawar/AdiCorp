@@ -43,7 +43,11 @@ export function formatMonth(value: DateInput, fallback = "—"): string {
 /** "3 minutes ago" */
 export function formatRelative(value: DateInput, fallback = "—"): string {
   const d = toDate(value);
-  return d ? formatDistanceToNowStrict(d, { addSuffix: true }) : fallback;
+  if (!d) return fallback;
+  // Server timestamps can sit a few seconds ahead of the browser clock; "in 0 seconds" reads as a bug.
+  const ahead = d.getTime() - Date.now();
+  if (ahead > 0 && ahead < 60_000) return "just now";
+  return formatDistanceToNowStrict(d, { addSuffix: true });
 }
 
 /* The signed-in company's IANA timezone (set by AuthContext). "Today" follows the company's clock,

@@ -1,4 +1,5 @@
 import { lazy } from "react";
+import { Navigate } from "react-router-dom";
 import { Bell, House, ShieldCheck, User } from "lucide-react";
 import { usePortalNotifications } from "@/components/portal-shell/PortalNotificationBell";
 import type { ModuleManifest } from "../types";
@@ -28,7 +29,7 @@ const manifest: ModuleManifest = {
     { path: "notifications", element: <PortalNotificationsPage /> },
     { path: "account", element: <PortalAccountPage /> },
     // Old links (bookmarks, earlier notifications) land on the new pages.
-    { path: "settings", element: <PortalAccountPage /> },
+    { path: "settings", element: <Navigate to="/portal/account" replace /> },
   ],
   portalNav: [
     { key: "portal.home", label: "Home", href: "/portal/home", icon: House, order: 0 },

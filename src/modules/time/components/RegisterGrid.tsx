@@ -41,8 +41,9 @@ function buildCell(emp: RegisterEmployee, day: RegisterDay, data: MonthRegister,
   let reason: string | null = null;
   if (outside) reason = "Outside employment";
   else if (onLeave) reason = "On approved leave";
-  else if (future) reason = "Future day";
+  // Off days first, so a future weekend or holiday is titled "Day off" / its title rather than "Future day".
   else if (!isWorking) reason = day.events.find((e) => e.affects && (e.type === "holiday" || e.type === "off_day"))?.title ?? "Day off";
+  else if (future) reason = "Future day";
   else if (locked) reason = emp.payslip_locked ? "Payslip final for this month" : "Month locked";
   else if (!active) reason = "Not active";
   else if (!data.can_edit) reason = "View only";

@@ -46,14 +46,17 @@ export function ProgressTimeline({ x, money, currency }: { x: ExpenseRow; money?
   if (x.status === "approved") steps.push({ when: null, title: "Waiting for Finance to pay", tone: "warning", pending: true });
   if (x.status === "declined") steps.push({ when: x.finance_at, title: `Declined by ${x.finance_by_name ?? "Finance"}`, body: x.finance_note || undefined, tone: "danger" });
   if (x.payments_count > 0) {
-    const renewal = x.renews_on ? `Next renewal ${formatDate(x.renews_on)}` : "";
+    // Only the lead word changes case mid-sentence; the date keeps its "12 Oct 2026" form.
+    const renewalDay = x.renews_on ? formatDate(x.renews_on) : "";
     steps.push({
       when: x.last_paid_on,
       title: x.billing === "once" ? (x.payments_count > 1 ? `Paid in ${x.payments_count} instalments` : "Paid") : `Paid ${x.payments_count} ${x.payments_count === 1 ? "time" : "times"}`,
       body:
         money && x.paid_total !== undefined
-          ? `${x.paid_quoted_total != null && currency && x.currency !== currency ? `${quoted(x.paid_quoted_total, x.currency)} in all (${money(x.paid_total)})` : `${money(x.paid_total)} in all`}${renewal ? `; ${renewal.toLowerCase()}` : ""}`
-          : renewal || undefined,
+          ? `${x.paid_quoted_total != null && currency && x.currency !== currency ? `${quoted(x.paid_quoted_total, x.currency)} in all (${money(x.paid_total)})` : `${money(x.paid_total)} in all`}${renewalDay ? `; next renewal ${renewalDay}` : ""}`
+          : renewalDay
+            ? `Next renewal ${renewalDay}`
+            : undefined,
       tone: "success",
     });
   }

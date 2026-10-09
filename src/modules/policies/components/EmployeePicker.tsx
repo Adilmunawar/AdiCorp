@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Check, ChevronsUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Command, containsFilter, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { humanize } from "@/components/kit";
 import { cn } from "@/lib/utils";
@@ -25,7 +25,7 @@ export function EmployeePicker({ id, employees, value, onChange, disabled }: Pro
   const item = (e: LetterEmployee) => (
     <CommandItem
       key={e.id}
-      value={`${e.name} ${e.employee_code ?? ""} ${e.rank ?? ""} ${e.department?.name ?? ""} ${e.id}`}
+      value={`${e.name} ${e.employee_code ?? ""} ${e.rank ?? ""} ${e.department?.name ?? ""}`}
       onSelect={() => {
         onChange(e.id);
         setOpen(false);
@@ -61,7 +61,7 @@ export function EmployeePicker({ id, employees, value, onChange, disabled }: Pro
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[--radix-popover-trigger-width] min-w-[260px] p-0" align="start">
-        <Command>
+        <Command filter={containsFilter}>
           <CommandInput placeholder="Search by name, ID or team…" />
           <CommandList className="max-h-72">
             <CommandEmpty>No employee found.</CommandEmpty>

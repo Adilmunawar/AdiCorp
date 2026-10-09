@@ -89,7 +89,8 @@ export function EmployeeAuthProvider({ children }: { children: ReactNode }) {
       const employee = normaliseEmployee(me, current.employee);
       if (employee) persist({ ...current, employee });
     } catch (err) {
-      if (err instanceof PortalAuthError) setSession(null);
+      // Also drop it from storage, or every later page load re-validates a dead token.
+      if (err instanceof PortalAuthError) persist(null);
       // Network or server hiccup: keep the stored session; the next portal call re-checks it.
     }
   }, [persist]);

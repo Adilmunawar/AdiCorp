@@ -20,8 +20,9 @@ const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 function dayReason(d: MonthDay, canEdit: boolean, active: boolean): string | null {
   if (d.outside) return "Outside employment";
   if (d.on_leave) return "On approved leave";
-  if (d.future) return "Future day";
+  // Off days first, so a future Sunday or holiday reads "Day off" / its title (as the month glance does), not "Future day".
   if (!d.working) return d.events.find((e) => e.affects && (e.type === "holiday" || e.type === "off_day"))?.title ?? "Day off";
+  if (d.future) return "Future day";
   if (d.locked) return "Month locked";
   if (!active) return "Not active";
   if (!canEdit) return "View only";

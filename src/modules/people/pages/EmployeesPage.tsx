@@ -193,7 +193,7 @@ export default function EmployeesPage() {
           { header: "Department", value: (e) => deptName(e.department_id) },
           { header: "Status", value: (e) => (e.status === "active" ? "Active" : "Separated") },
           { header: "Joining date", value: (e) => e.joining_date },
-          { header: "Phone", value: (e) => e.phone },
+          { header: "Phone", value: (e) => formatPhone(e.phone) },
           { header: "E-mail", value: (e) => e.email },
         ]);
       toast.success(`Exported ${list.length} ${list.length === 1 ? "person" : "people"}`);

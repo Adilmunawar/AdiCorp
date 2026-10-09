@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { Check, ChevronsUpDown, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Command, containsFilter, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -179,7 +179,7 @@ export function EmployeePicker({
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[--radix-popover-trigger-width] min-w-[260px] p-0" align="start">
-        <Command>
+        <Command filter={containsFilter}>
           <CommandInput placeholder="Search name, code or position…" />
           <CommandList>
             <CommandEmpty>No one matches.</CommandEmpty>

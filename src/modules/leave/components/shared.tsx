@@ -4,7 +4,7 @@ import { addMonths, format, startOfMonth } from "date-fns";
 import { CalendarDays, Check, ChevronLeft, ChevronRight, ChevronsUpDown } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Command, containsFilter, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { initials, toDate } from "@/components/kit";
 import { cn } from "@/lib/utils";
@@ -94,7 +94,7 @@ export function EmployeePicker({
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[--radix-popover-trigger-width] min-w-[240px] p-0" align="start">
-        <Command>
+        <Command filter={containsFilter}>
           <CommandInput placeholder="Search by name or ID…" />
           <CommandList>
             <CommandEmpty>No active employee matches.</CommandEmpty>
@@ -102,7 +102,7 @@ export function EmployeePicker({
               {employees.map((e) => (
                 <CommandItem
                   key={e.id}
-                  value={`${e.name} ${e.employee_code ?? ""} ${e.id}`}
+                  value={`${e.name} ${e.employee_code ?? ""}`}
                   onSelect={() => {
                     onChange(e.id);
                     setOpen(false);

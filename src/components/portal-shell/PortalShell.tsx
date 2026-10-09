@@ -173,19 +173,25 @@ function AvatarMenu() {
 
 const MAX_TABS = 4;
 
+/** Titles for portal pages that are reached from inside another page rather than from the nav. */
+const PAGE_TITLES: Record<string, string> = {
+  "/portal/devices": "Device notifications",
+};
+
 /** Employee portal frame: left sidebar on desktop, bottom tab bar (+ More) on phones. */
 export function PortalShell() {
   const location = useLocation();
   const [moreOpen, setMoreOpen] = useState(false);
   const active = matchNav(portalNav, location.pathname);
+  const pageTitle = active?.label ?? PAGE_TITLES[location.pathname.replace(/\/+$/, "")] ?? "Employee portal";
   const tabs = portalNav.length > MAX_TABS + 1 ? portalNav.slice(0, MAX_TABS) : portalNav;
   const overflow = portalNav.length > MAX_TABS + 1 ? portalNav.slice(MAX_TABS) : [];
   const overflowActive = overflow.some((i) => i.key === active?.key);
 
   useEffect(() => setMoreOpen(false), [location.pathname]);
   useEffect(() => {
-    document.title = active ? `${active.label} · Employee Portal` : "Employee Portal · AdiCorp HR";
-  }, [active]);
+    document.title = active || pageTitle !== "Employee portal" ? `${pageTitle} · Employee Portal` : "Employee Portal · AdiCorp HR";
+  }, [active, pageTitle]);
 
   return (
     <div className="flex h-[100dvh] w-full overflow-hidden bg-muted/30">
@@ -216,7 +222,7 @@ export function PortalShell() {
           </Link>
           <div className="min-w-0 flex-1">
             <p className="hidden text-[10px] font-semibold uppercase leading-none tracking-[0.12em] text-muted-foreground md:block">Employee portal</p>
-            <p className="truncate font-display text-[15px] font-semibold leading-tight tracking-tight md:mt-1">{active?.label ?? "Employee portal"}</p>
+            <p className="truncate font-display text-[15px] font-semibold leading-tight tracking-tight md:mt-1">{pageTitle}</p>
           </div>
           <PortalNotificationBell />
           <AvatarMenu />

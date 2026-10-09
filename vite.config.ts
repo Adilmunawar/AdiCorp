@@ -32,6 +32,8 @@ export default defineConfig(() => ({
     },
   },
   build: {
+    // Not "assets": on Vercel a real /assets folder would shadow the app's /assets route (deep links, refresh).
+    assetsDir: "static",
     chunkSizeWarningLimit: 900,
     rollupOptions: {
       output: {

@@ -82,7 +82,8 @@ export default function PayrollReportsPage() {
     return { ...t, gross: round2(t.gross), tax: round2(t.tax), net: round2(t.net), paidNet: round2(t.paidNet), overtime: round2(t.overtime), deductions: round2(t.deductions) };
   }, [months]);
   const unpaidNet = round2(total.net - total.paidNet);
-  const average = withPay.length ? round2(total.gross / withPay.length) : 0;
+  // A whole-unit figure: the tile beside it shows whole rupees, and paisa dust (…,106.90) reads as a mistake.
+  const average = withPay.length ? Math.round(total.gross / withPay.length) : 0;
   const deptGross = depts.reduce((s, d) => s + d.gross, 0);
   const chart = months.map((m) => ({
     label: formatDate(m.month, "MMM ’yy"),

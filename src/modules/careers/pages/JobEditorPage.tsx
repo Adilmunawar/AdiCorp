@@ -208,7 +208,7 @@ function JobEditor({ id }: { id: string | undefined }) {
             )}
             <Button type="submit" disabled={save.isPending}>
               <Save className="mr-1.5 h-4 w-4" />
-              {save.isPending ? "Saving…" : isNew ? "Publish role" : "Save changes"}
+              {save.isPending ? "Saving…" : isNew ? (form.status === "open" ? "Publish role" : "Save role") : "Save changes"}
             </Button>
           </>
         }
@@ -362,7 +362,7 @@ function JobEditor({ id }: { id: string | undefined }) {
               <Link to="/hiring/jobs">Cancel</Link>
             </Button>
             <Button type="submit" disabled={save.isPending}>
-              {save.isPending ? "Saving…" : isNew ? "Publish role" : "Save changes"}
+              {save.isPending ? "Saving…" : isNew ? (form.status === "open" ? "Publish role" : "Save role") : "Save changes"}
             </Button>
           </div>
         </div>

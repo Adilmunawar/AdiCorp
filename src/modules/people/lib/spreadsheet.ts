@@ -1,6 +1,7 @@
 import { format, isValid } from "date-fns";
 import type { Employee } from "../api/types";
 import { GENDER_OPTIONS, SHIFT_OPTIONS } from "./constants";
+import { formatPhone } from "./utils";
 
 /*
  * Excel import/export for the employee directory. The xlsx library is loaded on
@@ -227,7 +228,7 @@ export async function exportEmployeesXlsx(rows: Employee[], departmentName: (id:
     "Joining date": e.joining_date ?? "",
     "Last working day": e.separation_date ?? "",
     "Father's name": e.father_name ?? "",
-    Phone: e.phone ?? "",
+    Phone: formatPhone(e.phone),
     "E-mail": e.email ?? "",
     Gender: GENDER_OPTIONS.find((g) => g.value === e.gender)?.label ?? e.gender ?? "",
     "Date of birth": e.date_of_birth ?? "",

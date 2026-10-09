@@ -20,7 +20,7 @@ import {
 import { useAuth } from "@/context/AuthContext";
 import { useMediaBelow } from "@/hooks/use-mobile";
 import { adminNav } from "@/modules/registry";
-import { useNavBadges } from "@/components/shell/nav-badges";
+import { useNavBadges, useRequestNavBadges } from "@/components/shell/nav-badges";
 import { EmptyState, SectionCard, Skeleton, StatusBadge, formatDate, formatDateTime, formatNumber, formatRelative, initials, toDate } from "@/components/kit";
 import { cn } from "@/lib/utils";
 import type { Celebration, EventItem, LeaveItem } from "../api";
@@ -122,20 +122,20 @@ type AttentionKind = "decide" | "follow";
  * follow-up. The sidebar only has room for the page name ("Documents 37"); here there is room
  * to say what the number means. Unknown keys fall back to the nav label as a follow-up.
  */
-const ATTENTION: Record<string, { label: string; kind: AttentionKind }> = {
-  "leave.requests": { label: "Leave requests to decide", kind: "decide" },
-  "leave.overtime": { label: "Overtime to approve", kind: "decide" },
+const ATTENTION: Record<string, { label: string; kind: AttentionKind; href?: string }> = {
+  "leave.requests": { label: "Leave requests to decide", kind: "decide", href: "/leave?tab=requests&status=pending" },
+  "leave.overtime": { label: "Overtime to approve", kind: "decide", href: "/overtime-hours?status=pending" },
   "time.corrections": { label: "Punch corrections to review", kind: "decide" },
   "people.updates": { label: "Profile changes to review", kind: "decide" },
   "expenses.requests": { label: "Expense requests to decide", kind: "decide" },
   "expenses.finance": { label: "Expenses to pay or renew", kind: "decide" },
   "payroll.updates": { label: "HR updates to process", kind: "decide" },
   "payroll.overtime": { label: "Approved overtime to price", kind: "decide" },
-  "careers.applicants": { label: "New applicants", kind: "follow" },
+  "careers.applicants": { label: "New applicants", kind: "follow", href: "/hiring/applicants?stage=new" },
   "engagement.messages": { label: "Unread messages", kind: "follow" },
-  "engagement.complaints": { label: "Open complaints", kind: "follow" },
+  "engagement.complaints": { label: "Open complaints", kind: "follow", href: "/complaints?tab=pending" },
   "people.documents": { label: "Missing documents", kind: "follow" },
-  "people.onboarding": { label: "Overdue onboarding tasks", kind: "follow" },
+  "people.onboarding": { label: "Overdue onboarding tasks", kind: "follow", href: "/checklists?status=overdue" },
   "policies.policies": { label: "Policy signatures outstanding", kind: "follow" },
   "policies.letters": { label: "Letters past their reply date", kind: "follow" },
 };
@@ -205,7 +205,8 @@ export function AttentionCard({ extra = [], title = "Needs attention", wide = fa
   const phone = useMediaBelow(640);
   const [showAll, setShowAll] = useState(false);
   // The shell runs every badge hook once and shares the counts, so no module query or realtime
-  // subscription is opened twice.
+  // subscription is opened twice. Phones only load them when the drawer opens, so ask for them here.
+  useRequestNavBadges();
   const counts = useNavBadges();
   const [settled, setSettled] = useState(false);
 
@@ -224,7 +225,8 @@ export function AttentionCard({ extra = [], title = "Needs attention", wide = fa
       label: ATTENTION[n.key]?.label ?? n.label,
       kind: ATTENTION[n.key]?.kind ?? ("follow" as const),
       count: counts[n.key] ?? 0,
-      href: n.href,
+      // The badge counts one state (pending, overdue, new); land on that filter, not the whole page.
+      href: ATTENTION[n.key]?.href ?? n.href,
       icon: n.icon,
     })),
     ...extra.filter((x) => !covered.has(x.href)).map((x) => ({ ...x, kind: x.kind ?? ("follow" as const) })),

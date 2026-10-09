@@ -8,6 +8,9 @@ type Counts = Readonly<Record<string, number>>;
 
 const NavBadgesContext = createContext<Counts>({});
 
+/** Lets a page ask the shell for the counts where it would otherwise wait (phones load them when the drawer opens). */
+const NavBadgesRequestContext = createContext<() => void>(() => undefined);
+
 /**
  * Nav item keys whose count comes from the one `nav_badge_counts` RPC. Their `useBadge` hooks are
  * never mounted by the shell, so the sidebar costs one request on mount and one every two minutes
@@ -120,7 +123,18 @@ function useServerBadges(enabled: boolean): Counts {
  * drawer never opens a second subscription, and a failing badge only hides its own count.
  * `enabled` lets phones wait until the menu is first opened before asking for any counts.
  */
-export function NavBadgesProvider({ items, enabled = true, children }: { items: ModuleNavItem[]; enabled?: boolean; children: ReactNode }) {
+export function NavBadgesProvider({
+  items,
+  enabled = true,
+  onRequest,
+  children,
+}: {
+  items: ModuleNavItem[];
+  enabled?: boolean;
+  /** Called when a page needs the counts now (the dashboard's "Needs attention" card on a phone). */
+  onRequest?: () => void;
+  children: ReactNode;
+}) {
   const [hookCounts, setHookCounts] = useState<Counts>({});
   const report = useCallback((key: string, count: number) => {
     setHookCounts((prev) => ((prev[key] ?? 0) === count ? prev : { ...prev, [key]: count }));
@@ -129,17 +143,33 @@ export function NavBadgesProvider({ items, enabled = true, children }: { items: 
   const serverCounts = useServerBadges(enabled);
   const counts = useMemo<Counts>(() => ({ ...hookCounts, ...serverCounts }), [hookCounts, serverCounts]);
 
+  const request = useMemo(() => onRequest ?? (() => undefined), [onRequest]);
+
   return (
-    <NavBadgesContext.Provider value={counts}>
-      {enabled &&
-        withHooks.map((item) => (
-          <BadgeBoundary key={item.key}>
-            <BadgeCollector item={item} report={report} />
-          </BadgeBoundary>
-        ))}
-      {children}
-    </NavBadgesContext.Provider>
+    <NavBadgesRequestContext.Provider value={request}>
+      <NavBadgesContext.Provider value={counts}>
+        {enabled &&
+          withHooks.map((item) => (
+            <BadgeBoundary key={item.key}>
+              <BadgeCollector item={item} report={report} />
+            </BadgeBoundary>
+          ))}
+        {children}
+      </NavBadgesContext.Provider>
+    </NavBadgesRequestContext.Provider>
   );
+}
+
+/**
+ * Make sure the badge counts are being loaded while the calling component is mounted. On phones the
+ * shell waits for the drawer to open before asking for them, which would leave a card built on the
+ * counts (the dashboard's "Needs attention") empty until the menu was opened once.
+ */
+export function useRequestNavBadges(): void {
+  const request = useContext(NavBadgesRequestContext);
+  useEffect(() => {
+    request();
+  }, [request]);
 }
 
 /** Every nav badge count by item key (0 or missing means no badge). */
