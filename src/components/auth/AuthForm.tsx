@@ -232,7 +232,7 @@ export default function AuthForm() {
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full h-11 mt-4 rounded-lg text-sm font-bold tracking-wide gap-2 bg-white text-primary hover:bg-white/90 shadow-md hover:shadow-lg transition-all duration-200"
+              className="w-full h-11 mt-4 rounded-lg text-sm font-bold tracking-wide gap-2 bg-none bg-white text-primary hover:bg-white/90 shadow-md hover:shadow-lg transition-all duration-200"
             >
               {isLoading ? (
                 <>
