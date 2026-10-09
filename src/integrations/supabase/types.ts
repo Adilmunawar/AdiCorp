@@ -300,6 +300,9 @@ export type Database = {
           leave_request_id: string | null
           marked_by: string | null
           note: string | null
+          prev_note: string | null
+          prev_source: string | null
+          prev_status: string | null
           source: string
           status: string
           updated_at: string
@@ -313,6 +316,9 @@ export type Database = {
           leave_request_id?: string | null
           marked_by?: string | null
           note?: string | null
+          prev_note?: string | null
+          prev_source?: string | null
+          prev_status?: string | null
           source?: string
           status: string
           updated_at?: string
@@ -326,6 +332,9 @@ export type Database = {
           leave_request_id?: string | null
           marked_by?: string | null
           note?: string | null
+          prev_note?: string | null
+          prev_source?: string | null
+          prev_status?: string | null
           source?: string
           status?: string
           updated_at?: string
@@ -4747,21 +4756,39 @@ export type Database = {
         Returns: number
       }
       leave_request_cancel: { Args: { p_id: string }; Returns: Json }
-      leave_request_create: {
-        Args: {
-          p_approve_now?: boolean
-          p_employee: string
-          p_end: string
-          p_leave_type: string
-          p_reason?: string
-          p_start: string
-        }
-        Returns: Json
-      }
-      leave_request_review: {
-        Args: { p_decision: string; p_id: string; p_note?: string }
-        Returns: Json
-      }
+      leave_request_create:
+        | {
+            Args: {
+              p_approve_now?: boolean
+              p_employee: string
+              p_end: string
+              p_leave_type: string
+              p_reason?: string
+              p_start: string
+            }
+            Returns: Json
+          }
+        | {
+            Args: {
+              p_approve_now: boolean
+              p_employee: string
+              p_end: string
+              p_force: boolean
+              p_leave_type: string
+              p_reason: string
+              p_start: string
+            }
+            Returns: Json
+          }
+      leave_request_review:
+        | {
+            Args: { p_decision: string; p_id: string; p_note?: string }
+            Returns: Json
+          }
+        | {
+            Args: { p_decision: string; p_force: boolean; p_id: string; p_note: string }
+            Returns: Json
+          }
       leave_request_undo: { Args: { p_id: string }; Returns: Json }
       leave_requests_list: {
         Args: {

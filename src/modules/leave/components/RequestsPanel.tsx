@@ -15,7 +15,7 @@ import {
   type RowAction,
 } from "@/components/kit";
 import { cn } from "@/lib/utils";
-import { useCancelLeave, useReviewLeave, useUndoLeave } from "../api";
+import { isOverBalanceError, useCancelLeave, useReviewLeave, useUndoLeave } from "../api";
 import { dayWord, leaveWhen, yearOptions } from "../lib";
 import type { LeaveRequestRow, LeaveStatus } from "../types";
 import { DecisionDialog, type Decision } from "./DecisionDialog";
@@ -299,6 +299,9 @@ export function RequestsPanel({ rows, loading, refreshing, year, onYearChange, s
             : "The same decision and note apply to every selected request."
         }
         onDecide={(decision, note) => decideMany(deciding?.rows ?? [], decision, note)}
+        // A single request refused for the year's balance can be approved anyway by HR.
+        canOverride={single ? isOverBalanceError : undefined}
+        onApproveAnyway={single ? (note) => review.mutateAsync({ id: single.id, decision: "approved", note, force: true }) : undefined}
       >
         {single ? (
           <div className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">

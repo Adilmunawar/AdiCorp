@@ -284,6 +284,13 @@ export interface CreateLeaveVars {
   end: string;
   reason: string;
   approveNow: boolean;
+  /** HR override: file (and approve) even when the year's balance cannot cover it. */
+  force?: boolean;
+}
+
+/** The server refuses a request of a limited type that would take the year's balance below zero. */
+export function isOverBalanceError(error: unknown): boolean {
+  return /^Not enough .+ leave for \d{4}:/.test(errorMessage(error, ""));
 }
 
 export function useCreateLeaveRequest() {
@@ -296,6 +303,8 @@ export function useCreateLeaveRequest() {
       p_end: v.end,
       p_reason: v.reason || null,
       p_approve_now: v.approveNow,
+      // p_force selects the override overload; the plain call keeps the original signature.
+      ...(v.force ? { p_force: true } : {}),
     }),
     // "Approve now" can leave the request pending (closed or locked month): the reply says why.
     { partial: (v, reply) => v.approveNow && (reply as ActionReply | null)?.status !== "approved" },
@@ -303,12 +312,19 @@ export function useCreateLeaveRequest() {
 }
 
 export function useReviewLeave() {
-  return useModuleMutation<{ id: string; decision: "approved" | "rejected"; note?: string; silent?: boolean }>(
+  return useModuleMutation<{ id: string; decision: "approved" | "rejected"; note?: string; silent?: boolean; force?: boolean }>(
     "leave_request_review",
-    (v) => ({ p_id: v.id, p_decision: v.decision, p_note: v.note || null }),
+    (v) => ({ p_id: v.id, p_decision: v.decision, p_note: v.note || null, ...(v.force ? { p_force: true } : {}) }),
     {
       optimistic: (v) => ({ ids: [v.id], patch: { status: v.decision, review_notes: v.note || null } }),
-      success: (v) => (v.silent ? undefined : v.decision === "approved" ? "Leave approved and marked in attendance." : "Leave request rejected."),
+      success: (v) =>
+        v.silent
+          ? undefined
+          : v.decision === "rejected"
+            ? "Leave request rejected."
+            : v.force
+              ? "Leave approved beyond the year's balance and marked in attendance."
+              : "Leave approved and marked in attendance.",
     },
   );
 }
@@ -316,7 +332,7 @@ export function useReviewLeave() {
 export function useUndoLeave() {
   return useModuleMutation<{ id: string }>("leave_request_undo", (v) => ({ p_id: v.id }), {
     optimistic: (v) => ({ ids: [v.id], patch: { status: "pending", review_notes: null, reviewer_name: null } }),
-    success: "Moved back to pending. Attendance written by the approval was removed.",
+    success: "Moved back to pending. Days the approval took over got their earlier mark back; days it created were removed.",
   });
 }
 

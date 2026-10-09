@@ -16,6 +16,23 @@ const CORS_HEADERS: Record<string, string> = {
   "Access-Control-Max-Age": "86400",
 };
 
+/** The origin to allow: one listed in ALLOWED_ORIGINS (comma separated), or "*" when it is unset. */
+function allowOrigin(req: Request): string {
+  const allowed = (Deno.env.get("ALLOWED_ORIGINS") ?? "")
+    .split(",")
+    .map((o) => o.trim().replace(/\/+$/, ""))
+    .filter(Boolean);
+  if (allowed.length === 0) return "*";
+  const origin = (req.headers.get("origin") ?? "").replace(/\/+$/, "");
+  return allowed.includes(origin) ? origin : allowed[0];
+}
+
+function withCors(res: Response, req: Request): Response {
+  res.headers.set("Access-Control-Allow-Origin", allowOrigin(req));
+  res.headers.append("Vary", "Origin");
+  return res;
+}
+
 const CV_MAX_BYTES = 5 * 1024 * 1024;
 const BODY_MAX_BYTES = CV_MAX_BYTES + 64 * 1024;
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -91,7 +108,8 @@ function safeName(fileName: string, type: CvType): string {
 }
 
 function clientIp(req: Request): string {
-  const forwarded = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
+  // The LAST hop is the address the gateway saw; earlier entries are whatever the caller sent.
+  const forwarded = req.headers.get("x-forwarded-for")?.split(",").pop()?.trim();
   return forwarded || req.headers.get("cf-connecting-ip") || req.headers.get("x-real-ip") || "unknown";
 }
 
@@ -119,7 +137,7 @@ async function rpc(admin: SupabaseClient, fn: string, args: Record<string, unkno
   return (data ?? {}) as RpcResult;
 }
 
-Deno.serve(async (req) => {
+async function handle(req: Request): Promise<Response> {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS_HEADERS });
   if (req.method !== "POST") return fail("Method not allowed", 405);
 
@@ -203,4 +221,6 @@ Deno.serve(async (req) => {
     if (stored) await admin.storage.from("cvs").remove([stored]).catch(() => undefined);
     return fail("Your application could not be sent. Try again in a minute.", 500);
   }
-});
+}
+
+Deno.serve(async (req: Request): Promise<Response> => withCors(await handle(req), req));

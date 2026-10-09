@@ -152,7 +152,8 @@ export default function PayslipEditorPage() {
     const safe = (v: number) => (Number.isFinite(v) && v > 0 ? round2(v) : 0);
     const basic = safe(num("basic_salary"));
     const allowances = safe(num("allowances"));
-    const auto = taxFromSplit(basic, allowances, rules);
+    // A part-month slip pays its share of the full month's tax, as the server does on save.
+    const auto = taxFromSplit(basic, allowances, rules, d?.payslip.paid_days, d?.payslip.month_days);
     const income_tax = form.tax_manual ? safe(num("income_tax")) : auto.monthly_tax;
     const figures = {
       basic_salary: basic,

@@ -129,6 +129,12 @@ export interface SheetOpResult {
   done: Array<{ employee_id: string; name: string; payslip_id: string | null; net: number | null }>;
   skipped: number;
   negative: number;
+  /** finalise: drafts left alone because the salary, unpaid leave or overtime behind them changed. */
+  stale?: number;
+  /** delete: drafts left alone because they were paid once (payslips.ever_paid). */
+  locked?: number;
+  /** What the server wants Finance to know about stale or locked rows. */
+  message?: string | null;
   error?: string;
 }
 
@@ -144,6 +150,8 @@ export interface PayslipRecord extends SheetPayslip {
   absent_days: number;
   paid_days: number | null;
   month_days: number | null;
+  /** True once the slip was ever marked paid; it can be reopened but never deleted. */
+  ever_paid?: boolean;
   overtime_basis: number;
   lines: PayslipLine[];
   notes: string | null;

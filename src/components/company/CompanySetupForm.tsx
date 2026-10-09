@@ -102,27 +102,31 @@ export default function CompanySetupForm({ onComplete, isEmbedded = false }: Com
         return;
       }
       setIsLoading(true);
-      let logoUrl: string | null = null;
-      if (logoFile) {
-        const ext = logoFile.type === "image/png" ? "png" : logoFile.type === "image/webp" ? "webp" : "jpg";
-        // Logos are public: the file name must not reveal who uploaded it.
-        const filePath = `${crypto.randomUUID()}.${ext}`;
-        const { error: uploadError } = await supabase.storage.from("logos").upload(filePath, logoFile, { contentType: logoFile.type });
-        if (uploadError) throw uploadError;
-        logoUrl = supabase.storage.from("logos").getPublicUrl(filePath).data.publicUrl;
-      }
-
       // The server creates the company and makes the caller its owner in one transaction.
-      const { error } = await supabase.rpc("create_company_for_current_user", {
+      const { data: companyId, error } = await supabase.rpc("create_company_for_current_user", {
         p_name: values.name,
         p_phone: values.phone || undefined,
         p_website: values.website ? normaliseWebsite(values.website) ?? undefined : undefined,
         p_address: values.address || undefined,
         p_company_size: values.company_size || undefined,
         p_company_type: values.company_type || undefined,
-        p_logo: logoUrl ?? undefined,
       });
       if (error) throw error;
+
+      // The logo goes up once the company exists: the bucket only accepts <company_id>/... from its
+      // owner. Logos are public, so the file name must not reveal who uploaded it.
+      if (logoFile && companyId) {
+        const ext = logoFile.type === "image/png" ? "png" : logoFile.type === "image/webp" ? "webp" : "jpg";
+        const filePath = `${companyId}/${crypto.randomUUID()}.${ext}`;
+        const { error: uploadError } = await supabase.storage.from("logos").upload(filePath, logoFile, { contentType: logoFile.type });
+        if (uploadError) {
+          sonnerToast.error("The company was created, but the logo could not be uploaded", { description: uploadError.message });
+        } else {
+          const logo = supabase.storage.from("logos").getPublicUrl(filePath).data.publicUrl;
+          const { error: logoError } = await supabase.from("companies").update({ logo }).eq("id", companyId);
+          if (logoError) sonnerToast.error("The company was created, but the logo could not be saved", { description: logoError.message });
+        }
+      }
       await refreshProfile();
       sonnerToast.success(`${values.name} is set up`);
       onComplete?.();

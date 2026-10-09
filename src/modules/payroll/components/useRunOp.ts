@@ -22,12 +22,13 @@ export function describeResult(r: SheetOpResult): { text: string; ok: boolean } 
   let text = n ? `${n} ${n === 1 ? one : many}.` : "Nothing changed.";
   if (r.skipped) text += ` ${plural(r.skipped, "person was", "people were")} left as they were: the step does not apply to where their payslip is.`;
   if (r.negative) text += ` ${plural(r.negative, "draft")} would go below zero with the new figures; open ${r.negative === 1 ? "it" : "them"} to adjust by hand.`;
+  if (r.message) text += ` ${r.message}`;
   return { text, ok: n > 0 };
 }
 
 function report(r: SheetOpResult) {
   const { text, ok } = describeResult(r);
-  if (ok && !r.negative) toast.success(text);
+  if (ok && !r.negative && !r.stale && !r.locked) toast.success(text);
   else if (ok) toast.warning(text);
   else toast.info(text);
 }

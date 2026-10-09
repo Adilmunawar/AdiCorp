@@ -96,10 +96,32 @@ export function getPortalToken(): string | null {
 }
 
 const AUTH_PATTERNS = ["invalid session", "session expired", "not authenticated", "invalid token", "jwt expired"];
+/** The server refuses every call but portal_me / portal_change_password while a temporary password is in place. */
+const PASSWORD_PENDING_PATTERN = "password_change_required";
+/** Raised by portalRpc when the server says the password must be changed first (EmployeeAuthContext listens). */
+export const PORTAL_PASSWORD_PENDING_EVENT = "adicorp:portal-password-pending";
 
 function isAuthMessage(message: string | undefined | null): boolean {
   const m = (message ?? "").toLowerCase();
   return AUTH_PATTERNS.some((p) => m.includes(p));
+}
+
+function isPasswordPendingMessage(message: string | undefined | null): boolean {
+  return (message ?? "").toLowerCase().includes(PASSWORD_PENDING_PATTERN);
+}
+
+/** Thrown when the session is valid but the temporary password has not been replaced yet. */
+export class PortalPasswordPendingError extends Error {
+  constructor() {
+    super("Set a new password to continue.");
+    this.name = "PortalPasswordPendingError";
+  }
+}
+
+/** Mark the session as needing a password change (PortalGuard then shows /portal/setup-password). */
+function requirePasswordChange(): never {
+  window.dispatchEvent(new CustomEvent(PORTAL_PASSWORD_PENDING_EVENT));
+  throw new PortalPasswordPendingError();
 }
 
 /** Clear the stored session and tell EmployeeAuthContext (which redirects to /employee-login). */
@@ -126,6 +148,7 @@ export async function portalRpc<T = unknown>(fn: string, args: Record<string, un
   const token = requireToken();
   const { data, error } = await db.rpc(fn, { p_token: token, ...args });
   if (error) {
+    if (isPasswordPendingMessage(error.message)) requirePasswordChange();
     if (isAuthMessage(error.message)) {
       endPortalSession();
       throw new PortalAuthError();
@@ -134,6 +157,7 @@ export async function portalRpc<T = unknown>(fn: string, args: Record<string, un
   }
   if (data && typeof data === "object" && !Array.isArray(data) && "error" in data && (data as { error?: unknown }).error) {
     const message = String((data as { error: unknown }).error);
+    if (isPasswordPendingMessage(message)) requirePasswordChange();
     if (isAuthMessage(message)) {
       endPortalSession();
       throw new PortalAuthError();
@@ -157,6 +181,7 @@ async function invokePortalFiles<T>(body: FormData | Record<string, unknown>): P
         /* not JSON */
       }
     }
+    if (isPasswordPendingMessage(message)) requirePasswordChange();
     if (status === 401 || isAuthMessage(message)) {
       endPortalSession();
       throw new PortalAuthError();

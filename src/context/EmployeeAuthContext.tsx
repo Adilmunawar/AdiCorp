@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { db } from "@/integrations/supabase/client";
 import {
   PORTAL_LOGOUT_EVENT,
+  PORTAL_PASSWORD_PENDING_EVENT,
   PORTAL_SESSION_KEY,
   PortalAuthError,
   portalRpc,
@@ -119,6 +120,19 @@ export function EmployeeAuthProvider({ children }: { children: ReactNode }) {
     window.addEventListener(PORTAL_LOGOUT_EVENT, onLogout);
     return () => window.removeEventListener(PORTAL_LOGOUT_EVENT, onLogout);
   }, [queryClient]);
+
+  // The server refused a call because the temporary password is still in place (the session itself
+  // is fine): flag it, and PortalGuard sends the employee to /portal/setup-password.
+  useEffect(() => {
+    const onPending = () => {
+      const current = readPortalSession();
+      if (current && !current.employee.needs_password_change) {
+        persist({ ...current, employee: { ...current.employee, needs_password_change: true } });
+      }
+    };
+    window.addEventListener(PORTAL_PASSWORD_PENDING_EVENT, onPending);
+    return () => window.removeEventListener(PORTAL_PASSWORD_PENDING_EVENT, onPending);
+  }, [persist]);
 
   // The token has a fixed end: end the session then (and when the tab comes back after sleeping).
   useEffect(() => {

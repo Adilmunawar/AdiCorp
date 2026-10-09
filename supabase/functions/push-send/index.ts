@@ -20,6 +20,23 @@ const CORS_HEADERS: Record<string, string> = {
   "Access-Control-Max-Age": "86400",
 };
 
+/** The origin to allow: one listed in ALLOWED_ORIGINS (comma separated), or "*" when it is unset. */
+function allowOrigin(req: Request): string {
+  const allowed = (Deno.env.get("ALLOWED_ORIGINS") ?? "")
+    .split(",")
+    .map((o) => o.trim().replace(/\/+$/, ""))
+    .filter(Boolean);
+  if (allowed.length === 0) return "*";
+  const origin = (req.headers.get("origin") ?? "").replace(/\/+$/, "");
+  return allowed.includes(origin) ? origin : allowed[0];
+}
+
+function withCors(res: Response, req: Request): Response {
+  res.headers.set("Access-Control-Allow-Origin", allowOrigin(req));
+  res.headers.append("Vary", "Origin");
+  return res;
+}
+
 const admin = createClient(Deno.env.get("SUPABASE_URL") ?? "", Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "", {
   auth: { persistSession: false, autoRefreshToken: false },
 });
@@ -303,7 +320,7 @@ async function deliver(notificationId: string): Promise<Response> {
   return json(await record(outcomes));
 }
 
-Deno.serve(async (req) => {
+async function handle(req: Request): Promise<Response> {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS_HEADERS });
   if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
 
@@ -331,4 +348,6 @@ Deno.serve(async (req) => {
     console.error("push-send", e instanceof Error ? e.message : e);
     return json({ error: "Push delivery failed" }, 500);
   }
-});
+}
+
+Deno.serve(async (req: Request): Promise<Response> => withCors(await handle(req), req));

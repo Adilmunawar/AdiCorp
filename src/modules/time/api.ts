@@ -5,6 +5,7 @@ import { db } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { useEmployeeAuth } from "@/context/EmployeeAuthContext";
 import { portalRpc } from "@/lib/portal";
+import { formatDate } from "@/components/kit/format";
 import { companyToday, errorMessage } from "./lib";
 import type {
   AttendanceChange,
@@ -432,6 +433,9 @@ export function useTerminalIds() {
     queryKey: timeKeys.terminalIds(companyId),
     queryFn: () => rpc<TerminalIds>("time_terminal_ids"),
     enabled: !!companyId,
+    // Shared by the live board and the setup tab: flipping between them must not refetch. Link,
+    // unlink and punch events invalidate it explicitly.
+    staleTime: 60_000,
   });
 }
 
@@ -503,15 +507,25 @@ export function usePunchesForDay(date: string) {
 
   useEffect(() => {
     if (!companyId) return;
+    // A clock sync delivers hundreds of punch rows in a burst and every row fires here. The
+    // refetch is debounced (trailing, 3 s) so the burst costs one punches query and one daily
+    // summary instead of one of each per row. The device list keeps its own 30 s poll on the
+    // live board; a punch does not change it.
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    const flush = () => {
+      timer = null;
+      void qc.invalidateQueries({ queryKey: ["time", companyId, "punches"] });
+      void qc.invalidateQueries({ queryKey: ["time", companyId, "daily"] });
+    };
     const channel = db
       .channel(`time-punches-${companyId}-${instance}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "time_punches", filter: `company_id=eq.${companyId}` }, () => {
-        qc.invalidateQueries({ queryKey: ["time", companyId, "punches"] });
-        qc.invalidateQueries({ queryKey: ["time", companyId, "daily"] });
-        qc.invalidateQueries({ queryKey: timeKeys.devices(companyId) });
+        if (timer) clearTimeout(timer);
+        timer = setTimeout(flush, 3_000);
       })
       .subscribe();
     return () => {
+      if (timer) clearTimeout(timer);
       void db.removeChannel(channel);
     };
   }, [companyId, qc, instance]);
@@ -548,14 +562,11 @@ export function useCorrectionCounts() {
   const companyId = useCompanyId();
   return useQuery({
     queryKey: timeKeys.correctionCounts(companyId),
+    // One counted GROUP BY on the server instead of fetching every status row and counting here.
     queryFn: async () => {
-      const { data, error } = await db.from("punch_corrections").select("status").eq("company_id", companyId).limit(5000);
-      if (error) throw error;
+      const data = await rpc<Partial<Record<CorrectionStatus | "all", number>> | null>("time_correction_counts");
       const counts: Record<CorrectionStatus | "all", number> = { pending: 0, approved: 0, rejected: 0, withdrawn: 0, all: 0 };
-      for (const row of (data ?? []) as { status: CorrectionStatus }[]) {
-        counts[row.status] = (counts[row.status] ?? 0) + 1;
-        counts.all += 1;
-      }
+      for (const key of Object.keys(counts) as (CorrectionStatus | "all")[]) counts[key] = Number(data?.[key] ?? 0);
       return counts;
     },
     enabled: !!companyId,
@@ -605,7 +616,7 @@ export function useReviewCorrection() {
   const invalidate = useInvalidateTime();
   return useMutation({
     mutationFn: (input: { id: string; decision: "approve" | "reject"; timeIn?: string | null; timeOut?: string | null; note?: string | null }) =>
-      rpc<{ status: string; marked_present?: boolean }>("time_review_correction", {
+      rpc<{ status: string; marked_present?: boolean; work_date?: string }>("time_review_correction", {
         p_id: input.id,
         p_decision: input.decision,
         p_time_in: input.timeIn || null,
@@ -615,7 +626,11 @@ export function useReviewCorrection() {
     onSuccess: (res) => {
       invalidate();
       if (res.status === "approved") {
-        toast.success("Correction approved", { description: res.marked_present ? "The day was marked present on the register." : "The punches were added." });
+        toast.success("Correction approved", {
+          description: res.marked_present
+            ? `${res.work_date ? formatDate(res.work_date) : "The day"} was marked present on the register.`
+            : "The punches were added.",
+        });
       } else {
         toast.success("Correction rejected", { description: "The employee has been told." });
       }

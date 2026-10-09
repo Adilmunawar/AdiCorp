@@ -11,6 +11,8 @@ function vendorChunk(id: string): string | undefined {
   if (id.includes("@radix-ui") || id.includes("cmdk") || id.includes("vaul")) return "vendor-ui";
   if (id.includes("date-fns")) return "vendor-date";
   if (id.includes("lucide-react")) return "vendor-icons";
+  // recharts and the d3 pieces it pulls in: only chart pages load this, and it caches on its own.
+  if (/node_modules\/(recharts|recharts-scale|victory-vendor|internmap|d3-[a-z-]+)\//.test(id)) return "vendor-charts";
   return undefined;
 }
 

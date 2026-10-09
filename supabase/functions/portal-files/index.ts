@@ -15,6 +15,23 @@ const CORS_HEADERS: Record<string, string> = {
   "Access-Control-Max-Age": "86400",
 };
 
+/** The origin to allow: one listed in ALLOWED_ORIGINS (comma separated), or "*" when it is unset. */
+function allowOrigin(req: Request): string {
+  const allowed = (Deno.env.get("ALLOWED_ORIGINS") ?? "")
+    .split(",")
+    .map((o) => o.trim().replace(/\/+$/, ""))
+    .filter(Boolean);
+  if (allowed.length === 0) return "*";
+  const origin = (req.headers.get("origin") ?? "").replace(/\/+$/, "");
+  return allowed.includes(origin) ? origin : allowed[0];
+}
+
+function withCors(res: Response, req: Request): Response {
+  res.headers.set("Access-Control-Allow-Origin", allowOrigin(req));
+  res.headers.append("Vary", "Origin");
+  return res;
+}
+
 const MAX_BYTES = 8 * 1024 * 1024;
 const BODY_MAX_BYTES = MAX_BYTES + 64 * 1024;
 const SIGNED_URL_TTL_SECONDS = 300;
@@ -80,6 +97,9 @@ async function resolveSession(admin: SupabaseClient, token: unknown): Promise<Se
     throw new HttpError(401, "invalid session");
   }
   const { data, error } = await admin.rpc("_portal_resolve_session", { p_token: token });
+  // A temporary password blocks everything but portal_me / portal_change_password: the client
+  // redirects to the password page on this message, so it must not look like an ended session.
+  if (error?.message?.includes("password_change_required")) throw new HttpError(403, "password_change_required");
   if (error || !data) throw new HttpError(401, "invalid session");
   const session = data as { employee_id?: string; company_id?: string };
   if (!session.employee_id || !session.company_id) throw new HttpError(401, "invalid session");
@@ -215,7 +235,7 @@ async function handleSign(body: Record<string, unknown>, admin: SupabaseClient):
   return json({ url: data.signedUrl });
 }
 
-Deno.serve(async (req: Request): Promise<Response> => {
+async function handle(req: Request): Promise<Response> {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS_HEADERS });
   if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
 
@@ -243,4 +263,6 @@ Deno.serve(async (req: Request): Promise<Response> => {
     console.error("portal-files unexpected error", err);
     return json({ error: "Something went wrong" }, 500);
   }
-});
+}
+
+Deno.serve(async (req: Request): Promise<Response> => withCors(await handle(req), req));

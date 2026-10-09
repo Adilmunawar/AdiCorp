@@ -6,8 +6,10 @@
  *   basic = S x basic %, allowances = S - basic, medical exempt = basic x medical %,
  *   taxable = S - medical exempt, tax(year) = slabs on taxable x 12, tax(month) = tax(year) / 12 rounded.
  * Checked by hand (default PKR table): 250,000 -> taxable 235,000, 240,000 a year, 20,000 a month.
+ * A part month takes its share (paid days / days in the month) of the FULL month's figures, never the tax
+ * on the part-month pay as if it were a whole month's salary (see breakdownForPay and taxFromSplit).
  */
-import type { OvertimeType, PayRules, PayslipLine, TaxSlab } from "./types";
+import type { MonthPay, OvertimeType, PayRules, PayslipLine, TaxSlab } from "./types";
 
 export const MONEY_LIMIT = 100_000_000;
 export const MAX_LINES = 6;
@@ -69,13 +71,54 @@ export function breakdown(monthlySalary: number, rules: PayRules): SalaryBreakdo
   return { gross, basic, allowances: round2(gross - basic), medical_exempt: medical, taxable, yearly_tax: yearly, monthly_tax: roundWhole(yearly / 12) };
 }
 
-/** Tax from a payslip's own basic and allowances (after Finance changed them by hand). */
-export function taxFromSplit(basic: number, allowances: number, rules: PayRules): { taxable: number; yearly_tax: number; monthly_tax: number } {
+/**
+ * The structure and tax of a month's pay (_payroll_breakdown_pay). Each salary segment of the month is
+ * broken down as a FULL month and that share of the month (days / days in the month) is taken, so a part
+ * month pays its share of the full month's tax: 250,000 joining 15 October -> 17/31 of 20,000 = 10,968.
+ * A whole month at one salary is exactly breakdown() of that salary.
+ */
+export function breakdownForPay(pay: MonthPay, rules: PayRules): SalaryBreakdown {
+  const n = Number(pay.month_days) || 0;
+  const gross = round2(Math.max(0, Number(pay.monthly_salary) || 0));
+  if (!pay.prorated || n <= 0) return breakdown(gross, rules);
+  let basic = 0;
+  let medical = 0;
+  let taxable = 0;
+  let yearly = 0;
+  let monthly = 0;
+  for (const s of pay.segments ?? []) {
+    const b = breakdown(s.monthly_salary, rules);
+    const share = (Number(s.days) || 0) / n;
+    basic += b.basic * share;
+    medical += b.medical_exempt * share;
+    taxable += b.taxable * share;
+    yearly += b.yearly_tax * share;
+    monthly += b.monthly_tax * share;
+  }
+  basic = Math.min(round2(basic), gross);
+  return { gross, basic, allowances: round2(gross - basic), medical_exempt: round2(medical), taxable: round2(taxable), yearly_tax: round2(yearly), monthly_tax: roundWhole(monthly) };
+}
+
+/**
+ * Tax from a payslip's own basic and allowances (after Finance changed them by hand). On a part-month slip
+ * (paidDays < monthDays) the figures are scaled up to a full month, taxed, and the month's share taken
+ * (_payroll_tax_from_split with days).
+ */
+export function taxFromSplit(basic: number, allowances: number, rules: PayRules, paidDays?: number | null, monthDays?: number | null): { taxable: number; yearly_tax: number; monthly_tax: number } {
   const b = Math.max(0, Number(basic) || 0);
   const a = Math.max(0, Number(allowances) || 0);
   const taxable = round2(Math.max(0, b + a - (b * rules.medical_exempt_percent) / 100));
-  const yearly = yearlyTax(taxable * 12, rules.slabs);
-  return { taxable, yearly_tax: yearly, monthly_tax: roundWhole(yearly / 12) };
+  const pd = Number(paidDays) || 0;
+  const md = Number(monthDays) || 0;
+  const f = md > 0 && pd > 0 && pd < md ? pd / md : 1;
+  if (f === 1) {
+    const yearly = yearlyTax(taxable * 12, rules.slabs);
+    return { taxable, yearly_tax: yearly, monthly_tax: roundWhole(yearly / 12) };
+  }
+  const full = round2(taxable / f);
+  const yearly = yearlyTax(full * 12, rules.slabs);
+  const monthFull = roundWhole(yearly / 12);
+  return { taxable, yearly_tax: round2(yearly * f), monthly_tax: roundWhole(monthFull * f) };
 }
 
 /** A salary split into basic and allowances by the rules. */

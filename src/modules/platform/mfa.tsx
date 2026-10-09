@@ -34,17 +34,18 @@ export function useMfaStatus() {
       // All three at once: the company rule does not depend on the auth calls.
       // All local except the company rule: the factors come from the session's user (listFactors would
       // call /user, and that call holds the auth lock that every other request on the page waits for).
-      const [aal, session, setting] = await Promise.all([
+      // The rule comes from mfa_required(): company_settings itself is only readable once the session
+      // meets the company's assurance level, which is exactly what this gate has to find out.
+      const [aal, session, rule] = await Promise.all([
         supabase.auth.mfa.getAuthenticatorAssuranceLevel(),
         supabase.auth.getSession(),
-        companyId
-          ? db.from("company_settings").select("require_staff_mfa").eq("company_id", companyId).maybeSingle()
-          : Promise.resolve({ data: null }),
+        companyId ? db.rpc("mfa_required") : Promise.resolve({ data: false, error: null }),
       ]);
       if (aal.error) throw aal.error;
       if (session.error) throw session.error;
+      if (rule.error) throw rule.error;
       const factors = { data: { totp: (session.data.session?.user.factors ?? []).filter((f) => f.factor_type === "totp") } };
-      const companyRequires = !!(setting.data as { require_staff_mfa?: boolean } | null)?.require_staff_mfa;
+      const companyRequires = rule.data === true;
       return {
         currentLevel: aal.data.currentLevel ?? null,
         nextLevel: aal.data.nextLevel ?? null,

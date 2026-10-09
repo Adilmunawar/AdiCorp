@@ -17,6 +17,35 @@ const CORS_HEADERS: Record<string, string> = {
   "Access-Control-Max-Age": "86400",
 };
 
+/** The origin to allow: one listed in ALLOWED_ORIGINS (comma separated), or "*" when it is unset. */
+function allowOrigin(req: Request): string {
+  const allowed = (Deno.env.get("ALLOWED_ORIGINS") ?? "")
+    .split(",")
+    .map((o) => o.trim().replace(/\/+$/, ""))
+    .filter(Boolean);
+  if (allowed.length === 0) return "*";
+  const origin = (req.headers.get("origin") ?? "").replace(/\/+$/, "");
+  return allowed.includes(origin) ? origin : allowed[0];
+}
+
+function withCors(res: Response, req: Request): Response {
+  res.headers.set("Access-Control-Allow-Origin", allowOrigin(req));
+  res.headers.append("Vary", "Origin");
+  return res;
+}
+
+/** A string claim from a JWT that admin.auth.getUser() has already verified. */
+function jwtClaim(jwt: string, name: string): string | null {
+  try {
+    const part = jwt.split(".")[1] ?? "";
+    const padded = part.replace(/-/g, "+").replace(/_/g, "/").padEnd(Math.ceil(part.length / 4) * 4, "=");
+    const value = (JSON.parse(atob(padded)) as Record<string, unknown>)[name];
+    return typeof value === "string" ? value : null;
+  } catch {
+    return null;
+  }
+}
+
 const ROLES = ["owner", "hr", "finance"] as const;
 type Role = (typeof ROLES)[number];
 const BAN_FOREVER = "876000h";
@@ -134,6 +163,23 @@ async function authenticate(req: Request, admin: SupabaseClient): Promise<Caller
     .maybeSingle();
   if (!profile?.company_id || profile.role !== "owner") {
     throw new HttpError(403, "Only the company owner can manage staff accounts");
+  }
+
+  // Same rule as public.auth_mfa_ok(): when the company requires two-step verification, or the
+  // owner has enrolled a factor, only an aal2 session may manage accounts.
+  if (jwtClaim(jwt, "aal") !== "aal2") {
+    const factors = (data.user as User & { factors?: { status?: string }[] }).factors ?? [];
+    const hasFactor = factors.some((f) => f.status === "verified");
+    let required = false;
+    if (!hasFactor) {
+      const { data: settings } = await admin
+        .from("company_settings")
+        .select("require_staff_mfa")
+        .eq("company_id", profile.company_id)
+        .maybeSingle();
+      required = !!settings?.require_staff_mfa;
+    }
+    if (hasFactor || required) throw new HttpError(403, "Two-step verification is required");
   }
 
   const { data: company } = await admin
@@ -304,7 +350,7 @@ async function resetPassword(admin: SupabaseClient, caller: Caller, body: Record
   return json({ success: true });
 }
 
-Deno.serve(async (req: Request): Promise<Response> => {
+async function handle(req: Request): Promise<Response> {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS_HEADERS });
   if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
 
@@ -341,4 +387,6 @@ Deno.serve(async (req: Request): Promise<Response> => {
     console.error("admin-users unexpected error", err);
     return json({ error: "Something went wrong" }, 500);
   }
-});
+}
+
+Deno.serve(async (req: Request): Promise<Response> => withCors(await handle(req), req));

@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { useActiveEmployees, useCompanyTimeZone, useCreateLeaveRequest, useLeaveCountDays, useLeaveTypes } from "../api";
+import { isOverBalanceError, useActiveEmployees, useCompanyTimeZone, useCreateLeaveRequest, useLeaveCountDays, useLeaveTypes } from "../api";
 import { calendarDays, companyToday, dayWord } from "../lib";
 import { EmployeePicker } from "./shared";
 
@@ -26,6 +26,8 @@ export function LeaveRequestDialog({ open, onOpenChange }: { open: boolean; onOp
   const [reason, setReason] = useState("");
   const [approveNow, setApproveNow] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  /** The server's balance refusal, kept on screen so HR can file anyway. */
+  const [overBalance, setOverBalance] = useState<string | null>(null);
 
   // Reset when the dialog opens (not when the day rolls over while it is open).
   useEffect(() => {
@@ -38,6 +40,7 @@ export function LeaveRequestDialog({ open, onOpenChange }: { open: boolean; onOp
       setReason("");
       setApproveNow(true);
       setError(null);
+      setOverBalance(null);
     }
   }, [open, timeZone]);
 
@@ -45,19 +48,25 @@ export function LeaveRequestDialog({ open, onOpenChange }: { open: boolean; onOp
   const count = useLeaveCountDays(employeeId, start, end);
   const span = calendarDays(start, end);
 
-  const submit = async (e: FormEvent) => {
-    e.preventDefault();
+  const file = async (force: boolean) => {
     setError(null);
+    setOverBalance(null);
     if (!employeeId) return setError("Pick an employee.");
     if (!typeId) return setError("Pick a leave type.");
     if (!start || !end) return setError("Pick a start and an end date.");
     if (end < start) return setError("The end date is before the start date.");
     try {
-      await create.mutateAsync({ employeeId, leaveTypeId: typeId, start, end, reason: reason.trim(), approveNow });
+      await create.mutateAsync({ employeeId, leaveTypeId: typeId, start, end, reason: reason.trim(), approveNow, force });
       onOpenChange(false);
-    } catch {
+    } catch (err) {
       /* the server's reason is shown as a toast; the form stays open to correct it */
+      if (!force && isOverBalanceError(err)) setOverBalance(err instanceof Error ? err.message : "The balance does not cover this request.");
     }
+  };
+
+  const submit = (e: FormEvent) => {
+    e.preventDefault();
+    void file(false);
   };
 
   return (
@@ -138,6 +147,15 @@ export function LeaveRequestDialog({ open, onOpenChange }: { open: boolean; onOp
             <p role="alert" className="rounded-xl border border-destructive/20 bg-destructive/5 px-3 py-2 text-xs font-medium text-destructive">
               {error}
             </p>
+          )}
+          {overBalance && (
+            <div role="alert" className="space-y-2 rounded-xl border border-warning/30 bg-warning/10 p-3">
+              <p className="text-xs font-medium text-warning">{overBalance}</p>
+              <p className="text-xs text-muted-foreground">Filing anyway takes the year's balance below zero; the override is recorded in the activity log.</p>
+              <Button type="button" size="sm" variant="outline" className="rounded-xl" disabled={create.isPending} onClick={() => void file(true)}>
+                {approveNow ? "File and approve anyway" : "File anyway"}
+              </Button>
+            </div>
           )}
           <DialogFooter className="gap-2 sm:gap-2">
             <Button type="button" variant="outline" className="rounded-xl" onClick={() => onOpenChange(false)} disabled={create.isPending}>
