@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { ExternalLink } from "lucide-react";
 import { SectionCard, formatDate, formatDateTime } from "@/components/kit";
-import { CATEGORY_LABELS, METHOD_LABELS, costLine, monthlyCost, type ExpenseFile, type ExpensePayment, type ExpenseRow } from "../kinds";
+import { CATEGORY_LABELS, METHOD_LABELS, costLine, monthlyCost, quoted, type ExpenseFile, type ExpensePayment, type ExpenseRow } from "../kinds";
 import { Facts, Quote } from "./bits";
 import { FileButton, FileList } from "./FileList";
 import { ProgressTimeline } from "./ProgressTimeline";
@@ -52,10 +52,10 @@ export function DetailsCard({ x, money, currency, showWho = true }: { x: Expense
   );
 }
 
-export function ProgressCard({ x, money }: { x: ExpenseRow; money?: (n: number) => string }) {
+export function ProgressCard({ x, money, currency }: { x: ExpenseRow; money?: (n: number) => string; currency?: string }) {
   return (
     <SectionCard title="Progress">
-      <ProgressTimeline x={x} money={money} />
+      <ProgressTimeline x={x} money={money} currency={currency} />
     </SectionCard>
   );
 }
@@ -72,7 +72,8 @@ export function PaymentsCard({
   payments: ExpensePayment[];
   files: ExpenseFile[];
   money: (n: number) => string;
-  total: number;
+  /** "USD 360 in all (PKR 101,000)" or "PKR 101,000 in all": see paidTotalLabel. */
+  total: string;
   onOpen: (path: string) => void;
   /** Rendered next to the payment it undoes (Finance's undo). */
   undo?: ReactNode;
@@ -81,14 +82,17 @@ export function PaymentsCard({
 }) {
   if (!payments.length) return null;
   return (
-    <SectionCard title="Payments" description={`${money(total)} in all`} flush>
+    <SectionCard title="Payments" description={total} flush>
       <ul className="divide-y divide-border/60">
         {payments.map((p, i) => {
           const receipts = files.filter((f) => f.payment_id === p.id);
           return (
             <li key={p.id} className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2 px-4 py-3 sm:px-5">
               <div className="min-w-0">
-                <p className="tabular text-sm font-bold text-foreground">{money(p.amount)}</p>
+                <p className="tabular text-sm font-bold text-foreground">
+                  {money(p.amount)}
+                  {p.quoted_amount != null && p.quoted_currency && <span className="ml-1.5 text-xs font-medium text-muted-foreground">= {quoted(p.quoted_amount, p.quoted_currency)}</span>}
+                </p>
                 <p className="text-[11px] text-muted-foreground">
                   {formatDate(p.paid_on)} · {METHOD_LABELS[p.method]}
                   {p.reference && <> · <span className="tabular">{p.reference}</span></>}

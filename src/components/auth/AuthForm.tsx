@@ -67,9 +67,9 @@ export default function AuthForm() {
 
           <div className="grid grid-cols-3 gap-4 pt-8 mt-8 border-t border-border/40">
             {[
-              { value: "99.9%", label: "Uptime" },
-              { value: "AES-256", label: "Encryption" },
-              { value: "SOC 2", label: "Compliant" },
+              { value: "AES-256", label: "Encrypted at rest" },
+              { value: "TLS 1.3", label: "Encrypted in transit" },
+              { value: "2FA", label: "Two-step sign-in" },
             ].map((stat) => (
               <div key={stat.label} className="flex flex-col">
                 <div className="text-lg font-bold text-foreground">{stat.value}</div>

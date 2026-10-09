@@ -7,8 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { formatDate } from "@/components/kit";
 import { useAuth } from "@/context/AuthContext";
-import { useDepartments, useHireApplication } from "../lib/api";
+import { existingEmployeeMatch, useDepartments, useHireApplication, type ExistingEmployeeMatch } from "../lib/api";
 import { errorMessage, todayIn, type Application } from "../lib/model";
 
 const NONE = "__none__";
@@ -38,6 +39,8 @@ export function HireDialog({ application, onOpenChange, onHired }: HireDialogPro
   const [department, setDepartment] = useState<string>(NONE);
   const [cnic, setCnic] = useState("");
   const [error, setError] = useState<string | null>(null);
+  // Someone with this email or CNIC is already on the books: offer to link instead of duplicating them.
+  const [match, setMatch] = useState<ExistingEmployeeMatch | null>(null);
 
   useEffect(() => {
     if (!application) return;
@@ -46,32 +49,48 @@ export function HireDialog({ application, onOpenChange, onHired }: HireDialogPro
     setDepartment(application.job?.department_id ?? NONE);
     setCnic("");
     setError(null);
+    setMatch(null);
     // Reset only when a different candidate is opened, not when the company record refetches.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [application]);
 
-  const submit = (e: FormEvent) => {
-    e.preventDefault();
+  const run = (employeeId: string | null) => {
     if (!application) return;
     const digits = cnic.replace(/\D/g, "");
     if (!rank.trim()) return setError("Give the new hire a designation.");
     if (!joining) return setError("Pick a joining date.");
     if (digits && digits.length !== 13) return setError("A CNIC has 13 digits.");
     setError(null);
+    const returning = !!employeeId;
     hire.mutate(
-      { applicationId: application.id, rank: rank.trim(), joiningDate: joining, departmentId: department === NONE ? null : department, cnic: digits },
+      { applicationId: application.id, rank: rank.trim(), joiningDate: joining, departmentId: department === NONE ? null : department, cnic: digits, employeeId },
       {
-        onSuccess: (employeeId) => {
-          toast.success(`${application.name} is hired.`, {
-            description: "Their employee record is ready. Finance has been asked to set the salary.",
-            action: { label: "Open profile", onClick: () => navigate(`/employees/${employeeId}`) },
+        onSuccess: (hiredId) => {
+          toast.success(returning ? `${application.name} is back.` : `${application.name} is hired.`, {
+            description: returning
+              ? "Their existing employee record is active again. Finance has been asked to check the salary."
+              : "Their employee record is ready. Finance has been asked to set the salary.",
+            action: { label: "Open profile", onClick: () => navigate(`/employees/${hiredId}`) },
           });
           onOpenChange(false);
-          onHired?.(employeeId);
+          onHired?.(hiredId);
         },
-        onError: (err) => setError(errorMessage(err)),
+        onError: (err) => {
+          const found = existingEmployeeMatch(err);
+          if (found) {
+            setMatch(found);
+            setError(null);
+          } else {
+            setError(errorMessage(err));
+          }
+        },
       },
     );
+  };
+
+  const submit = (e: FormEvent) => {
+    e.preventDefault();
+    run(null);
   };
 
   return (
@@ -133,6 +152,20 @@ export function HireDialog({ application, onOpenChange, onHired }: HireDialogPro
               {application.phone ? ` · ${application.phone}` : ""}
             </div>
           )}
+          {match && (
+            <div role="alert" className="rounded-xl border border-warning/40 bg-warning/10 p-3 text-xs text-foreground">
+              <p className="font-semibold">
+                {match.name} is already on the books{match.status === "active" ? "" : ` (${match.status.replace("_", " ")})`}.
+              </p>
+              <p className="mt-1 text-muted-foreground">
+                Same {match.matched_on === "cnic" ? "CNIC" : "email"}
+                {match.rank ? ` · ${match.rank}` : ""}
+                {match.joining_date ? ` · joined ${formatDate(match.joining_date)}` : ""}
+                {match.separation_date ? ` · left ${formatDate(match.separation_date)}` : ""}. Hiring as a returning employee keeps their record and history
+                {match.status === "active" ? " and only updates the designation and department" : " and makes it active again from the joining date"}.
+              </p>
+            </div>
+          )}
           {error && (
             <p role="alert" className="text-sm text-destructive">
               {error}
@@ -142,9 +175,15 @@ export function HireDialog({ application, onOpenChange, onHired }: HireDialogPro
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button type="submit" disabled={hire.isPending}>
-              {hire.isPending ? "Creating employee…" : "Hire and create employee"}
-            </Button>
+            {match ? (
+              <Button type="button" disabled={hire.isPending} onClick={() => run(match.employee_id)}>
+                {hire.isPending ? "Linking…" : "Hire as returning employee"}
+              </Button>
+            ) : (
+              <Button type="submit" disabled={hire.isPending}>
+                {hire.isPending ? "Creating employee…" : "Hire and create employee"}
+              </Button>
+            )}
           </DialogFooter>
         </form>
       </DialogContent>

@@ -1,7 +1,6 @@
 import { lazy, Suspense } from "react";
-import { Skeleton } from "@/components/kit";
+import { formatNumber, Skeleton } from "@/components/kit";
 import { cn } from "@/lib/utils";
-import { formatNumber } from "@/components/kit";
 import { CHART } from "./helpers";
 import type { CountTrendChartProps, MonthBarsProps, StackedBarsProps } from "./charts-recharts";
 

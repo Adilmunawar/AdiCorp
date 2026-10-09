@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useEmployeeAuth } from "@/context/EmployeeAuthContext";
 import { checkFile } from "../api";
 import { openPortalExpenseFile, usePortalCompleteCourse, usePortalExpense, usePortalWithdrawExpense } from "../portalApi";
-import { BILLING_LABELS, CATEGORY_LABELS, EXPENSE_LIMITS as L, errorMessage, type ExpenseRow } from "../kinds";
+import { BILLING_LABELS, CATEGORY_LABELS, EXPENSE_LIMITS as L, errorMessage, paidTotalLabel, type ExpenseRow } from "../kinds";
 import { CATEGORY_ICONS, ExpenseStatusBadge, FieldLabel, FilePicker, FormError, Stage } from "../components/bits";
 import { DetailsCard, FilesCard, PaymentsCard, ProgressCard } from "../components/ExpenseDetails";
 
@@ -76,8 +76,8 @@ export default function PortalExpenseDetailPage() {
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:items-start">
         <div className="grid min-w-0 gap-4">
           <DetailsCard x={row} money={money} currency={currency} showWho={false} />
-          <ProgressCard x={row} money={money} />
-          <PaymentsCard payments={payments} files={files} money={money} total={x.paid_total ?? 0} onOpen={openPortalExpenseFile} />
+          <ProgressCard x={row} money={money} currency={currency} />
+          <PaymentsCard payments={payments} files={files} money={money} total={paidTotalLabel(x.paid_total ?? 0, x.paid_quoted_total, x.currency, currency, money)} onOpen={openPortalExpenseFile} />
           <FilesCard files={files} onOpen={openPortalExpenseFile} />
         </div>
         <div className="grid min-w-0 gap-4">

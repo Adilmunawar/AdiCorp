@@ -4,7 +4,7 @@ import { CardSkeleton, ConfirmButton, EmptyState, PageHeader, SectionCard, Skele
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
 import { openExpenseFile, useCompanyToday, useExpense, useExpenseFiles, useExpensePayments, useUndoPayment } from "../api";
-import { CATEGORY_LABELS, type ExpensePayment } from "../kinds";
+import { CATEGORY_LABELS, paidTotalLabel, quotedTotal, type ExpensePayment } from "../kinds";
 import { CATEGORY_ICONS, ExpenseStatusBadge, Stage } from "../components/bits";
 import { DetailsCard, FilesCard, PaymentsCard, ProgressCard } from "../components/ExpenseDetails";
 import { StaffActions } from "../components/StaffActions";
@@ -58,7 +58,9 @@ export default function ExpenseDetailPage() {
   // Listed by paid day, newest first: the first one is the latest payment.
   const lastPayment = paid[0]?.amount ?? null;
   // Until the payments are in (or if they fail), show no total rather than "0 in all".
-  const row = isFinance && payments.data ? { ...x, paid_total: paidTotal, last_payment: lastPayment } : x;
+  // In the item's currency too, when every payment says what it equals there.
+  const paidQuoted = quotedTotal(paid, x.currency, currency);
+  const row = isFinance && payments.data ? { ...x, paid_total: paidTotal, paid_quoted_total: paidQuoted, last_payment: lastPayment } : x;
   const money = isFinance ? (n: number) => format(n) : undefined;
   // Undo removes the payment recorded last (expense_undo_payment orders by created_at, id),
   // which differs from the latest paid day when an older payment was added afterwards.
@@ -92,7 +94,7 @@ export default function ExpenseDetailPage() {
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:items-start">
         <div className="grid min-w-0 gap-4">
           <DetailsCard x={row} money={money} currency={currency} />
-          <ProgressCard x={row} money={money} />
+          <ProgressCard x={row} money={money} currency={currency} />
           {isFinance && payments.error && (
             <SectionCard title="Payments">
               <div className="flex flex-wrap items-center justify-between gap-3">
@@ -108,7 +110,7 @@ export default function ExpenseDetailPage() {
               payments={payments.data ?? []}
               files={files.data ?? []}
               money={format}
-              total={paidTotal}
+              total={paidTotalLabel(paidTotal, paidQuoted, x.currency, currency, format)}
               onOpen={openExpenseFile}
               undoId={newest?.id}
               undo={

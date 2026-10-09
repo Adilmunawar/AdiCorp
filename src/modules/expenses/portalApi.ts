@@ -26,7 +26,13 @@ export const portalExpenseKeys = {
   detail: (companyId: string | null, employeeId: string | null, id: string) => ["expenses", companyId, "portal", employeeId, "detail", id] as const,
 };
 
-const num = (x: ExpenseRow): ExpenseRow => ({ ...x, amount: Number(x.amount), paid_total: Number(x.paid_total ?? 0), payments_count: Number(x.payments_count ?? 0) });
+const num = (x: ExpenseRow): ExpenseRow => ({
+  ...x,
+  amount: Number(x.amount),
+  paid_total: Number(x.paid_total ?? 0),
+  paid_quoted_total: x.paid_quoted_total == null ? null : Number(x.paid_quoted_total),
+  payments_count: Number(x.payments_count ?? 0),
+});
 
 export function usePortalExpenses() {
   const { companyId, employeeId } = usePortalIds();
@@ -49,7 +55,7 @@ export function usePortalExpense(id: string | undefined) {
       const d = await portalRpc<PortalExpenseDetail>("portal_expense", { p_id: id });
       return {
         expense: num(d.expense),
-        payments: (d.payments ?? []).map((p) => ({ ...p, amount: Number(p.amount) })),
+        payments: (d.payments ?? []).map((p) => ({ ...p, amount: Number(p.amount), quoted_amount: p.quoted_amount == null ? null : Number(p.quoted_amount) })),
         files: d.files ?? [],
       } satisfies PortalExpenseDetail;
     },

@@ -12,6 +12,7 @@ import {
   EXPENSE_BUCKET,
   MAX_FILE_BYTES,
   RENEWAL_WINDOW_DAYS,
+  confirmMessage,
   errorMessage,
   isoPlusDays,
   todayIso,
@@ -168,12 +169,12 @@ export function useExpensePayments(id: string | undefined, enabled: boolean) {
     queryFn: async () => {
       const { data, error } = await db
         .from("expense_payments")
-        .select("id, expense_id, amount, paid_on, method, reference, note, created_by_name, created_at")
+        .select("id, expense_id, amount, quoted_amount, quoted_currency, paid_on, method, reference, note, created_by_name, created_at")
         .eq("expense_id", id!)
         .order("paid_on", { ascending: false })
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return ((data ?? []) as ExpensePayment[]).map((p) => ({ ...p, amount: Number(p.amount) }));
+      return ((data ?? []) as ExpensePayment[]).map((p) => ({ ...p, amount: Number(p.amount), quoted_amount: p.quoted_amount == null ? null : Number(p.quoted_amount) }));
     },
   });
 }
@@ -354,7 +355,10 @@ function useExpenseMutation<V, R = unknown>(run: (v: V, companyId: string) => Pr
     onSuccess: (r, v) => {
       toast.success(typeof success === "function" ? success(v, r) : success);
     },
-    onError: (e) => toast.error(errorMessage(e)),
+    onError: (e) => {
+      // A "record it anyway?" answer from the server is shown as a confirm by the caller, not as an error.
+      if (!confirmMessage(e)) toast.error(errorMessage(e));
+    },
     onSettled: () => invalidateAll(qc, companyId),
   });
 }
@@ -399,6 +403,8 @@ export interface FinanceAddVars {
   payment: Record<string, unknown> | null;
   quote: File | null;
   receipt: File | null;
+  /** Go ahead after the server asked (the person has left). */
+  force?: boolean;
 }
 
 export function useFinanceAdd() {
@@ -417,6 +423,7 @@ export function useFinanceAdd() {
         p_payment: v.payment,
         p_quote: quote,
         p_receipt: receipt,
+        p_force: !!v.force,
       });
     } catch (e) {
       await removeExpenseObjects(uploaded.map((u) => u.path)).catch(() => undefined);
@@ -431,6 +438,8 @@ export interface PaymentVars {
   payment: Record<string, unknown>;
   receipt: File | null;
   renewal: boolean;
+  /** Go ahead after the server asked (already paid, more than quoted, or the person has left). */
+  force?: boolean;
 }
 
 export function useRecordPayment() {
@@ -438,7 +447,7 @@ export function useRecordPayment() {
     async (v: PaymentVars, companyId) => {
       const receipt = v.receipt ? await uploadExpenseFile(companyId, "receipt", v.owner, v.receipt) : null;
       try {
-        return await rpc<string>("expense_record_payment", { p_id: v.id, p_payment: v.payment, p_receipt: receipt });
+        return await rpc<string>("expense_record_payment", { p_id: v.id, p_payment: v.payment, p_receipt: receipt, p_force: !!v.force });
       } catch (e) {
         if (receipt) await removeExpenseObjects([receipt.path]).catch(() => undefined);
         throw e;

@@ -78,7 +78,7 @@ export function TopBar({ onOpenMenu, isMobile }: TopBarProps) {
           <div
             aria-hidden={showTitle}
             className={cn(
-              "absolute inset-0 flex min-w-0 items-center gap-3 transition-[opacity,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none",
+              "absolute inset-0 flex min-w-0 items-center gap-3 transition-[opacity,transform] duration-300 ease-out motion-reduce:transition-none",
               showTitle ? "pointer-events-none -translate-y-full opacity-0" : "opacity-100",
             )}
           >
@@ -91,7 +91,7 @@ export function TopBar({ onOpenMenu, isMobile }: TopBarProps) {
         <div
           aria-hidden={!showTitle}
           className={cn(
-            "absolute inset-0 flex min-w-0 items-center gap-3 transition-[opacity,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none",
+            "absolute inset-0 flex min-w-0 items-center gap-3 transition-[opacity,transform] duration-300 ease-out motion-reduce:transition-none",
             showTitle ? "opacity-100" : "pointer-events-none translate-y-full opacity-0",
           )}
         >

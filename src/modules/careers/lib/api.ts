@@ -395,6 +395,44 @@ export interface HireInput {
   joiningDate: string;
   departmentId: string | null;
   cnic: string;
+  /** Link the application to this existing employee (a returning person) instead of creating one. */
+  employeeId?: string | null;
+}
+
+/** The server found someone already on the books with the applicant's email or CNIC (SQLSTATE P0E01). */
+export const EXISTING_EMPLOYEE_CODE = "P0E01";
+
+export interface ExistingEmployeeMatch {
+  employee_id: string;
+  name: string;
+  status: string;
+  email: string | null;
+  rank: string | null;
+  joining_date: string | null;
+  separation_date: string | null;
+  matched_on: "email" | "cnic";
+}
+
+export function existingEmployeeMatch(err: unknown): ExistingEmployeeMatch | null {
+  if (!err || typeof err !== "object") return null;
+  const e = err as { code?: unknown; details?: unknown };
+  if (e.code !== EXISTING_EMPLOYEE_CODE || typeof e.details !== "string") return null;
+  try {
+    const d = JSON.parse(e.details) as Partial<ExistingEmployeeMatch>;
+    if (!d.employee_id || !d.name) return null;
+    return {
+      employee_id: d.employee_id,
+      name: d.name,
+      status: d.status ?? "active",
+      email: d.email ?? null,
+      rank: d.rank ?? null,
+      joining_date: d.joining_date ?? null,
+      separation_date: d.separation_date ?? null,
+      matched_on: d.matched_on === "cnic" ? "cnic" : "email",
+    };
+  } catch {
+    return null;
+  }
 }
 
 export function useHireApplication() {
@@ -408,6 +446,7 @@ export function useHireApplication() {
         p_joining_date: input.joiningDate,
         p_department: input.departmentId,
         p_cnic: input.cnic || null,
+        p_employee_id: input.employeeId ?? null,
       });
       if (error) throw error;
       return data as string;

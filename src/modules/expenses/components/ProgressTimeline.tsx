@@ -1,6 +1,6 @@
 import { formatDate, formatDateTime } from "@/components/kit";
 import { cn } from "@/lib/utils";
-import type { ExpenseRow } from "../kinds";
+import { quoted, type ExpenseRow } from "../kinds";
 
 type Tone = "danger" | "primary" | "warning" | "success" | undefined;
 
@@ -23,7 +23,7 @@ const DOT: Record<NonNullable<Tone>, string> = {
  * Who did what, in order. `money` adds what was paid (Finance and the employee);
  * HR sees that it was paid and when, not how much.
  */
-export function ProgressTimeline({ x, money }: { x: ExpenseRow; money?: (amount: number) => string }) {
+export function ProgressTimeline({ x, money, currency }: { x: ExpenseRow; money?: (amount: number) => string; currency?: string }) {
   const steps: Step[] = [];
   steps.push({
     when: x.created_at,
@@ -50,7 +50,10 @@ export function ProgressTimeline({ x, money }: { x: ExpenseRow; money?: (amount:
     steps.push({
       when: x.last_paid_on,
       title: x.billing === "once" ? (x.payments_count > 1 ? `Paid in ${x.payments_count} instalments` : "Paid") : `Paid ${x.payments_count} ${x.payments_count === 1 ? "time" : "times"}`,
-      body: money && x.paid_total !== undefined ? `${money(x.paid_total)} in all${renewal ? `; ${renewal.toLowerCase()}` : ""}` : renewal || undefined,
+      body:
+        money && x.paid_total !== undefined
+          ? `${x.paid_quoted_total != null && currency && x.currency !== currency ? `${quoted(x.paid_quoted_total, x.currency)} in all (${money(x.paid_total)})` : `${money(x.paid_total)} in all`}${renewal ? `; ${renewal.toLowerCase()}` : ""}`
+          : renewal || undefined,
       tone: "success",
     });
   }

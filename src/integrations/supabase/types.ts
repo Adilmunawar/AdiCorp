@@ -1415,6 +1415,8 @@ export type Database = {
           method: string
           note: string
           paid_on: string
+          quoted_amount: number | null
+          quoted_currency: string | null
           reference: string
         }
         Insert: {
@@ -1428,6 +1430,8 @@ export type Database = {
           method: string
           note?: string
           paid_on: string
+          quoted_amount?: number | null
+          quoted_currency?: string | null
           reference?: string
         }
         Update: {
@@ -1441,6 +1445,8 @@ export type Database = {
           method?: string
           note?: string
           paid_on?: string
+          quoted_amount?: number | null
+          quoted_currency?: string | null
           reference?: string
         }
         Relationships: [
@@ -4478,16 +4484,28 @@ export type Database = {
       careers_delete_application: { Args: { p_id: string }; Returns: string }
       careers_delete_job: { Args: { p_id: string }; Returns: undefined }
       careers_delete_note: { Args: { p_note: string }; Returns: undefined }
-      careers_hire_application: {
-        Args: {
-          p_cnic?: string
-          p_department?: string
-          p_id: string
-          p_joining_date: string
-          p_rank: string
-        }
-        Returns: string
-      }
+      careers_hire_application:
+        | {
+            Args: {
+              p_cnic?: string
+              p_department?: string
+              p_id: string
+              p_joining_date: string
+              p_rank: string
+            }
+            Returns: string
+          }
+        | {
+            Args: {
+              p_cnic: string | null
+              p_department: string | null
+              p_employee_id: string | null
+              p_id: string
+              p_joining_date: string
+              p_rank: string
+            }
+            Returns: string
+          }
       careers_public_company: { Args: { p_slug: string }; Returns: Json }
       careers_public_job: {
         Args: { p_company_slug: string; p_job_slug: string }
@@ -4639,17 +4657,30 @@ export type Database = {
         Args: { p_id: string; p_on: string }
         Returns: undefined
       }
-      expense_finance_add: {
-        Args: {
-          p_employee: string
-          p_input: Json
-          p_payment?: Json
-          p_quote?: Json
-          p_receipt?: Json
-          p_tell?: boolean
-        }
-        Returns: string
-      }
+      expense_finance_add:
+        | {
+            Args: {
+              p_employee: string
+              p_input: Json
+              p_payment?: Json
+              p_quote?: Json
+              p_receipt?: Json
+              p_tell?: boolean
+            }
+            Returns: string
+          }
+        | {
+            Args: {
+              p_employee: string | null
+              p_force: boolean
+              p_input: Json
+              p_payment: Json | null
+              p_quote: Json | null
+              p_receipt: Json | null
+              p_tell: boolean
+            }
+            Returns: string
+          }
       expense_finance_decline: {
         Args: { p_id: string; p_note: string }
         Returns: undefined
@@ -4660,10 +4691,15 @@ export type Database = {
         Returns: undefined
       }
       expense_hr_undo: { Args: { p_id: string }; Returns: undefined }
-      expense_record_payment: {
-        Args: { p_id: string; p_payment: Json; p_receipt?: Json }
-        Returns: string
-      }
+      expense_record_payment:
+        | {
+            Args: { p_id: string; p_payment: Json; p_receipt?: Json }
+            Returns: string
+          }
+        | {
+            Args: { p_force: boolean; p_id: string; p_payment: Json; p_receipt: Json | null }
+            Returns: string
+          }
       expense_undo_payment: { Args: { p_id: string }; Returns: string[] }
       get_employee_portal_data: { Args: { p_emp_id: string }; Returns: Json }
       get_employee_working_days_for_month: {

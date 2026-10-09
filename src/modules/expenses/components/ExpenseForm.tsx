@@ -102,7 +102,7 @@ export function ExpenseForm({
     const problem =
       checkExpense(v, !finance) ??
       checkFile(quote) ??
-      (finance && paidNow ? checkPayment(payment, forPerson, currency, today) ?? checkFile(receipt) : null);
+      (finance && paidNow ? checkPayment(payment, forPerson, currency, today, v.currency) ?? checkFile(receipt) : null);
     if (problem) return setError(problem);
     setError(null);
     onSubmit({
@@ -304,7 +304,7 @@ export function ExpenseForm({
               onCheckedChange={(c) => {
                 const on = c === true;
                 setPaidNow(on);
-                if (on && !payment.amount) setPayment(emptyPayment(v.currency === currency ? v.amount : "", forPerson && v.reimburse, today));
+                if (on && !payment.amount) setPayment(emptyPayment(v.currency === currency ? v.amount : "", forPerson && v.reimburse, today, v.currency === currency ? "" : v.amount));
               }}
               className="mt-0.5"
             />
@@ -315,7 +315,7 @@ export function ExpenseForm({
           </label>
           {paidNow && (
             <div className="mt-4">
-              <PaymentFields value={payment} onChange={setPayment} currency={currency} company={!forPerson} receipt={receipt} onReceiptChange={setReceipt} today={today} />
+              <PaymentFields value={payment} onChange={setPayment} currency={currency} itemCurrency={v.currency} company={!forPerson} receipt={receipt} onReceiptChange={setReceipt} today={today} />
             </div>
           )}
         </SectionCard>

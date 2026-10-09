@@ -9,6 +9,9 @@ function vendorChunk(id: string): string | undefined {
   if (id.includes("@supabase")) return "vendor-supabase";
   if (id.includes("@tanstack")) return "vendor-query";
   if (id.includes("@radix-ui") || id.includes("cmdk") || id.includes("vaul")) return "vendor-ui";
+  // Tiny class helpers every page uses. Pinned here so a bigger chunk that also depends on them
+  // (recharts needs clsx) cannot absorb them and get preloaded by every page.
+  if (/node_modules\/(clsx|tailwind-merge|class-variance-authority)\//.test(id)) return "vendor-ui";
   if (id.includes("date-fns")) return "vendor-date";
   if (id.includes("lucide-react")) return "vendor-icons";
   // recharts and the d3 pieces it pulls in: only chart pages load this, and it caches on its own.

@@ -18,7 +18,7 @@ import {
   useHrUndo,
   useRecordPayment,
 } from "../api";
-import { BILLING_LABELS, EXPENSE_LIMITS as L, checkPayment, costLine, quoted, type ExpenseRow, type PaymentInput } from "../kinds";
+import { BILLING_LABELS, EXPENSE_LIMITS as L, checkPayment, confirmMessage, costLine, quoted, type ExpenseRow, type PaymentInput } from "../kinds";
 import { FieldLabel, FilePicker, FormError } from "./bits";
 import { PaymentFields, emptyPayment } from "./PaymentFields";
 
@@ -204,36 +204,54 @@ function UndoApproval({ x }: { x: ExpenseRow }) {
 function PaymentForm({ x, currency, renewal }: { x: ExpenseRow; currency: string; renewal: boolean }) {
   const pay = useRecordPayment();
   const today = useCompanyToday();
-  const suggested = x.last_payment ? String(x.last_payment) : x.currency === currency ? String(x.amount) : "";
-  const [value, setValue] = useState<PaymentInput>(() => emptyPayment(suggested, x.reimburse, today));
+  const foreign = x.currency !== currency;
+  const suggested = x.last_payment ? String(x.last_payment) : foreign ? "" : String(x.amount);
+  // A foreign-currency item: offer the quoted amount as what the payment equals (one cycle, or the whole once item).
+  const quotedSuggested = foreign ? String(x.amount) : "";
+  const [value, setValue] = useState<PaymentInput>(() => emptyPayment(suggested, x.reimburse, today, quotedSuggested));
   const [receipt, setReceipt] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // The server asked "record it anyway?" (already paid, more than quoted, the person has left).
+  const [confirm, setConfirm] = useState<string | null>(null);
   // The last payment loads after the item: offer it once known, unless something was typed.
   useEffect(() => {
     if (suggested) setValue((v) => (v.amount ? v : { ...v, amount: suggested }));
   }, [suggested]);
+  const vars = (force: boolean) => ({ id: x.id, owner: x.employee_id ?? "company", payment: { ...value }, receipt, renewal, force });
+  const done = () => {
+    setReceipt(null);
+    setValue(emptyPayment(value.amount, x.reimburse, today, quotedSuggested));
+  };
   const submit = () => {
-    const problem = checkPayment(value, !!x.employee_id, currency, today) ?? checkFile(receipt);
+    const problem = checkPayment(value, !!x.employee_id, currency, today, x.currency) ?? checkFile(receipt);
     if (problem) return setError(problem);
     setError(null);
-    pay.mutate(
-      { id: x.id, owner: x.employee_id ?? "company", payment: { ...value }, receipt, renewal },
-      {
-        onSuccess: () => {
-          setReceipt(null);
-          setValue(emptyPayment(value.amount, x.reimburse, today));
-        },
+    pay.mutate(vars(false), {
+      onSuccess: done,
+      onError: (e) => {
+        const ask = confirmMessage(e);
+        if (ask) setConfirm(ask);
       },
-    );
+    });
   };
   return (
     <div className="grid gap-3">
       <Muted>
         Quoted at <span className="tabular font-semibold text-foreground">{costLine(x)}</span>
-        {x.currency !== currency ? `. Enter what it cost in ${currency}, as on the bank or card statement.` : "."}
+        {foreign ? `. Enter what it cost in ${currency}, as on the bank or card statement, and what that equals in ${x.currency} if you know it.` : "."}
         {x.reimburse ? " The employee paid for it: pay them back." : ""}
       </Muted>
-      <PaymentFields value={value} onChange={setValue} currency={currency} company={!x.employee_id} receipt={receipt} onReceiptChange={setReceipt} showNote today={today} />
+      <PaymentFields
+        value={value}
+        onChange={setValue}
+        currency={currency}
+        itemCurrency={x.currency}
+        company={!x.employee_id}
+        receipt={receipt}
+        onReceiptChange={setReceipt}
+        showNote
+        today={today}
+      />
       <FormError>{error}</FormError>
       <div className="flex justify-end">
         <Button type="button" onClick={submit} disabled={pay.isPending} className="w-full sm:w-auto">
@@ -241,6 +259,15 @@ function PaymentForm({ x, currency, renewal }: { x: ExpenseRow; currency: string
           {renewal ? "Record renewal" : "Record payment"}
         </Button>
       </div>
+      <ConfirmDialog
+        open={confirm !== null}
+        onOpenChange={(open) => !open && setConfirm(null)}
+        title="Record it anyway?"
+        description={confirm}
+        confirmLabel="Record anyway"
+        destructive={false}
+        onConfirm={() => pay.mutateAsync(vars(true)).then(done)}
+      />
     </div>
   );
 }

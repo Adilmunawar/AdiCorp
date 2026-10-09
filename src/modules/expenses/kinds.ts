@@ -135,6 +135,8 @@ export interface ExpenseRow {
   employee?: ExpenseEmployee | null;
   /** Finance and the employee only: what has been paid so far, in the company currency. */
   paid_total?: number;
+  /** Portal: the total in the item's own currency, when every payment says what it equals there. */
+  paid_quoted_total?: number | null;
   /** Finance only: the newest payment's amount. */
   last_payment?: number | null;
 }
@@ -143,6 +145,9 @@ export interface ExpensePayment {
   id: string;
   expense_id?: string;
   amount: number;
+  /** What it equals in the item's currency, when that differs from the company currency. */
+  quoted_amount?: number | null;
+  quoted_currency?: string | null;
   paid_on: string;
   method: PaymentMethod;
   reference: string;
@@ -312,14 +317,30 @@ export function toRpcInput(v: ExpenseInput): Record<string, unknown> {
 
 export interface PaymentInput {
   amount: string;
+  /** What the payment equals in the item's own currency, when that differs from the company currency. Optional. */
+  quoted_amount: string;
   paid_on: string;
   method: PaymentMethod;
   reference: string;
   note: string;
 }
 
-export function checkPayment(p: PaymentInput, hasEmployee: boolean, currency: string, today = todayIso()): string | null {
+/**
+ * The server asks before it records something unusual (a second payment on a paid item, more than
+ * the quoted cost, money for someone who has left): SQLSTATE P0C01. The UI shows the message as a
+ * confirm and resends with p_force.
+ */
+export const CONFIRM_CODE = "P0C01";
+
+export function confirmMessage(e: unknown): string | null {
+  if (e && typeof e === "object" && "code" in e && (e as { code: unknown }).code === CONFIRM_CODE) return errorMessage(e);
+  return null;
+}
+
+export function checkPayment(p: PaymentInput, hasEmployee: boolean, currency: string, today = todayIso(), itemCurrency?: string): string | null {
   if (readAmount(p.amount) === null) return `Enter the amount paid in ${currency}: a number more than 0.`;
+  if (itemCurrency && itemCurrency !== currency && p.quoted_amount.trim() && readAmount(p.quoted_amount) === null)
+    return `Enter what it equals in ${itemCurrency}: a number more than 0, or leave it empty.`;
   if (!/^\d{4}-\d{2}-\d{2}$/.test(p.paid_on) || p.paid_on < "2000-01-01") return "Enter the date it was paid.";
   if (p.paid_on > today) return "The payment date is in the future. Record it once it is paid.";
   if (!PAYMENT_METHODS.includes(p.method)) return "Choose how it was paid.";
@@ -394,6 +415,23 @@ export function stageLine(x: ExpenseRow, today = todayIso()): { text: string; to
 }
 
 /** Human message from a Supabase/PostgREST error. */
+/**
+ * The total paid in the item's own currency when every payment carries a quoted amount (or the
+ * currencies match); null when it is only known in the company currency.
+ */
+export function quotedTotal(payments: ExpensePayment[], itemCurrency: string, currency: string): number | null {
+  if (!payments.length) return null;
+  if (itemCurrency === currency) return payments.reduce((s, p) => s + p.amount, 0);
+  if (payments.some((p) => p.quoted_amount == null)) return null;
+  return payments.reduce((s, p) => s + Number(p.quoted_amount), 0);
+}
+
+/** "USD 360 in all (PKR 101,000)" when the item-currency total is known, else "PKR 101,000 in all". */
+export function paidTotalLabel(paidTotal: number, paidQuoted: number | null | undefined, itemCurrency: string, currency: string, money: (n: number) => string): string {
+  if (paidQuoted != null && itemCurrency !== currency) return `${quoted(paidQuoted, itemCurrency)} in all (${money(paidTotal)})`;
+  return `${money(paidTotal)} in all`;
+}
+
 export function errorMessage(e: unknown, fallback = "Something went wrong. Please try again."): string {
   if (e && typeof e === "object" && "message" in e && typeof (e as { message: unknown }).message === "string") {
     const m = (e as { message: string }).message.trim();
