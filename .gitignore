@@ -23,8 +23,8 @@ dist-ssr
 *.sln
 *.sw?
 
-# Environment and local credentials (never commit)
-.env
+# .env holds only the public Supabase URL and publishable (anon) key, so it is committed.
+# Anything secret goes in .env.local or .env.<name>, which stay out of git.
 .env.*
 !.env.example
 DEV-ACCOUNTS*
