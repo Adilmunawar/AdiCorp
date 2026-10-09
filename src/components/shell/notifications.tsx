@@ -295,13 +295,13 @@ export function NotificationBell({ className }: { className?: string }) {
           type="button"
           aria-label={unread ? `Notifications, ${unread} unread` : "Notifications"}
           className={cn(
-            "relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[state=open]:bg-muted data-[state=open]:text-foreground",
+            "relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-border bg-card text-muted-foreground shadow-sm transition-[color,border-color,box-shadow] hover:border-foreground/20 hover:text-foreground hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[state=open]:border-primary/30 data-[state=open]:text-primary",
             className,
           )}
         >
-          <Bell className="h-[18px] w-[18px]" aria-hidden />
+          <Bell className="h-[17px] w-[17px]" aria-hidden />
           {unread > 0 && (
-            <span className="tabular absolute right-0 top-0 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-card bg-destructive px-1 text-[10px] font-bold leading-none text-destructive-foreground">
+            <span className="tabular absolute -right-1 -top-1 flex h-[18px] min-w-[18px] items-center justify-center rounded-full border-2 border-card bg-primary px-1 text-[10px] font-bold leading-none text-primary-foreground">
               {unread > 99 ? "99+" : unread}
             </span>
           )}

@@ -51,23 +51,24 @@ const NavRow = memo(function NavRow({ item, active, compact, mobile, badge, onNa
       aria-current={active ? "page" : undefined}
       aria-label={compact ? (badge > 0 ? `${item.label}, ${badge} to review` : item.label) : undefined}
       className={cn(
-        "group/item relative flex w-full items-center gap-2.5 rounded-lg px-2.5 font-medium outline-none transition-colors duration-150",
+        "group/item relative flex w-full items-center gap-2.5 rounded-[10px] px-2.5 font-medium outline-none transition-[background-color,color,box-shadow] duration-150",
         "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset",
-        mobile ? "h-10 text-sm" : compact ? "h-9 justify-center px-0" : "h-[30px] text-[13px] tight:h-7",
-        active ? "bg-primary/[0.08] font-semibold text-primary" : "text-foreground/75 hover:bg-muted hover:text-foreground",
+        mobile ? "h-10 text-sm" : compact ? "h-10 justify-center px-0" : "h-8 text-[13px] tight:h-7",
+        active
+          ? "bg-gradient-to-r from-brand-600 to-brand-800 font-semibold text-white shadow-[0_8px_18px_-6px_hsl(var(--brand-700)/0.55)]"
+          : "text-foreground/75 hover:bg-brand-50 hover:text-foreground dark:hover:bg-muted",
       )}
     >
-      {active && <span aria-hidden className={cn("absolute inset-y-1.5 w-[3px] rounded-r-full bg-primary", compact ? "-left-2" : "-left-3")} />}
-      <Icon className={cn("h-4 w-4 shrink-0", active ? "text-primary" : "text-muted-foreground group-hover/item:text-foreground")} aria-hidden />
+      <Icon className={cn("h-4 w-4 shrink-0", active ? "text-brand-100" : "text-muted-foreground group-hover/item:text-primary")} aria-hidden />
       {!compact && <span className="min-w-0 flex-1 truncate">{item.label}</span>}
       {badge > 0 &&
         (compact ? (
-          <span aria-hidden className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-primary ring-2 ring-card" />
+          <span aria-hidden className={cn("absolute right-1.5 top-1.5 h-2 w-2 rounded-full ring-2", active ? "bg-white ring-brand-700" : "bg-primary ring-card")} />
         ) : (
           <span
             className={cn(
               "tabular ml-auto inline-flex h-[18px] min-w-[20px] shrink-0 items-center justify-center rounded-full px-1.5 text-[11px] font-semibold leading-none",
-              active ? "bg-primary text-primary-foreground" : "bg-primary/10 text-primary",
+              active ? "bg-white/20 text-white" : "bg-brand-100 text-brand-800 dark:bg-primary/15 dark:text-primary",
             )}
           >
             {countLabel(badge)}
@@ -108,8 +109,8 @@ function SectionHeading({ section, open, pending, mobile, listId, onToggle }: Se
       aria-expanded={open}
       aria-controls={listId}
       className={cn(
-        "group/heading flex w-full items-center gap-1.5 rounded-md px-2.5 text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring",
-        mobile ? "h-9" : "h-7 tight:h-6",
+        "group/heading flex w-full items-center gap-1.5 rounded-md px-2.5 text-left text-[10px] font-bold uppercase tracking-[0.14em] text-muted-foreground/70 outline-none transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring",
+        mobile ? "h-9" : "mb-0.5 h-7 tight:h-6",
       )}
     >
       <span className="min-w-0 flex-1 truncate">{section.group}</span>
@@ -223,20 +224,22 @@ export function Sidebar({ collapsed = false, onToggleCollapse, mobile = false, o
 
   return (
     <div className="flex h-full flex-col bg-card">
-      {/* Brand: same height and hairline as the top bar, so the frame reads as one grid. */}
-      <div className={cn("flex h-14 shrink-0 items-center border-b border-border", compact ? "justify-center px-2" : "px-4", mobile && "pr-14")}>
+      {/* Brand */}
+      <div className={cn("flex h-16 shrink-0 items-center", compact ? "justify-center px-2" : "px-4", mobile && "pr-14")}>
         <Link
           to={home}
           onClick={onNavigate}
           aria-label="AdiCorp HR home"
-          className="flex min-w-0 items-center gap-2.5 rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          className="flex min-w-0 items-center gap-2.5 rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         >
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-border bg-card shadow-sm">
-            <img src={ADICORP_LOGO_PATH} alt="" className="h-full w-full object-contain p-0.5" />
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[11px_11px_4px_11px] bg-card shadow-[0_6px_16px_-4px_hsl(var(--brand-700)/0.35)] ring-1 ring-brand-100 dark:ring-border">
+            <img src={ADICORP_LOGO_PATH} alt="" className="h-6 w-6 object-contain" />
           </span>
           {!compact && (
             <span className="min-w-0 leading-none">
-              <span className="block font-display text-[14px] font-bold tracking-tight text-foreground">AdiCorp HR</span>
+              <span className="block font-display text-[15px] font-extrabold tracking-[-0.02em] text-foreground">
+                AdiCorp <span className="text-primary">HR</span>
+              </span>
               <span className="mt-1 block truncate text-[11px] font-medium text-muted-foreground" title={company?.name ?? undefined}>
                 {company?.name ?? "Workspace"}
               </span>
@@ -253,14 +256,14 @@ export function Sidebar({ collapsed = false, onToggleCollapse, mobile = false, o
         style={fadeStyle}
         className={cn("scrollbar-subtle min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain", compact ? "px-2" : "px-3")}
       >
-        <div className="py-3">
+        <div className="pb-3 pt-1">
           {sections.map((section, gi) => {
             const heading = hasHeading(section) && !compact;
             const open = compact || !heading || !closed.includes(section.group);
             const listId = `nav-group-${section.group.toLowerCase()}`;
             const pending = section.items.reduce((n, item) => n + (badges[item.key] ?? 0), 0);
             return (
-              <div key={section.group} className={cn(gi > 0 && (compact ? "mt-2 border-t border-border/70 pt-2" : "mt-3 tight:mt-2"))}>
+              <div key={section.group} className={cn(gi > 0 && (compact ? "mt-2 border-t border-border/60 pt-2" : "mt-4 tight:mt-2"))}>
                 {heading && (
                   <SectionHeading
                     section={section}
@@ -294,7 +297,7 @@ export function Sidebar({ collapsed = false, onToggleCollapse, mobile = false, o
 
       {/* Footer: the account lives in the top bar; here only the collapse control. */}
       {!mobile && onToggleCollapse && (
-        <div className={cn("shrink-0 border-t border-border py-2", compact ? "flex justify-center px-2" : "px-3")}>
+        <div className={cn("shrink-0 pb-3 pt-1.5", compact ? "flex justify-center px-2" : "px-3")}>
           <Tooltip delayDuration={compact ? 0 : 600}>
             <TooltipTrigger asChild>
               <button
@@ -303,7 +306,7 @@ export function Sidebar({ collapsed = false, onToggleCollapse, mobile = false, o
                 aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
                 aria-expanded={!collapsed}
                 className={cn(
-                  "flex h-8 w-full items-center gap-2.5 rounded-lg px-2.5 text-[13px] font-medium text-muted-foreground outline-none transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring",
+                  "flex h-8 w-full items-center gap-2.5 rounded-[10px] border border-border/70 bg-muted/40 px-2.5 text-[12.5px] font-semibold text-muted-foreground outline-none transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring",
                   compact && "w-10 justify-center px-0",
                 )}
               >

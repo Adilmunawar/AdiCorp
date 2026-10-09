@@ -23,23 +23,42 @@ export interface PageHeaderProps {
 
 export function PageHeader({ title, description, icon: Icon, actions, eyebrow, children, className }: PageHeaderProps) {
   return (
-    <header className={cn("mb-5 sm:mb-6", className)}>
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div className="flex min-w-0 items-center gap-3">
+    <header
+      className={cn(
+        "relative isolate mb-5 overflow-hidden rounded-[20px] border border-border/70 bg-card shadow-[0_1px_2px_hsl(var(--foreground)/0.04)] sm:mb-6",
+        className,
+      )}
+    >
+      {/* Brand light from the top-right and a fine dot grid that fades out: quiet, but no longer a bare white strip. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(55%_140%_at_100%_0%,hsl(var(--brand-100)/0.75),transparent_70%)] dark:bg-[radial-gradient(55%_140%_at_100%_0%,hsl(var(--brand-800)/0.35),transparent_70%)]"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 -z-10 opacity-60 [background-image:radial-gradient(hsl(var(--brand-700)/0.09)_1px,transparent_1.2px)] [background-size:16px_16px] [mask-image:linear-gradient(to_left,black,transparent_50%)]"
+      />
+      <div className="flex flex-col gap-4 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+        <div className="flex min-w-0 items-center gap-4">
           {Icon && (
-            <div className="hidden h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary sm:flex">
-              <Icon className="h-5 w-5" aria-hidden />
+            <div className="hidden h-12 w-12 shrink-0 items-center justify-center rounded-[14px] bg-gradient-to-br from-brand-500 to-brand-800 text-white shadow-[inset_0_1px_0_hsl(0_0%_100%/0.2),0_8px_18px_-8px_hsl(var(--brand-700)/0.7)] sm:flex">
+              <Icon className="h-[22px] w-[22px]" aria-hidden />
             </div>
           )}
           <div className="min-w-0">
-            {eyebrow && <p className="micro-label mb-1 !text-primary">{eyebrow}</p>}
-            <h1 className="font-display text-xl font-semibold leading-tight tracking-tight text-foreground [overflow-wrap:anywhere] sm:text-2xl">{title}</h1>
-            {description && <p className="mt-1 max-w-2xl text-[13px] leading-5 text-muted-foreground">{description}</p>}
+            {eyebrow && <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-primary">{eyebrow}</p>}
+            <h1 className="font-display text-[22px] font-semibold leading-tight tracking-tight text-foreground [overflow-wrap:anywhere] sm:text-[26px]">{title}</h1>
+            {description && <p className="mt-1 max-w-2xl text-[13.5px] leading-5 text-muted-foreground">{description}</p>}
           </div>
         </div>
         {actions && <div className="flex flex-wrap items-center gap-2 sm:shrink-0 sm:justify-end">{actions}</div>}
       </div>
-      {children && <div className="mt-4">{children}</div>}
+      {/* Tabs sit flush on the header's bottom edge; anything else gets breathing room. */}
+      {children && (
+        <div className="border-t border-border/60 bg-card/60 px-5 pb-4 pt-3 sm:px-6 has-[[data-tabsnav]]:pb-0 has-[[data-tabsnav]]:pt-0 [&_[data-tabsnav]]:border-b-0">
+          {children}
+        </div>
+      )}
     </header>
   );
 }
@@ -65,11 +84,15 @@ export interface SectionCardProps {
 export function SectionCard({ title, description, icon: Icon, actions, children, footer, className, contentClassName, flush, id }: SectionCardProps) {
   const hasHeader = title || description || actions;
   return (
-    <section id={id} className={cn("min-w-0 overflow-hidden rounded-2xl border border-border bg-card shadow-sm", className)}>
+    <section id={id} className={cn("min-w-0 overflow-hidden rounded-[18px] border border-border/70 bg-card shadow-[0_1px_2px_hsl(var(--foreground)/0.04),0_8px_24px_-16px_hsl(var(--brand-950)/0.12)]", className)}>
       {hasHeader && (
         <div className="flex flex-col gap-2 border-b border-border/60 px-4 py-3.5 sm:flex-row sm:items-center sm:justify-between sm:px-5">
-          <div className="flex min-w-0 items-center gap-2.5">
-            {Icon && <Icon className="h-4 w-4 shrink-0 text-primary" aria-hidden />}
+          <div className="flex min-w-0 items-center gap-3">
+            {Icon && (
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] bg-brand-50 text-primary ring-1 ring-inset ring-brand-100 dark:bg-primary/10 dark:ring-primary/20">
+                <Icon className="h-4 w-4" aria-hidden />
+              </span>
+            )}
             <div className="min-w-0">
               {title && (
                 <h2 className="truncate font-display text-[15px] font-semibold leading-5 tracking-tight text-foreground" title={typeof title === "string" ? title : undefined}>
@@ -96,17 +119,25 @@ export type Tone = "default" | "primary" | "success" | "warning" | "danger";
 
 /* Icon wells use the palette's soft tints with a hairline ring; values keep the strong (AA) tone. */
 const toneIcon: Record<Tone, string> = {
-  default: "bg-muted text-muted-foreground ring-1 ring-inset ring-border/60",
-  primary: "bg-primary/[0.08] text-primary ring-1 ring-inset ring-primary/10",
-  success: "bg-success-soft text-success ring-1 ring-inset ring-success/10",
-  warning: "bg-warning-soft text-warning ring-1 ring-inset ring-warning/15",
-  danger: "bg-danger-soft text-danger ring-1 ring-inset ring-danger/10",
+  default: "bg-gradient-to-br from-neutral-500 to-neutral-700 text-white",
+  primary: "bg-gradient-to-br from-brand-500 to-brand-700 text-white",
+  success: "bg-gradient-to-br from-emerald-500 to-emerald-700 text-white",
+  warning: "bg-gradient-to-br from-amber-400 to-amber-600 text-white",
+  danger: "bg-gradient-to-br from-rose-500 to-rose-700 text-white",
+};
+
+const toneWash: Record<Tone, string> = {
+  default: "from-neutral-200/60",
+  primary: "from-brand-100",
+  success: "from-emerald-100/80",
+  warning: "from-amber-100/80",
+  danger: "from-rose-100/80",
 };
 
 const toneValue: Record<Tone, string> = {
   default: "text-foreground",
-  primary: "text-primary",
-  success: "text-success",
+  primary: "text-foreground",
+  success: "text-foreground",
   warning: "text-warning",
   danger: "text-danger",
 };
@@ -127,19 +158,19 @@ export function StatTile({ label, value, hint, tone = "default", icon: Icon, hre
   const body = (
     <div
       className={cn(
-        "group flex h-full min-w-0 items-start justify-between gap-3 rounded-2xl border border-border bg-card p-4 shadow-sm transition-colors sm:p-5",
-        href && "hover:border-primary/30 hover:shadow-md",
+        "group relative isolate flex h-full min-w-0 items-start justify-between gap-3 overflow-hidden rounded-[18px] border border-border/70 bg-card p-4 shadow-[0_1px_2px_hsl(var(--foreground)/0.04)] transition-[border-color,box-shadow] sm:p-5",
+        href && "hover:border-primary/25 hover:shadow-[0_10px_28px_-14px_hsl(var(--brand-800)/0.35)]",
         className,
       )}
     >
       <div className="min-w-0 flex-1">
-        <p className="micro-label truncate" title={typeof label === "string" ? label : undefined}>
+        <p className="truncate text-[12.5px] font-medium text-muted-foreground" title={typeof label === "string" ? label : undefined}>
           {label}
         </p>
         {loading ? (
           <Skeleton className="mt-2 h-7 w-24 sm:h-8" />
         ) : (
-          <p className={cn("tabular mt-1.5 truncate font-display text-xl font-semibold leading-tight tracking-tight sm:text-2xl", toneValue[tone])} title={typeof value === "string" || typeof value === "number" ? String(value) : undefined}>{value}</p>
+          <p className={cn("tabular mt-1.5 truncate font-display text-[22px] font-semibold leading-tight tracking-tight sm:text-[26px]", toneValue[tone])} title={typeof value === "string" || typeof value === "number" ? String(value) : undefined}>{value}</p>
         )}
         {hint && !loading && (
           <p className="mt-1 line-clamp-2 text-xs text-muted-foreground" title={typeof hint === "string" ? hint : undefined}>
@@ -148,14 +179,16 @@ export function StatTile({ label, value, hint, tone = "default", icon: Icon, hre
         )}
       </div>
       {Icon && (
-        <div className={cn("flex h-9 w-9 shrink-0 items-center justify-center rounded-xl", toneIcon[tone])}>
-          <Icon className="h-4 w-4" aria-hidden />
+        <div className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-xl shadow-[inset_0_1px_0_hsl(0_0%_100%/0.2),0_6px_14px_-6px_hsl(var(--foreground)/0.3)]", toneIcon[tone])}>
+          <Icon className="h-[18px] w-[18px]" aria-hidden />
         </div>
       )}
+      {/* Last child on purpose: pages hide the icon on phones with [&>div:nth-child(2)]. */}
+      <div aria-hidden className={cn("pointer-events-none absolute -right-10 -top-10 -z-10 h-32 w-32 rounded-full bg-gradient-to-br to-transparent opacity-80 dark:opacity-20", toneWash[tone])} />
     </div>
   );
   return href ? (
-    <Link to={href} className="block min-w-0 rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+    <Link to={href} className="block min-w-0 rounded-[18px] outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
       {body}
     </Link>
   ) : (
@@ -200,7 +233,7 @@ export function EmptyState({ icon: Icon, title, description, action, className, 
   return (
     <div className={cn("flex flex-col items-center justify-center text-center", compact ? "px-4 py-8" : "px-6 py-14", className)}>
       {Icon && (
-        <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-primary/[0.07] text-primary ring-1 ring-inset ring-primary/10">
+        <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-50 to-brand-100 text-primary ring-1 ring-inset ring-brand-200/60 dark:from-primary/10 dark:to-primary/20 dark:ring-primary/20">
           <Icon className="h-5 w-5" aria-hidden />
         </div>
       )}

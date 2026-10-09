@@ -12,8 +12,8 @@ interface BrandLoaderProps {
   className?: string;
 }
 
-/* One loop period that every animation divides (1.6s spin/bar, 3.2s halo, 6.4s orbit). */
-const LOOP_MS = 6400;
+/* One loop period that every animation divides (1.2s bar, 2.4s float). */
+const LOOP_MS = 2400;
 const now = () => (typeof performance !== "undefined" ? performance.now() : Date.now());
 const bootAt = now();
 let lastUnmountAt = Number.NEGATIVE_INFINITY;
@@ -40,9 +40,10 @@ function useLoaderTiming() {
   return timing;
 }
 
+/** AdiCorp loading state: the logo, the wordmark and a slim progress bar; words appear only if it takes a moment. */
 export default function BrandLoader({
-  message = "Loading your workspace...",
-  subtitle = "Please wait a moment",
+  message = "Loading your workspace",
+  subtitle,
   fullScreen = false,
   action,
   className,
@@ -53,7 +54,7 @@ export default function BrandLoader({
   return (
     <div
       className={cn(
-        "relative isolate flex w-full items-center justify-center overflow-hidden px-4",
+        "flex w-full items-center justify-center px-4",
         fullScreen ? "min-h-[100dvh] bg-background bg-gradient-surface" : "min-h-[36vh] py-10",
         className,
       )}
@@ -62,54 +63,36 @@ export default function BrandLoader({
       aria-live="polite"
       aria-busy="true"
     >
-      {fullScreen && <div aria-hidden className="adl-grid pointer-events-none absolute inset-0 -z-10" />}
-
-      <div className={cn("flex w-full max-w-xs flex-col items-center text-center", !seamless && "adl-enter")}>
-        <div
-          aria-hidden
-          data-size={fullScreen ? "lg" : "sm"}
-          className={cn("adl-mark relative shrink-0", fullScreen ? "h-32 w-32" : "h-[76px] w-[76px]")}
-        >
-          <span className="adl-halo absolute -inset-[30%] rounded-full" />
-          {fullScreen && <span className="adl-orbit absolute -inset-[10px] rounded-full" />}
-          <span className="adl-track absolute inset-0 rounded-full" />
-          <span className="adl-arc absolute inset-0 rounded-full" />
-          <span className="adl-cap absolute inset-0 rounded-full" />
-          <span className="adl-tile absolute inset-[17%] flex items-center justify-center rounded-full">
-            <img
-              src={ADICORP_LOGO_PATH}
-              alt=""
-              width={96}
-              height={96}
-              decoding="async"
-              draggable={false}
-              className="h-[56%] w-[56%] select-none object-contain"
-            />
-          </span>
-        </div>
+      <div className={cn("flex w-full max-w-[18rem] flex-col items-center text-center", !seamless && "adl-enter")}>
+        <img
+          src={ADICORP_LOGO_PATH}
+          alt=""
+          width={64}
+          height={64}
+          decoding="async"
+          draggable={false}
+          className={cn(
+            "adl-logo select-none object-contain",
+            fullScreen ? "h-[clamp(2.75rem,8vh,4rem)] w-[clamp(2.75rem,8vh,4rem)]" : "h-11 w-11",
+          )}
+        />
 
         {fullScreen && (
-          <p className="mt-7 font-display text-lg font-semibold leading-7 tracking-[0.02em] text-foreground">
+          <p className="mt-[clamp(0.75rem,2.2vh,1.25rem)] font-display text-[17px] font-semibold leading-6 tracking-tight text-foreground">
             AdiCorp <span className="text-primary">HR</span>
           </p>
         )}
 
-        <p
-          className={cn(
-            "h-5 w-full truncate text-[13px] font-medium leading-5 text-foreground/80",
-            fullScreen ? "mt-1.5" : "mt-5",
-          )}
-        >
-          {message}
-        </p>
-
-        <div className="adl-bar relative mt-5 h-[3px] w-40 overflow-hidden rounded-full">
+        <div className={cn("adl-bar relative h-[3px] w-28 overflow-hidden rounded-full", fullScreen ? "mt-4" : "mt-5")}>
           <span className="adl-bar-fill absolute inset-y-0 left-0 w-2/5 rounded-full" />
         </div>
 
-        {subtitle && <p className="mt-3 h-4 w-full truncate text-[11px] leading-4 tracking-wide text-muted-foreground">{subtitle}</p>}
+        <p className={cn("mt-3 h-5 w-full truncate text-[12.5px] font-medium leading-5 text-muted-foreground", !seamless && "adl-late")}>
+          {message}
+        </p>
+        {subtitle && <p className={cn("h-4 w-full truncate text-[11px] leading-4 text-muted-foreground/80", !seamless && "adl-late")}>{subtitle}</p>}
 
-        {action && <div className="mt-5">{action}</div>}
+        {action && <div className="mt-4">{action}</div>}
       </div>
     </div>
   );

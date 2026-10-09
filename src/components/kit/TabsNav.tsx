@@ -101,9 +101,9 @@ export function TabsNav({ tabs, value, onChange, param = "tab", className }: Tab
   };
 
   return (
-    <div className={cn("min-w-0 rounded-xl border border-border/70 bg-muted/50 p-1", className)}>
-      <div ref={fade.ref} onScroll={fade.onScroll} style={fade.style} className="hide-scrollbar min-w-0 overflow-x-auto rounded-lg">
-        <div role="tablist" className="flex w-max min-w-full gap-1">
+    <div data-tabsnav="" className={cn("min-w-0 border-b border-border", className)}>
+      <div ref={fade.ref} onScroll={fade.onScroll} style={fade.style} className="hide-scrollbar min-w-0 overflow-x-auto">
+        <div role="tablist" className="flex w-max min-w-full gap-5 sm:gap-6">
           {tabs.map((tab) => {
             const on = tab.value === active;
             const Icon = tab.icon;
@@ -115,8 +115,8 @@ export function TabsNav({ tabs, value, onChange, param = "tab", className }: Tab
                 aria-selected={on}
                 onClick={() => select(tab.value)}
                 className={cn(
-                  "inline-flex h-10 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg px-3 text-[13px] font-medium outline-none transition-colors focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring sm:h-8",
-                  on ? "bg-card text-foreground shadow-sm ring-1 ring-border/60" : "text-muted-foreground hover:bg-card/60 hover:text-foreground",
+                  "relative inline-flex h-11 shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 px-0.5 text-[13.5px] font-medium outline-none transition-colors focus-visible:rounded-sm focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
+                  on ? "border-primary font-semibold text-primary" : "border-transparent text-muted-foreground hover:border-border hover:text-foreground",
                 )}
               >
                 {Icon && <Icon className={cn("h-3.5 w-3.5", on && "text-primary")} aria-hidden />}
@@ -125,7 +125,7 @@ export function TabsNav({ tabs, value, onChange, param = "tab", className }: Tab
                   <span
                     className={cn(
                       "tabular min-w-[18px] rounded-full px-1.5 py-px text-center text-[10px] font-semibold leading-[14px]",
-                      on ? "bg-primary text-primary-foreground" : "bg-primary/10 text-primary",
+                      on ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground",
                     )}
                   >
                     {tab.badge > 99 ? "99+" : tab.badge}

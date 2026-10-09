@@ -169,7 +169,7 @@ export function DataTable<T>({
 
   const headCell = (col: (typeof cols)[number]) =>
     cn(
-      "whitespace-nowrap px-3 py-2.5 text-[11px] font-semibold uppercase tracking-[0.06em] text-muted-foreground first:pl-4 last:pr-4",
+      "whitespace-nowrap px-3 py-3 text-[12px] font-medium text-muted-foreground first:pl-5 last:pr-5",
       alignClass[col.align ?? "left"],
       col.hideBelow && hideClass[col.hideBelow],
       col.className,
@@ -184,7 +184,7 @@ export function DataTable<T>({
         <div className="hidden overflow-hidden sm:block">
           <table className="w-full border-collapse text-[13px]">
             <thead>
-              <tr className="border-b border-border bg-muted/40">
+              <tr className="border-b border-border bg-muted/30">
                 {selectable && <th scope="col" className="w-10 px-3 py-2.5" aria-hidden />}
                 {cols.map((col) => (
                   <th key={col.id} scope="col" className={headCell(col)}>
@@ -258,7 +258,7 @@ export function DataTable<T>({
         <table className="w-full border-collapse text-[13px]">
           {caption && <caption className="sr-only">{caption}</caption>}
           <thead>
-            <tr className="border-b border-border bg-muted/40">
+            <tr className="border-b border-border bg-muted/30">
               {selectable && (
                 <th scope="col" className="w-10 px-3 py-2.5">
                   <Checkbox
@@ -283,7 +283,7 @@ export function DataTable<T>({
                         type="button"
                         onClick={() => toggleSort(col.id)}
                         className={cn(
-                          "-mx-1 inline-flex items-center gap-1 rounded px-1 uppercase tracking-[0.06em] outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring",
+                          "-mx-1 inline-flex items-center gap-1 rounded px-1 outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring",
                           col.align === "right" && "flex-row-reverse",
                           active && "text-foreground",
                         )}
@@ -314,7 +314,7 @@ export function DataTable<T>({
                   onKeyDown={onRowClick ? (e) => activateOnKey(e, () => onRowClick(row)) : undefined}
                   tabIndex={onRowClick ? 0 : undefined}
                   className={cn(
-                    "border-b border-border/60 transition-colors last:border-0 hover:bg-muted/40",
+                    "border-b border-border/60 transition-colors last:border-0 hover:bg-brand-50/50 dark:hover:bg-muted/40",
                     onRowClick && "cursor-pointer focus-visible:bg-muted/50 focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring",
                     isSelected && "bg-primary/[0.04]",
                     rowClassName?.(row),
@@ -329,7 +329,7 @@ export function DataTable<T>({
                     <td
                       key={col.id}
                       className={cn(
-                        "px-3 py-2.5 align-middle text-foreground first:pl-4 last:pr-4",
+                        "px-3 py-3 align-middle text-foreground first:pl-5 last:pr-5",
                         alignClass[col.align ?? "left"],
                         col.align === "right" && "tabular whitespace-nowrap",
                         col.hideBelow && hideClass[col.hideBelow],

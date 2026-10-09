@@ -64,20 +64,17 @@ interface ProfileBundle {
 }
 
 async function loadProfile(userId: string): Promise<ProfileBundle> {
-  const { data: profile, error } = await supabase.from("profiles").select("*").eq("id", userId).maybeSingle();
+  // One round trip: the profile with its company embedded (profiles_company_id_fkey).
+  const { data: row, error } = await supabase
+    .from("profiles")
+    .select("*, company:companies!profiles_company_id_fkey(*)")
+    .eq("id", userId)
+    .maybeSingle();
   if (error) throw error;
-  if (!profile) return { profile: null, company: null };
+  if (!row) return { profile: null, company: null };
 
-  let company: Company | null = null;
-  if (profile.company_id) {
-    const { data, error: companyError } = await supabase
-      .from("companies")
-      .select("*")
-      .eq("id", profile.company_id)
-      .maybeSingle();
-    if (companyError) throw companyError;
-    company = data ?? null;
-  }
+  const { company: embedded, ...profile } = row as typeof row & { company: Company | null };
+  const company: Company | null = profile.company_id ? (embedded ?? null) : null;
   // Before anything renders with this company: form defaults such as "today" follow its clock.
   setCompanyTimeZone(company?.timezone);
   return { profile: { ...profile, role: resolveRole(profile) }, company };

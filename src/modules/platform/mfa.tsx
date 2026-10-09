@@ -31,21 +31,20 @@ export function useMfaStatus() {
     enabled: !!user?.id,
     staleTime: 60_000,
     queryFn: async (): Promise<MfaStatus> => {
-      const [aal, factors] = await Promise.all([
+      // All three at once: the company rule does not depend on the auth calls.
+      // All local except the company rule: the factors come from the session's user (listFactors would
+      // call /user, and that call holds the auth lock that every other request on the page waits for).
+      const [aal, session, setting] = await Promise.all([
         supabase.auth.mfa.getAuthenticatorAssuranceLevel(),
-        supabase.auth.mfa.listFactors(),
+        supabase.auth.getSession(),
+        companyId
+          ? db.from("company_settings").select("require_staff_mfa").eq("company_id", companyId).maybeSingle()
+          : Promise.resolve({ data: null }),
       ]);
       if (aal.error) throw aal.error;
-      if (factors.error) throw factors.error;
-      let companyRequires = false;
-      if (companyId) {
-        const { data } = await db
-          .from("company_settings")
-          .select("require_staff_mfa")
-          .eq("company_id", companyId)
-          .maybeSingle();
-        companyRequires = !!(data as { require_staff_mfa?: boolean } | null)?.require_staff_mfa;
-      }
+      if (session.error) throw session.error;
+      const factors = { data: { totp: (session.data.session?.user.factors ?? []).filter((f) => f.factor_type === "totp") } };
+      const companyRequires = !!(setting.data as { require_staff_mfa?: boolean } | null)?.require_staff_mfa;
       return {
         currentLevel: aal.data.currentLevel ?? null,
         nextLevel: aal.data.nextLevel ?? null,
@@ -315,11 +314,15 @@ export function MfaGate({ children }: { children: ReactNode }) {
   }, [verifiedAt, refreshProfile]);
 
   if (status.isPending) {
+    // The page mounts hidden underneath, so its own data loads while this check runs; nothing shows until it passes.
     return (
-      <div className="space-y-3" aria-busy="true">
-        <Skeleton className="h-8 w-56" />
-        <Skeleton className="h-28 w-full rounded-2xl" />
-      </div>
+      <>
+        <div className="space-y-3" aria-busy="true">
+          <Skeleton className="h-8 w-56" />
+          <Skeleton className="h-28 w-full rounded-2xl" />
+        </div>
+        <div hidden>{children}</div>
+      </>
     );
   }
   // If the status cannot be read (offline, old auth server), fall through: the database still enforces it.

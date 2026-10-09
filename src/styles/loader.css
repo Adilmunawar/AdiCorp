@@ -1,121 +1,16 @@
 /*
- * BrandLoader motion and ring geometry (src/components/common/BrandLoader.tsx).
+ * BrandLoader (src/components/common/BrandLoader.tsx): logo, wordmark and a slim progress bar.
  * Only transform and opacity animate, so everything stays on the compositor.
- * Every looping animation shares --adl-delay (a negative offset derived from
- * performance.now()), so a loader that remounts, or replaces the static splash
- * in index.html, continues in the same phase instead of jumping.
- * The static splash in index.html mirrors this geometry; keep them in step.
+ * Looping animations share --adl-delay (a negative offset from performance.now()), so a loader that
+ * remounts, or replaces the static splash in index.html, continues in the same phase instead of jumping.
+ * The static splash in index.html mirrors this; keep them in step.
  */
 
-.adl-mark {
-  --adl-stroke: 2.5px;
-}
-
-.adl-mark[data-size="sm"] {
-  --adl-stroke: 2px;
-}
-
-.adl-halo {
-  background: radial-gradient(
-    closest-side,
-    hsl(var(--brand-200) / 0.55) 0%,
-    hsl(var(--brand-100) / 0.3) 55%,
-    hsl(var(--brand-100) / 0) 100%
-  );
-  animation: adl-breathe 3.2s ease-in-out infinite;
-  animation-delay: var(--adl-delay, 0ms);
-  will-change: transform, opacity;
-}
-
-.dark .adl-halo {
-  background: radial-gradient(
-    closest-side,
-    hsl(var(--brand-600) / 0.3) 0%,
-    hsl(var(--brand-800) / 0.18) 55%,
-    hsl(var(--brand-900) / 0) 100%
-  );
-}
-
-.adl-track {
-  box-shadow: inset 0 0 0 var(--adl-stroke) hsl(var(--primary) / 0.1);
-}
-
-/* Comet arc: a conic gradient clipped to a thin ring, head at 12 o'clock. */
-.adl-arc {
-  background: conic-gradient(
-    from 0deg,
-    hsl(var(--brand-400) / 0) 0deg,
-    hsl(var(--brand-400) / 0.12) 120deg,
-    hsl(var(--brand-500) / 0.75) 270deg,
-    hsl(var(--brand-700)) 360deg
-  );
-  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - var(--adl-stroke)), #000 calc(100% - var(--adl-stroke) + 0.5px));
-  mask: radial-gradient(farthest-side, transparent calc(100% - var(--adl-stroke)), #000 calc(100% - var(--adl-stroke) + 0.5px));
-}
-
-.dark .adl-arc {
-  background: conic-gradient(
-    from 0deg,
-    hsl(var(--brand-300) / 0) 0deg,
-    hsl(var(--brand-300) / 0.12) 120deg,
-    hsl(var(--brand-400) / 0.8) 270deg,
-    hsl(var(--brand-300)) 360deg
-  );
-}
-
-.adl-arc,
-.adl-cap {
-  animation: adl-spin 1.6s cubic-bezier(0.55, 0.12, 0.45, 0.88) infinite;
+.adl-logo {
+  filter: drop-shadow(0 6px 14px hsl(var(--brand-700) / 0.18));
+  animation: adl-float 2.4s ease-in-out infinite;
   animation-delay: var(--adl-delay, 0ms);
   will-change: transform;
-}
-
-/* Round, softly glowing head that rides on top of the arc. */
-.adl-cap::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 50%;
-  width: var(--adl-stroke);
-  height: var(--adl-stroke);
-  margin-left: calc(var(--adl-stroke) / -2);
-  border-radius: 9999px;
-  background: hsl(var(--brand-700));
-  box-shadow: 0 0 8px 1.5px hsl(var(--brand-500) / 0.55);
-}
-
-.dark .adl-cap::before {
-  background: hsl(var(--brand-300));
-  box-shadow: 0 0 8px 1.5px hsl(var(--brand-400) / 0.6);
-}
-
-/* Slow outer orbit with a single satellite. */
-.adl-orbit {
-  box-shadow: inset 0 0 0 1px hsl(var(--primary) / 0.07);
-  animation: adl-spin 6.4s linear infinite reverse;
-  animation-delay: var(--adl-delay, 0ms);
-  will-change: transform;
-}
-
-.adl-orbit::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: -2.5px;
-  width: 5px;
-  height: 5px;
-  margin-top: -2.5px;
-  border-radius: 9999px;
-  background: hsl(var(--brand-400));
-  box-shadow: 0 0 0 3px hsl(var(--brand-400) / 0.15);
-}
-
-.adl-tile {
-  background: hsl(var(--neutral-0));
-  box-shadow:
-    0 1px 2px hsl(var(--brand-950) / 0.06),
-    0 12px 32px -12px hsl(var(--brand-700) / 0.4),
-    inset 0 0 0 1px hsl(var(--brand-700) / 0.07);
 }
 
 .adl-bar {
@@ -123,51 +18,33 @@
 }
 
 .adl-bar-fill {
-  background: linear-gradient(90deg, hsl(var(--brand-500) / 0) 0%, hsl(var(--brand-500)) 40%, hsl(var(--brand-700)) 100%);
-  animation: adl-slide 1.6s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+  background: linear-gradient(90deg, hsl(var(--brand-500) / 0) 0%, hsl(var(--brand-500)) 45%, hsl(var(--brand-700)) 100%);
+  animation: adl-slide 1.2s cubic-bezier(0.65, 0, 0.35, 1) infinite;
   animation-delay: var(--adl-delay, 0ms);
   will-change: transform;
 }
 
 .dark .adl-bar-fill {
-  background: linear-gradient(90deg, hsl(var(--brand-400) / 0) 0%, hsl(var(--brand-400)) 40%, hsl(var(--brand-300)) 100%);
+  background: linear-gradient(90deg, hsl(var(--brand-400) / 0) 0%, hsl(var(--brand-400)) 45%, hsl(var(--brand-300)) 100%);
 }
 
-/* Faint dot grid that fades out from the centre (full-screen only). */
-.adl-grid {
-  background-image: radial-gradient(hsl(var(--brand-700) / 0.07) 1px, transparent 1.2px);
-  background-size: 22px 22px;
-  background-position: center;
-  -webkit-mask-image: radial-gradient(60% 55% at 50% 45%, #000 0%, transparent 100%);
-  mask-image: radial-gradient(60% 55% at 50% 45%, #000 0%, transparent 100%);
-}
-
-.dark .adl-grid {
-  background-image: radial-gradient(hsl(var(--brand-300) / 0.08) 1px, transparent 1.2px);
-}
-
+/* Fast loads show nothing at all; the mark fades in only if loading takes a moment. */
 .adl-enter {
-  animation: adl-in 420ms cubic-bezier(0.22, 1, 0.36, 1) 90ms both;
+  animation: adl-in 360ms cubic-bezier(0.22, 1, 0.36, 1) 120ms both;
 }
 
-@keyframes adl-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+/* The words appear only when it is taking a while. */
+.adl-late {
+  animation: adl-fade 300ms ease-out 700ms both;
 }
 
-@keyframes adl-breathe {
+@keyframes adl-float {
   0%,
   100% {
-    opacity: 0.6;
-    transform: scale(0.94);
+    transform: translateY(0);
   }
   50% {
-    opacity: 1;
-    transform: scale(1.04);
+    transform: translateY(-3px);
   }
 }
 
@@ -183,7 +60,7 @@
 @keyframes adl-in {
   from {
     opacity: 0;
-    transform: translateY(6px) scale(0.985);
+    transform: scale(0.97);
   }
   to {
     opacity: 1;
@@ -191,26 +68,23 @@
   }
 }
 
+@keyframes adl-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .adl-halo,
-  .adl-arc,
-  .adl-cap,
-  .adl-orbit,
+  .adl-logo,
   .adl-bar-fill,
-  .adl-enter {
+  .adl-enter,
+  .adl-late {
     animation: none !important;
   }
 
-  .adl-arc,
-  .adl-cap {
-    transform: rotate(40deg);
-  }
-
-  .adl-halo {
-    opacity: 0.85;
-  }
-
-  /* A still, centred segment instead of a sliding one. */
   .adl-bar-fill {
     transform: translateX(75%);
   }

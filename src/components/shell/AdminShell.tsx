@@ -167,7 +167,7 @@ export function AdminShell() {
           {!isMobile && (
             <aside
               className={cn(
-                "relative z-30 h-full shrink-0 overflow-hidden border-r border-border bg-card transition-[width] duration-200 ease-out motion-reduce:transition-none",
+                "relative z-40 h-full shrink-0 overflow-hidden rounded-r-[22px] border-r border-border/70 bg-card shadow-[6px_0_28px_-8px_hsl(var(--brand-950)/0.12)] transition-[width] duration-200 ease-out motion-reduce:transition-none",
                 rail ? "w-16" : "w-60",
               )}
             >

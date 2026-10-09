@@ -8,6 +8,7 @@
     <title>AdiCorp HR</title>
     <link rel="icon" type="image/png" href="/AdilMunawar-Uploads/AdiCorp%20-%20Logo.png" />
     <link rel="apple-touch-icon" href="/AdilMunawar-Uploads/AdiCorp%20-%20Logo.png" />
+    <link rel="preload" as="image" href="/AdilMunawar-Uploads/AdiCorp%20-%20Logo.png" fetchpriority="high" />
     <meta name="description" content="AdiCorp HR: people, time, leave, payroll and employee self-service in one secure workspace." />
     <meta name="author" content="AdiCorp" />
 
@@ -26,48 +27,29 @@
     <!--
       Static splash shown before the JS bundle runs. It mirrors the full-screen
       BrandLoader (src/components/common/BrandLoader.tsx + src/styles/loader.css)
-      pixel for pixel and shares its phase clock, so React takes over without a jump.
+      closely and shares its phase clock, so React takes over without a jump.
       Colours are the palette hexes from src/styles/palette.css.
     -->
     <style>
       html,body{margin:0}
-      .sp-root{position:relative;isolation:isolate;display:flex;min-height:100vh;min-height:100dvh;width:100%;align-items:center;justify-content:center;overflow:hidden;padding:0 16px;box-sizing:border-box;background-color:#fff;background-image:radial-gradient(120% 70% at 50% 0%,rgba(226,238,254,.7) 0%,rgba(241,248,255,.45) 38%,transparent 72%),linear-gradient(180deg,#f8fafc 0%,#fff 100%);font-family:Inter,sans-serif;-webkit-font-smoothing:antialiased}
-      .sp-root *,.sp-root *::before{box-sizing:border-box}
-      .sp-grid{position:absolute;inset:0;z-index:-1;pointer-events:none;background-image:radial-gradient(rgba(7,77,183,.07) 1px,transparent 1.2px);background-size:22px 22px;background-position:center;-webkit-mask-image:radial-gradient(60% 55% at 50% 45%,#000 0%,transparent 100%);mask-image:radial-gradient(60% 55% at 50% 45%,#000 0%,transparent 100%)}
-      .sp-stack{display:flex;width:100%;max-width:20rem;flex-direction:column;align-items:center;text-align:center}
-      .sp-mark{position:relative;flex-shrink:0;width:128px;height:128px}
-      .sp-mark>span{position:absolute;border-radius:9999px}
-      .sp-halo{inset:-30%;background:radial-gradient(closest-side,rgba(199,223,254,.55) 0%,rgba(226,238,254,.3) 55%,rgba(226,238,254,0) 100%);animation:sp-breathe 3.2s ease-in-out infinite}
-      .sp-orbit{inset:-10px;box-shadow:inset 0 0 0 1px rgba(7,77,183,.07);animation:sp-spin 6.4s linear infinite reverse}
-      .sp-orbit::before{content:"";position:absolute;top:50%;left:-2.5px;width:5px;height:5px;margin-top:-2.5px;border-radius:9999px;background:#66a6fe;box-shadow:0 0 0 3px rgba(102,166,254,.15)}
-      .sp-track{inset:0;box-shadow:inset 0 0 0 2.5px rgba(7,77,183,.1)}
-      .sp-arc{inset:0;background:conic-gradient(from 0deg,rgba(102,166,254,0) 0deg,rgba(102,166,254,.12) 120deg,rgba(50,132,247,.75) 270deg,#074db7 360deg);-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 2.5px),#000 calc(100% - 2px));mask:radial-gradient(farthest-side,transparent calc(100% - 2.5px),#000 calc(100% - 2px))}
-      .sp-arc,.sp-cap{animation:sp-spin 1.6s cubic-bezier(.55,.12,.45,.88) infinite}
-      .sp-cap{inset:0}
-      .sp-cap::before{content:"";position:absolute;top:0;left:50%;width:2.5px;height:2.5px;margin-left:-1.25px;border-radius:9999px;background:#074db7;box-shadow:0 0 8px 1.5px rgba(50,132,247,.55)}
-      .sp-tile{inset:17%;display:flex;align-items:center;justify-content:center;background:#fff;box-shadow:0 1px 2px rgba(11,26,72,.06),0 12px 32px -12px rgba(7,77,183,.4),inset 0 0 0 1px rgba(7,77,183,.07)}
-      .sp-tile img{width:56%;height:56%;object-fit:contain}
-      .sp-name{margin:28px 0 0;font:600 18px/28px "DM Sans",sans-serif;letter-spacing:.02em;color:#141925}
+      .sp-root{display:flex;min-height:100vh;min-height:100dvh;width:100%;align-items:center;justify-content:center;padding:0 16px;box-sizing:border-box;background-color:#fff;background-image:radial-gradient(120% 70% at 50% 0%,rgba(226,238,254,.7) 0%,rgba(241,248,255,.45) 38%,transparent 72%),linear-gradient(180deg,#f8fafc 0%,#fff 100%);font-family:Inter,sans-serif;-webkit-font-smoothing:antialiased}
+      .sp-stack{display:flex;width:100%;max-width:18rem;flex-direction:column;align-items:center;text-align:center}
+      .sp-logo{width:clamp(2.75rem,8vh,4rem);height:clamp(2.75rem,8vh,4rem);object-fit:contain;filter:drop-shadow(0 6px 14px rgba(7,77,183,.18));animation:sp-float 2.4s ease-in-out infinite}
+      .sp-name{margin:clamp(.75rem,2.2vh,1.25rem) 0 0;font:600 17px/24px "DM Sans",sans-serif;letter-spacing:-.01em;color:#141925}
       .sp-name span{color:#074db7}
-      .sp-msg{margin:6px 0 0;height:20px;width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:13px;line-height:20px;font-weight:500;color:rgba(20,25,37,.8)}
-      .sp-bar{position:relative;margin-top:20px;height:3px;width:160px;overflow:hidden;border-radius:9999px;background:rgba(7,77,183,.12)}
-      .sp-bar span{position:absolute;top:0;bottom:0;left:0;width:40%;border-radius:9999px;background:linear-gradient(90deg,rgba(50,132,247,0) 0%,#3284f7 40%,#074db7 100%);animation:sp-slide 1.6s cubic-bezier(.65,0,.35,1) infinite}
-      .sp-sub{margin:12px 0 0;height:16px;width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:11px;line-height:16px;letter-spacing:.025em;color:#656e7c}
-      .sp-root .sp-halo,.sp-root .sp-orbit,.sp-root .sp-arc,.sp-root .sp-cap,.sp-root .sp-bar span{animation-delay:var(--adl-delay,0ms);will-change:transform}
-      @keyframes sp-spin{to{transform:rotate(360deg)}}
-      @keyframes sp-breathe{0%,100%{opacity:.6;transform:scale(.94)}50%{opacity:1;transform:scale(1.04)}}
+      .sp-bar{position:relative;margin-top:16px;height:3px;width:112px;overflow:hidden;border-radius:9999px;background:rgba(7,77,183,.12)}
+      .sp-bar span{position:absolute;top:0;bottom:0;left:0;width:40%;border-radius:9999px;background:linear-gradient(90deg,rgba(50,132,247,0) 0%,#3284f7 45%,#074db7 100%);animation:sp-slide 1.2s cubic-bezier(.65,0,.35,1) infinite}
+      .sp-msg{margin:12px 0 0;height:20px;width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:12.5px;line-height:20px;font-weight:500;color:#656e7c;animation:sp-fade .3s ease-out .7s both}
+      .sp-root .sp-logo,.sp-root .sp-bar span{animation-delay:var(--adl-delay,0ms);will-change:transform}
+      @keyframes sp-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
       @keyframes sp-slide{from{transform:translateX(-100%)}to{transform:translateX(250%)}}
-      @media (prefers-reduced-motion:reduce){
-        .sp-root .sp-halo,.sp-root .sp-orbit,.sp-root .sp-arc,.sp-root .sp-cap,.sp-root .sp-bar span{animation:none}
-        .sp-arc,.sp-cap{transform:rotate(40deg)}
-        .sp-halo{opacity:.85}
-        .sp-bar span{transform:translateX(75%)}
-      }
+      @keyframes sp-fade{from{opacity:0}to{opacity:1}}
+      @media (prefers-reduced-motion:reduce){.sp-root .sp-logo,.sp-root .sp-bar span,.sp-msg{animation:none}.sp-bar span{transform:translateX(75%)}}
     </style>
   </head>
 
   <body>
-    <div id="root"><div id="adl-splash" class="sp-root" role="status" aria-live="polite" aria-busy="true"><div class="sp-grid" aria-hidden="true"></div><div class="sp-stack"><div class="sp-mark" aria-hidden="true"><span class="sp-halo"></span><span class="sp-orbit"></span><span class="sp-track"></span><span class="sp-arc"></span><span class="sp-cap"></span><span class="sp-tile"><img src="/AdilMunawar-Uploads/AdiCorp%20-%20Logo.png" alt="" width="96" height="96" decoding="async" draggable="false" /></span></div><p class="sp-name">AdiCorp <span>HR</span></p><p class="sp-msg">Loading your workspace...</p><div class="sp-bar"><span></span></div><p class="sp-sub">Please wait a moment</p></div></div><script>(function(){var t=window.performance&&performance.now?performance.now():0;var el=document.getElementById("adl-splash");if(el)el.style.setProperty("--adl-delay",-Math.round(t%6400)+"ms");})();</script></div>
+    <div id="root"><div id="adl-splash" class="sp-root" role="status" aria-live="polite" aria-busy="true"><div class="sp-stack"><img class="sp-logo" src="/AdilMunawar-Uploads/AdiCorp%20-%20Logo.png" alt="" width="64" height="64" decoding="async" draggable="false" /><p class="sp-name">AdiCorp <span>HR</span></p><div class="sp-bar"><span></span></div><p class="sp-msg">Loading your workspace</p></div></div><script>(function(){var t=window.performance&&performance.now?performance.now():0;var el=document.getElementById("adl-splash");if(el)el.style.setProperty("--adl-delay",-Math.round(t%2400)+"ms");})();</script></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

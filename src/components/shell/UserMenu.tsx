@@ -79,14 +79,14 @@ export function UserMenu({ variant = "topbar", compact = false }: UserMenuProps)
       <button
         type="button"
         aria-label={`Account menu for ${name}`}
-        className="flex h-10 w-10 shrink-0 items-center justify-center gap-2 rounded-full transition-[border-color,box-shadow,background-color] hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:h-9 sm:w-9 lg:h-auto lg:w-auto lg:border lg:border-border lg:bg-card lg:py-1 lg:pl-1 lg:pr-2.5 lg:shadow-sm lg:hover:border-foreground/20 lg:hover:bg-card lg:hover:shadow-md"
+        className="flex h-9 shrink-0 items-center gap-2 rounded-full border border-border bg-card p-0.5 shadow-sm transition-[border-color,box-shadow] hover:border-foreground/20 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[state=open]:border-primary/30 md:pr-3"
       >
-        <Avatar name={name} src={profile?.avatar_url} className="h-8 w-8 lg:h-7 lg:w-7" />
-        <span className="hidden min-w-0 text-left leading-tight lg:block">
-          <span className="block max-w-[150px] truncate text-[12px] font-semibold text-foreground">{name}</span>
-          <span className="block max-w-[150px] truncate text-[11px] text-muted-foreground">{roleLabel(role)}</span>
+        <Avatar name={name} src={profile?.avatar_url} className="h-8 w-8" />
+        <span className="hidden min-w-0 text-left leading-tight md:block">
+          <span className="block max-w-[140px] truncate text-[12px] font-semibold text-foreground">{name}</span>
+          <span className="block max-w-[140px] truncate text-[10.5px] text-muted-foreground">{roleLabel(role)}</span>
         </span>
-        <ChevronDown className="hidden h-3.5 w-3.5 shrink-0 text-muted-foreground lg:block" aria-hidden />
+        <ChevronDown className="hidden h-3.5 w-3.5 shrink-0 text-muted-foreground md:block" aria-hidden />
       </button>
     );
 

@@ -1,5 +1,6 @@
 import { useMemo, type ReactNode } from "react";
 import { Link } from "react-router-dom";
+import type { LucideIcon } from "lucide-react";
 import {
   Banknote,
   Briefcase,
@@ -14,7 +15,9 @@ import {
   LayoutDashboard,
   ListChecks,
   Plane,
+  Radio,
   RefreshCcw,
+  Receipt,
   Rocket,
   Settings2,
   UserPlus,
@@ -28,7 +31,6 @@ import { useMediaBelow } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import {
   EmptyState,
-  PageHeader,
   STATUS_COLORS,
   SectionCard,
   Skeleton,
@@ -753,6 +755,118 @@ function FinanceDashboard({ data }: { data: DashboardData }) {
 }
 
 /* ------------------------------------------------------------------ */
+/* Hero                                                                */
+/* ------------------------------------------------------------------ */
+
+interface HeroAction {
+  label: string;
+  to: string;
+  icon: LucideIcon;
+}
+
+function heroActions(role: string | null): HeroAction[] {
+  if (role === "finance") {
+    return [
+      { label: "Open payroll", to: navHref("payroll", "/payroll"), icon: Banknote },
+      { label: "Add an expense", to: "/expenses/new", icon: Receipt },
+    ];
+  }
+  return [
+    { label: "Live attendance", to: "/attendance/live", icon: Radio },
+    { label: "Add employee", to: "/employees/new", icon: UserPlus },
+  ];
+}
+
+/** Figures for the hero that the tiles below do not already show. */
+function heroChips(d: DashboardData, currency: string): { label: string; short: string; value: string; dot: string }[] {
+  if (d.role === "finance") {
+    return [
+      { label: "Paid out this month", short: "Paid out", value: d.spending ? preciseCompact(d.spending.month_total, currency) : "—", dot: "bg-emerald-300" },
+      { label: "Pay changes this month", short: "Pay changes", value: formatNumber(d.salary_bill?.changes_this_month ?? 0, 0), dot: "bg-sky-300" },
+      { label: "Overtime with HR", short: "OT with HR", value: formatNumber(d.overtime_month?.pending_entries ?? 0, 0), dot: "bg-amber-300" },
+    ];
+  }
+  const celebrating = (d.celebrations ?? []).filter((c) => c.date === d.today).length;
+  const apps = d.hiring?.by_status ?? {};
+  const newApps = (apps.new ?? 0) + (apps.submitted ?? 0) + (apps.received ?? 0);
+  return [
+    { label: "Celebrating today", short: "Celebrating", value: formatNumber(celebrating, 0), dot: "bg-pink-300" },
+    { label: "Away today", short: "Away", value: formatNumber(d.attendance_today?.leave ?? 0, 0), dot: "bg-sky-300" },
+    d.hiring
+      ? { label: "New applicants", short: "Applicants", value: formatNumber(newApps, 0), dot: "bg-emerald-300" }
+      : { label: "Incomplete profiles", short: "Incomplete", value: formatNumber(d.people.incomplete_profiles, 0), dot: "bg-amber-300" },
+  ];
+}
+
+function DashboardHero({
+  eyebrow,
+  title,
+  lede,
+  data,
+  role,
+  refresh,
+}: {
+  eyebrow: string;
+  title: string;
+  lede: string;
+  data?: DashboardData;
+  role: string | null;
+  refresh: ReactNode;
+}) {
+  const actions = heroActions(role);
+  const { currency } = useMoney();
+  return (
+    <section className="relative isolate mb-5 overflow-hidden rounded-[24px] bg-gradient-to-br from-brand-600 via-brand-800 to-brand-950 px-5 py-6 text-white shadow-[0_18px_40px_-18px_hsl(var(--brand-800)/0.7)] sm:mb-6 sm:px-7 sm:py-7">
+      {/* Quiet decoration: two soft light pools and a fine dot grid. */}
+      <div aria-hidden className="pointer-events-none absolute -right-16 -top-24 -z-10 h-72 w-72 rounded-full bg-brand-400/30 blur-3xl" />
+      <div aria-hidden className="pointer-events-none absolute -bottom-28 left-1/3 -z-10 h-64 w-64 rounded-full bg-sky-400/20 blur-3xl" />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 -z-10 opacity-[0.12] [background-image:radial-gradient(white_1px,transparent_1.2px)] [background-size:18px_18px] [mask-image:linear-gradient(to_left,black,transparent_70%)]"
+      />
+
+      <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+        <div className="min-w-0">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/70">{eyebrow}</p>
+          <h1 className="mt-1.5 font-display text-[clamp(1.45rem,2.4vw,2rem)] font-semibold leading-tight tracking-tight">{title}</h1>
+          <p className="mt-1.5 max-w-2xl text-[13.5px] leading-6 text-white/80">{lede}</p>
+        </div>
+        <div className="flex shrink-0 flex-wrap items-center gap-2">
+          {actions.map((a) => (
+            <Link
+              key={a.to}
+              to={a.to}
+              className="inline-flex h-9 items-center gap-2 rounded-full bg-white/10 px-3.5 text-[13px] font-semibold text-white ring-1 ring-inset ring-white/20 backdrop-blur transition-colors hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+            >
+              <a.icon className="h-4 w-4" aria-hidden />
+              {a.label}
+            </Link>
+          ))}
+          {refresh}
+        </div>
+      </div>
+
+      <dl className="mt-5 grid grid-cols-3 gap-2 sm:flex sm:flex-wrap sm:gap-2.5">
+        {(data ? heroChips(data, currency) : [0, 1, 2].map(() => null)).map((c, i) =>
+          c ? (
+            <div key={c.label} className="min-w-0 rounded-2xl bg-white/[0.08] px-3 py-2 ring-1 ring-inset ring-white/15 sm:min-w-[150px] sm:px-4">
+              <dt className="flex items-center gap-1.5 truncate text-[11px] font-medium text-white/70">
+                <span aria-hidden className={cn("h-1.5 w-1.5 shrink-0 rounded-full", c.dot)} />
+                <span className="sm:hidden">{c.short}</span>
+                <span className="hidden sm:inline">{c.label}</span>
+              </dt>
+              <dd className="tabular mt-0.5 truncate font-display text-[18px] font-semibold leading-6">{c.value}</dd>
+            </div>
+          ) : (
+            <div key={i} className="h-[52px] animate-pulse rounded-2xl bg-white/[0.08] sm:w-[150px]" />
+          ),
+        )}
+      </dl>
+    </section>
+  );
+}
+
+/* ------------------------------------------------------------------ */
 /* Page                                                                */
 /* ------------------------------------------------------------------ */
 
@@ -775,24 +889,23 @@ function DashboardBody() {
 
   return (
     <>
-      <PageHeader
+      <DashboardHero
         eyebrow={eyebrow}
         title={first ? `${greeting()}, ${first}.` : `${greeting()}.`}
-        description={lede}
-        icon={LayoutDashboard}
-        actions={
-          <Button
-            variant="ghost"
-            size="sm"
-            className="hidden text-muted-foreground sm:inline-flex"
+        lede={lede}
+        data={query.data}
+        role={role}
+        refresh={
+          <button
+            type="button"
             onClick={() => void query.refetch()}
             disabled={query.isFetching}
             aria-label={updated ? `Refresh the dashboard, last updated at ${updated}` : "Refresh the dashboard"}
-            title="Refresh"
+            title={updated ? `Updated ${updated}` : "Refresh"}
+            className="hidden h-9 w-9 items-center justify-center rounded-full text-white/80 sm:inline-flex ring-1 ring-inset ring-white/20 transition-colors hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white disabled:opacity-70"
           >
-            <RefreshCcw className={query.isFetching ? "animate-spin" : undefined} />
-            {query.isFetching ? "Updating…" : updated ? `Updated ${updated}` : "Refresh"}
-          </Button>
+            <RefreshCcw className={cn("h-4 w-4", query.isFetching && "animate-spin")} aria-hidden />
+          </button>
         }
       />
       {query.isPending ? (
